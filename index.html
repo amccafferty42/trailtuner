@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <title>LHHT Trip Planner</title>
+    </head>
+    <body>
+        <label for="start">Start Trailhead: </label>
+        <select id="start">
+            <option value="0">No Preference</option>
+        </select>
+        <br>
+        <label for="end">End Trailhead: </label>
+        <select id="end">
+            <option value="0">No Preference</option>
+        </select>
+        <br>
+        <label for="days">Days: </label>
+        <input type="number" min="1" max="8" value="3" name="days" id="days">
+        <br>
+        <label for="difficulty">Difficulty: </label>
+        <select id="difficulty" disabled>
+            <option value="1">Casual</option>
+            <option value="2">Moderate</option>
+            <option value="3">Strenuous</option>
+        </select>
+        <br>
+        <label for="date">Start Date: </label>
+        <input type="date" id="start-date" name="start-date" value="2018-07-22">
+        <br>
+        <label for="half">Half Day? </label>
+        <input type="checkbox" id="half">
+        <br>
+        <button type="button" onclick="plan()">Plan</button>
+        <br>
+        <p id="route"></p>
+    </body>
+</html>
+<script src="lhht.js"></script>
+<link rel="stylesheet" href="main.css">
