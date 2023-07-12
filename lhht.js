@@ -115,7 +115,7 @@ function plan() {
         pRoute.innerHTML = '';
         for (let i = 0; i < route.length; i++) {
             pRoute.innerHTML += route[i].date.toLocaleDateString() + ': ' + route[i].miles + ' miles from ' + route[i].start + ' to ' + route[i].end + '<br>';
-            console.log(route[i]);
+            //console.log(route[i]);
         }
     } else if (selectStart.value != 0) {
         //todo
@@ -124,7 +124,7 @@ function plan() {
     }
 }
 
-function generateRoute(start, end, days, startDate) {
+function generateRoute(start, end, days, startDate, halfDay) {
     const isNobo = start.mile < end.mile ? true : false;
     const mileage = Math.abs(end.mile - start.mile);
     const avgMileage = mileage / days;
@@ -143,13 +143,22 @@ function generateRoute(start, end, days, startDate) {
     routeCandidate2[0].start = start.name;
     routeCandidate2[0].start_mile = start.mile;
 
+    let routeCandidate3 = [days];
+    routeCandidate3[0] = {};
+    routeCandidate3[0].date = startDate;
+    routeCandidate3[0].start = start.name;
+    routeCandidate3[0].start_mile = start.mile;
+
+    if (halfDay) {
+
+    }
+
     for (let i = 0; i < days; i++) {
         idealEndMile = isNobo ? idealEndMile + avgMileage : idealEndMile - avgMileage;
         if (i > 0) {
             let tomorrow = new Date(routeCandidate1[i-1].date);
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    
-            
+
             routeCandidate1[i] = {};
             routeCandidate1[i].date = tomorrow;
             routeCandidate1[i].start = routeCandidate1[i-1].end;
@@ -159,36 +168,51 @@ function generateRoute(start, end, days, startDate) {
             routeCandidate2[i].date = tomorrow;
             routeCandidate2[i].start = routeCandidate2[i-1].end;
             routeCandidate2[i].start_mile = routeCandidate2[i-1].end_mile;
+
+            routeCandidate3[i] = {};
+            routeCandidate3[i].date = tomorrow;
+            routeCandidate3[i].start = routeCandidate3[i-1].end;
+            routeCandidate3[i].start_mile = routeCandidate3[i-1].end_mile;
         }
         if (i == days - 1) {
             routeCandidate1[i].end = end.name;
             routeCandidate1[i].end_mile = end.mile;
             routeCandidate2[i].end = end.name;
             routeCandidate2[i].end_mile = end.mile;
+            routeCandidate3[i].end = end.name;
+            routeCandidate3[i].end_mile = end.mile;
         } else {
             if (isNobo) {
                 for (let j = 0; j < shelters.length; j++) {
-                    if (shelters[j].mile > idealEndMile) {
-                        selectedShelter = j > 0 && idealEndMile - Math.abs(shelters[j-1].mile - idealEndMile) <= 2.5 ? sheleters[j-1] : shelters[j];
+                    if (shelters[j].mile > idealEndMile || j == shelters.length - 1) {
+                        selectedShelter = shelters[j];
                         routeCandidate1[i].end = selectedShelter.name;
                         routeCandidate1[i].end_mile = selectedShelter.mile;
 
-                        selectedShelter = j > 0 && (Math.abs(shelters[j-1].mile - idealEndMile) < Math.abs(shelters[j].mile - idealEndMile)) ? shelters[j-1] : shelters[j];
+                        selectedShelter = j > 0 ? shelters[j-1] : shelters[j];
                         routeCandidate2[i].end = selectedShelter.name;
                         routeCandidate2[i].end_mile = selectedShelter.mile;
+
+                        selectedShelter = j > 0 && (Math.abs(shelters[j-1].mile - idealEndMile) < Math.abs(shelters[j].mile - idealEndMile)) ? shelters[j-1] : shelters[j];
+                        routeCandidate3[i].end = selectedShelter.name;
+                        routeCandidate3[i].end_mile = selectedShelter.mile;
                         break;
                     }
                 }
             } else {
                 for (let j = shelters.length - 1; j >= 0; j--) {
-                    if (shelters[j].mile < idealEndMile) {
-                        selectedShelter = j < shelters.length - 1 ? shelters[j+1] : shelters[j];
+                    if (shelters[j].mile < idealEndMile || j == 0) {
+                        selectedShelter = shelters[j];
                         routeCandidate1[i].end = selectedShelter.name;
                         routeCandidate1[i].end_mile = selectedShelter.mile;
 
-                        selectedShelter = j < shelters.length - 1 && (Math.abs(shelters[j+1].mile - idealEndMile) < Math.abs(shelters[j].mile - idealEndMile)) ? shelters[j+1] : shelters[j];
+                        selectedShelter = j < shelters.length - 1 ? shelters[j+1] : shelters[j];
                         routeCandidate2[i].end = selectedShelter.name;
                         routeCandidate2[i].end_mile = selectedShelter.mile;
+
+                        selectedShelter = j < shelters.length - 1 && (Math.abs(shelters[j+1].mile - idealEndMile) < Math.abs(shelters[j].mile - idealEndMile)) ? shelters[j+1] : shelters[j];
+                        routeCandidate3[i].end = selectedShelter.name;
+                        routeCandidate3[i].end_mile = selectedShelter.mile;
                         break;
                     }
                 }
@@ -196,10 +220,18 @@ function generateRoute(start, end, days, startDate) {
         }
         routeCandidate1[i].miles = Math.round(Math.abs(routeCandidate1[i].end_mile - routeCandidate1[i].start_mile) * 10) / 10;
         routeCandidate2[i].miles = Math.round(Math.abs(routeCandidate2[i].end_mile - routeCandidate2[i].start_mile) * 10) / 10;
+        routeCandidate3[i].miles = Math.round(Math.abs(routeCandidate3[i].end_mile - routeCandidate3[i].start_mile) * 10) / 10;
     }
     const sd1 = calculateSD(calculateVariance(Array.from(routeCandidate1, x => x.miles)));
+    console.log("routeCandidate1 (long) calculated with a standard deviation of " + sd1);
     const sd2 = calculateSD(calculateVariance(Array.from(routeCandidate2, x => x.miles)));
-    return sd1 < sd2 ? routeCandidate1 : routeCandidate2;
+    console.log("routeCandidate2 (short) calculated with a standard deviation of " + sd2);
+    const sd3 = calculateSD(calculateVariance(Array.from(routeCandidate3, x => x.miles)));
+    console.log("routeCandidate3 (closest to average) calculated with a standard deviation of " + sd3);
+
+    if (Math.min(sd1, sd2, sd3) === sd1) return routeCandidate1;
+    if (Math.min(sd1, sd2, sd3) === sd2) return routeCandidate2;
+    return routeCandidate3;
 }
 
 // Calculate the average of all the numbers
@@ -223,3 +255,5 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
+
+//bug: 653 -> 381 9 days causes NaN
