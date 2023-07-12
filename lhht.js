@@ -149,6 +149,7 @@ function generateRoute(start, end, days, startDate) {
             let tomorrow = new Date(routeCandidate1[i-1].date);
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
     
+            
             routeCandidate1[i] = {};
             routeCandidate1[i].date = tomorrow;
             routeCandidate1[i].start = routeCandidate1[i-1].end;
