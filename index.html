@@ -16,6 +16,12 @@
         <label for="days">Days: </label>
         <input type="number" min="1" max="9" value="3" name="days" id="days">
         <br>
+        <div class="tooltip">
+            <label for="half">Half Day? </label>
+            <span class="tooltiptext">Check this box to hike in to the nearest shelter on day 1. Useful for late starts (i.e. Friday after work)</span>
+            <input type="checkbox" id="half">
+        </div>
+        <br>
         <label for="difficulty">Difficulty: </label>
         <select id="difficulty" disabled>
             <option value="1">Casual</option>
@@ -25,9 +31,6 @@
         <br>
         <label for="date">Start Date: </label>
         <input type="date" id="start-date" name="start-date" value="2018-07-22">
-        <br>
-        <label for="half">Half Day? </label>
-        <input type="checkbox" id="half">
         <br>
         <button type="button" onclick="plan()">Plan</button>
         <br>

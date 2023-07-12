@@ -2,32 +2,38 @@ let trailheads = [
     {
         name: "Rt. 381 (Ohiopyle)",
         mile: 0.0,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 0
     },
     {
         name: "Rt. 653",
         mile: 18.9,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 1
     },
     {
         name: "Rt. 31",
         mile: 30.9,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 3
     },
     {
         name: "Rt. 30",
         mile: 45.6,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 5
     },
     {
         name: "Rt. 271",
         mile: 56.8,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 6
     },
     {
         name: "Rt. 56 (Johnstown)",
         mile: 70.0,
-        type: "trailhead"
+        type: "trailhead",
+        closest_shelter: 7
     }
 ];
 let shelters = [
@@ -36,7 +42,7 @@ let shelters = [
         mile: 6.3,
         type: "shelter"
     },
-    {
+    {   
         name: "Rt. 653 Shelter Area",
         mile: 18.5,
         type: "shelter"
@@ -75,8 +81,6 @@ let shelters = [
 
 let startTrailhead;
 let endTrailhead;
-let genRoute = [];
-let genRoutes = [];
 
 // select DOM elements
 const selectStart = document.getElementById('start');
@@ -87,8 +91,6 @@ const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
 const pRoute = document.getElementById('route');
 
-
-// populate trailhead dropdowns
 for (let i = 0; i < trailheads.length; i++) {
     addOption(selectStart, trailheads[i].name, i+1);
     addOption(selectEnd, trailheads[i].name, i+1);
@@ -108,26 +110,36 @@ function addOption(element, name, value) {
 function plan() {
     const startDate = new Date(inputDate.value + 'T00:00');
     const days = inputDays.value;
+    let startTrailhead = trailheads[selectStart.value - 1];
+    let endTrailhead = trailheads[selectEnd.value - 1];
+
     if (selectStart.value !== 0 && selectEnd.value !== 0) {
-        let startTrailhead = trailheads[selectStart.value - 1];
-        let endTrailhead = trailheads[selectEnd.value - 1];
-        const route = generateRoute(startTrailhead, endTrailhead, days, startDate);
-        pRoute.innerHTML = '';
-        for (let i = 0; i < route.length; i++) {
-            pRoute.innerHTML += route[i].date.toLocaleDateString() + ': ' + route[i].miles + ' miles from ' + route[i].start + ' to ' + route[i].end + '<br>';
-            //console.log(route[i]);
-        }
-    } else if (selectStart.value != 0) {
-        //todo
-    } else {
-        //todo
+        endTrailhead = trailheads[Math.floor(Math.random() * 5)];
+        startTrailhead = trailheads[Math.floor(Math.random() * 5)];
+        console.log('Selected ' + startTrailhead.name + ' as starting trailhead!');
+        console.log('Selected ' + endTrailhead.name + ' as ending trailhead!');
+    } else if (selectStart.value !== 0) {
+        endTrailhead = trailheads[Math.floor(Math.random() * 5)];
+        console.log('Selected ' + endTrailhead.name + ' as ending trailhead!');
+    } else if (selectEnd.value !== 0) {
+        startTrailhead = trailheads[Math.floor(Math.random() * 5)];
+        console.log('Selected ' + startTrailhead.name + ' as starting trailhead!');
+    }
+    const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked);
+    displayRoute(route);
+}
+
+function displayRoute(route) {
+    pRoute.innerHTML = '';
+    for (let i = 0; i < route.length; i++) {
+        pRoute.innerHTML += route[i].date.toLocaleDateString() + ': ' + route[i].miles + ' miles from ' + route[i].start + ' to ' + route[i].end + '<br>';
     }
 }
 
 function generateRoute(start, end, days, startDate, halfDay) {
     const isNobo = start.mile < end.mile ? true : false;
     const mileage = Math.abs(end.mile - start.mile);
-    const avgMileage = mileage / days;
+    let avgMileage = mileage / days;
     let idealEndMile = start.mile;
     let selectedShelter;
 
@@ -149,12 +161,25 @@ function generateRoute(start, end, days, startDate, halfDay) {
     routeCandidate3[0].start = start.name;
     routeCandidate3[0].start_mile = start.mile;
 
-    if (halfDay) {
-
-    }
-
     for (let i = 0; i < days; i++) {
-        idealEndMile = isNobo ? idealEndMile + avgMileage : idealEndMile - avgMileage;
+        if (halfDay) {
+            routeCandidate1[0].end = shelters[start.closest_shelter].name;
+            routeCandidate1[0].end_mile = shelters[start.closest_shelter].mile;
+            routeCandidate1[0].miles = Math.round(Math.abs(routeCandidate1[0].end_mile - routeCandidate1[0].start_mile) * 10) / 10;
+            
+            routeCandidate2[0].end = shelters[start.closest_shelter].name;
+            routeCandidate2[0].end_mile = shelters[start.closest_shelter].mile;
+            routeCandidate2[0].miles = Math.round(Math.abs(routeCandidate2[0].end_mile - routeCandidate2[0].start_mile) * 10) / 10;
+            
+            routeCandidate3[0].end = shelters[start.closest_shelter].name;
+            routeCandidate3[0].end_mile = shelters[start.closest_shelter].mile;
+            routeCandidate3[0].miles = Math.round(Math.abs(routeCandidate3[0].end_mile - routeCandidate3[0].start_mile) * 10) / 10;
+    
+            avgMileage = (Math.abs(end.mile - shelters[start.closest_shelter].mile)) / (days - 1);
+            idealEndMile = shelters[start.closest_shelter].mile;
+            i++;
+            halfDay = false;
+        }
         if (i > 0) {
             let tomorrow = new Date(routeCandidate1[i-1].date);
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
@@ -183,6 +208,7 @@ function generateRoute(start, end, days, startDate, halfDay) {
             routeCandidate3[i].end_mile = end.mile;
         } else {
             if (isNobo) {
+                idealEndMile += avgMileage;
                 for (let j = 0; j < shelters.length; j++) {
                     if (shelters[j].mile > idealEndMile || j == shelters.length - 1) {
                         selectedShelter = shelters[j];
@@ -192,7 +218,7 @@ function generateRoute(start, end, days, startDate, halfDay) {
                         selectedShelter = j > 0 ? shelters[j-1] : shelters[j];
                         routeCandidate2[i].end = selectedShelter.name;
                         routeCandidate2[i].end_mile = selectedShelter.mile;
-
+                        
                         selectedShelter = j > 0 && (Math.abs(shelters[j-1].mile - idealEndMile) < Math.abs(shelters[j].mile - idealEndMile)) ? shelters[j-1] : shelters[j];
                         routeCandidate3[i].end = selectedShelter.name;
                         routeCandidate3[i].end_mile = selectedShelter.mile;
@@ -200,6 +226,7 @@ function generateRoute(start, end, days, startDate, halfDay) {
                     }
                 }
             } else {
+                idealEndMile -= avgMileage;
                 for (let j = shelters.length - 1; j >= 0; j--) {
                     if (shelters[j].mile < idealEndMile || j == 0) {
                         selectedShelter = shelters[j];
@@ -255,5 +282,3 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
-
-//bug: 653 -> 381 9 days causes NaN
