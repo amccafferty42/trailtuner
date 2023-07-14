@@ -4,12 +4,12 @@
     </head>
     <body>
         <label for="start">Start Trailhead: </label>
-        <select id="start">
+        <select id="start" onChange="enableDifficulty()">
             <option value="0">No Preference</option>
         </select>
         <br>
         <label for="end">End Trailhead: </label>
-        <select id="end">
+        <select id="end" onChange="enableDifficulty()">
             <option value="0">No Preference</option>
         </select>
         <br>
@@ -18,15 +18,15 @@
         <br>
         <div class="tooltip">
             <label for="half">Half Day? </label>
-            <span class="tooltiptext">Check this box to hike in to the nearest shelter on day 1. Useful for late starts (i.e. Friday after work)</span>
+            <span class="tooltiptext">Check to hike-in to nearest shelter Day 1. Useful for late starts (i.e. Friday after work)</span>
             <input type="checkbox" id="half">
         </div>
         <br>
         <label for="difficulty">Difficulty: </label>
         <select id="difficulty" disabled>
             <option value="1">Casual</option>
-            <option value="2">Moderate</option>
-            <option value="3">Strenuous</option>
+            <option value="1.5">Moderate</option>
+            <option value="2">Strenuous</option>
         </select>
         <br>
         <label for="date">Start Date: </label>
