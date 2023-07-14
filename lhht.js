@@ -54,7 +54,7 @@ const trail = {
         },
         {
             name: "Rt. 271 Shelter Area",
-            mile: 56.9,
+            mile: 56.5,
         },
         {
             name: "Rt. 56 Shelter Area",
@@ -98,6 +98,7 @@ function plan() {
 
     console.log('Generating ' + Math.abs(startTrailhead.mile - endTrailhead.mile) + ' mile trip from ' + startTrailhead.name + ' to ' + endTrailhead.name);
     const route = generateRoute(startTrailhead, endTrailhead, inputDays.value, startDate, inputHalfDay.checked);
+
     displayRoute(route);
 }
 
@@ -133,7 +134,7 @@ function selectEndTrailhead(startTrailhead, difficulty) {
 /* Given mile number, return the nearest campsite in either direction */
 function getNearestCampsite(mile) {
     if (mile < 0) return trail.campsites[0];
-    if (mile > trail.trailLength) trail.campsites[trail.campsites.length - 1];
+    if (mile > trail.length) return trail.campsites[trail.campsites.length - 1];
     for (let i = 0; i < trail.campsites.length; i++) {
         if (trail.campsites[i].mile > mile) {
             if (i == 0) return trail.campsites[0];
@@ -143,10 +144,30 @@ function getNearestCampsite(mile) {
     return trail.campsites[trail.campsites.length - 1];
 }
 
+/* Given mile number, return the nearest campsite with a greater mile */
+function getNearestCampsiteGreaterThan(mile) {
+    if (mile < 0) return trail.campsites[0];
+    if (mile > trail.length) return;
+    for (let i = 0; i < trail.campsites.length; i++) {
+        if (trail.campsites[i].mile > mile) return trail.campsites[i];
+    }
+    return;
+}
+
+/* Given mile number, return the nearest campsite with a lesser mile */
+function getNearestCampsiteLessThan(mile) {
+    if (mile < 0) return;
+    if (mile > trail.length) return trail.campsites[trail.campsites.length - 1];
+    for (let i = trail.campsites.length - 1; i >= 0; i--) {
+        if (trail.campsites[i].mile < mile) return trail.campsites[i];
+    }
+    return;
+}
+
 /* Given mile number, return the nearest trailhead in either direction */
 function getNearestTrailhead(mile) {
     if (mile < 0) return trail.trailheads[0];
-    if (mile > trail.trailLength) trail.trailheads[trail.trailheads.length - 1];
+    if (mile > trail.length) return trail.trailheads[trail.trailheads.length - 1];
     for (let i = 0; i < trail.trailheads.length; i++) {
         if (trail.trailheads[i].mile > mile) {
             if (i == 0) return trail.trailheads[0];
@@ -156,138 +177,104 @@ function getNearestTrailhead(mile) {
     return trail.trailheads[trail.trailheads.length - 1];
 }
 
-/* Given campsite and direction, return the next campsite */
-function getNextCampsite(campsite, isNobo) {
-    if (isNobo) return trail.campsites[trail.campsites.indexOf(campsite) + 1];
-    return trail.campsites[trail.campsites.indexOf(campsite) - 1];
+function generateHalfDay(start, startDate) {
+    const end = getNearestCampsite(start.mile);
+    return {
+        start: start.name,
+        start_mile: start.mile,
+        date: startDate,
+        end: end.name,
+        end_mile: end.mile,
+        miles: Math.round(Math.abs(start.mile - end.mile) * 10) / 10
+    }
 }
 
-/* Given a start, end, number of days, startDate, and halfDay boolean, 
-    generate three route candidates and return the one with the lowest standard deviation */
 function generateRoute(start, end, days, startDate, halfDay) {
-    const isNobo = start.mile < end.mile ? true : false;
-    const mileage = Math.abs(end.mile - start.mile);
-    let avgMileage = mileage / days;
-    let idealEndMile = start.mile;
-    let selectedShelter;
-
-    let routeCandidate1 = [days];
-    routeCandidate1[0] = {};
-    routeCandidate1[0].date = startDate;
-    routeCandidate1[0].start = start.name;
-    routeCandidate1[0].start_mile = start.mile;
-
-    let routeCandidate2 = [days];
-    routeCandidate2[0] = {};
-    routeCandidate2[0].date = startDate;
-    routeCandidate2[0].start = start.name;
-    routeCandidate2[0].start_mile = start.mile;
-
-    let routeCandidate3 = [days];
-    routeCandidate3[0] = {};
-    routeCandidate3[0].date = startDate;
-    routeCandidate3[0].start = start.name;
-    routeCandidate3[0].start_mile = start.mile;
-
-    for (let i = 0; i < days; i++) {
-        if (halfDay) {
-            const nearestCampsite = getNearestCampsite(start.mile);
-            routeCandidate1[0].end = nearestCampsite.name;
-            routeCandidate1[0].end_mile = nearestCampsite.mile;
-            routeCandidate1[0].miles = Math.round(Math.abs(routeCandidate1[0].end_mile - routeCandidate1[0].start_mile) * 10) / 10;
-            
-            routeCandidate2[0].end = nearestCampsite.name;
-            routeCandidate2[0].end_mile = nearestCampsite.mile;
-            routeCandidate2[0].miles = Math.round(Math.abs(routeCandidate2[0].end_mile - routeCandidate2[0].start_mile) * 10) / 10;
-            
-            routeCandidate3[0].end = nearestCampsite.name;
-            routeCandidate3[0].end_mile = nearestCampsite.mile;
-            routeCandidate3[0].miles = Math.round(Math.abs(routeCandidate3[0].end_mile - routeCandidate3[0].start_mile) * 10) / 10;
-    
-            avgMileage = (Math.abs(end.mile - nearestCampsite.mile)) / (days - 1);
-            idealEndMile = nearestCampsite.mile;
-            i++;
-            halfDay = false;
-        }
-        if (i > 0) {
-            let tomorrow = new Date(routeCandidate1[i-1].date);
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-
-            routeCandidate1[i] = {};
-            routeCandidate1[i].date = tomorrow;
-            routeCandidate1[i].start = routeCandidate1[i-1].end;
-            routeCandidate1[i].start_mile = routeCandidate1[i-1].end_mile;
-    
-            routeCandidate2[i] = {};
-            routeCandidate2[i].date = tomorrow;
-            routeCandidate2[i].start = routeCandidate2[i-1].end;
-            routeCandidate2[i].start_mile = routeCandidate2[i-1].end_mile;
-
-            routeCandidate3[i] = {};
-            routeCandidate3[i].date = tomorrow;
-            routeCandidate3[i].start = routeCandidate3[i-1].end;
-            routeCandidate3[i].start_mile = routeCandidate3[i-1].end_mile;
-        }
-        if (i == days - 1) {
-            routeCandidate1[i].end = end.name;
-            routeCandidate1[i].end_mile = end.mile;
-            routeCandidate2[i].end = end.name;
-            routeCandidate2[i].end_mile = end.mile;
-            routeCandidate3[i].end = end.name;
-            routeCandidate3[i].end_mile = end.mile;
-        } else {
-            if (isNobo) {
-                idealEndMile += avgMileage;
-                for (let j = 0; j < trail.campsites.length; j++) {
-                    if (trail.campsites[j].mile > idealEndMile || j == trail.campsites.length - 1) {
-                        selectedShelter = trail.campsites[j];
-                        routeCandidate1[i].end = selectedShelter.name;
-                        routeCandidate1[i].end_mile = selectedShelter.mile;
-
-                        selectedShelter = j > 0 ? trail.campsites[j-1] : trail.campsites[j];
-                        routeCandidate2[i].end = selectedShelter.name;
-                        routeCandidate2[i].end_mile = selectedShelter.mile;
-                        
-                        selectedShelter = j > 0 && (Math.abs(trail.campsites[j-1].mile - idealEndMile) < Math.abs(trail.campsites[j].mile - idealEndMile)) ? trail.campsites[j-1] : trail.campsites[j];
-                        routeCandidate3[i].end = selectedShelter.name;
-                        routeCandidate3[i].end_mile = selectedShelter.mile;
-                        break;
-                    }
-                }
-            } else {
-                idealEndMile -= avgMileage;
-                for (let j = trail.campsites.length - 1; j >= 0; j--) {
-                    if (trail.campsites[j].mile < idealEndMile || j == 0) {
-                        selectedShelter = trail.campsites[j];
-                        routeCandidate1[i].end = selectedShelter.name;
-                        routeCandidate1[i].end_mile = selectedShelter.mile;
-
-                        selectedShelter = j < trail.campsites.length - 1 ? trail.campsites[j+1] : trail.campsites[j];
-                        routeCandidate2[i].end = selectedShelter.name;
-                        routeCandidate2[i].end_mile = selectedShelter.mile;
-
-                        selectedShelter = j < trail.campsites.length - 1 && (Math.abs(trail.campsites[j+1].mile - idealEndMile) < Math.abs(trail.campsites[j].mile - idealEndMile)) ? trail.campsites[j+1] : trail.campsites[j];
-                        routeCandidate3[i].end = selectedShelter.name;
-                        routeCandidate3[i].end_mile = selectedShelter.mile;
-                        break;
-                    }
-                }
-            }
-        }
-        routeCandidate1[i].miles = Math.round(Math.abs(routeCandidate1[i].end_mile - routeCandidate1[i].start_mile) * 10) / 10;
-        routeCandidate2[i].miles = Math.round(Math.abs(routeCandidate2[i].end_mile - routeCandidate2[i].start_mile) * 10) / 10;
-        routeCandidate3[i].miles = Math.round(Math.abs(routeCandidate3[i].end_mile - routeCandidate3[i].start_mile) * 10) / 10;
+    if (halfDay) {
+        let route = [];
+        const halfDay = generateHalfDay(start, startDate);
+        let newStart = {
+            name: halfDay.end,
+            mile: halfDay.end_mile
+        };
+        let tomorrow = new Date(halfDay.date);
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+        route.push(halfDay);
+        return route.concat(calculateRoute(newStart, end, days - 1, tomorrow));
     }
-    const sd1 = calculateSD(calculateVariance(Array.from(routeCandidate1, x => x.miles)));
-    console.log("routeCandidate1 (long) calculated with a standard deviation of " + sd1);
-    const sd2 = calculateSD(calculateVariance(Array.from(routeCandidate2, x => x.miles)));
-    console.log("routeCandidate2 (short) calculated with a standard deviation of " + sd2);
-    const sd3 = calculateSD(calculateVariance(Array.from(routeCandidate3, x => x.miles)));
-    console.log("routeCandidate3 (closest to average) calculated with a standard deviation of " + sd3);
+    return calculateRoute(start, end, days, startDate);  
+}
 
-    if (Math.min(sd1, sd2, sd3) === sd1) return routeCandidate1;
-    if (Math.min(sd1, sd2, sd3) === sd2) return routeCandidate2;
-    return routeCandidate3;
+function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
+    let route = [days];
+    route[0] = {};
+    route[0].date = startDate;
+    route[0].start = startTrailhead.name;
+    route[0].start_mile = startTrailhead.mile;
+    for (let j = 0; j < days; j++) {
+        if (j > 0) {
+            let tomorrow = new Date(route[j-1].date);
+            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+            route[j] = {};
+            route[j].date = tomorrow;
+            route[j].start = route[j-1].end;
+            route[j].start_mile = route[j-1].end_mile;
+        }
+        if (j == days - 1) {
+            route[j].end = endTrailhead.name;
+            route[j].end_mile = endTrailhead.mile;
+        } else {
+            route[j].end = campsites[j] === undefined ? route[j].start : campsites[j].name;
+            route[j].end_mile = campsites[j] === undefined ? route[j].start_mile : campsites[j].mile;
+        }
+        route[j].miles = Math.round(Math.abs(route[j].end_mile - route[j].start_mile) * 10) / 10;
+    }
+    return route;
+}
+
+function calculateRoute(start, end, days, startDate) {
+    const isNobo = start.mile < end.mile ? true : false;
+    const firstPossibleCampsite = isNobo ? getNearestCampsiteGreaterThan(start.mile) : getNearestCampsiteLessThan(start.mile);
+    const lastPossibleCampsite = isNobo ? getNearestCampsiteLessThan(end.mile) : getNearestCampsiteGreaterThan(end.mile);
+    let allPossibleCampsites = isNobo ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();
+    if (allPossibleCampsites.length < days) {
+        console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
+        return buildRoute(start, end, allPossibleCampsites, days, startDate);
+    }
+
+    let campsites = subset(allPossibleCampsites, days - 1);
+    let routes = [];
+    for (let campsite of campsites) {
+        routes.push(buildRoute(start, end, campsite, days, startDate));
+    }
+
+    let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
+    for(let i = 0; i < routes.length; i++) {
+        let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.miles)));
+        if (sd < lowestSD) {
+            bestRoute = routes[i];
+            lowestSD = sd;
+        }
+    }
+    console.log("Analyzed " + routes.length + " different routes to find ideal route with a daily mileage standard deviation of " + lowestSD);
+    return bestRoute;
+}
+
+function subset(arra, arra_size) {
+    var result_set = [], result;
+    for (var x = 0; x < Math.pow(2, arra.length); x++) {
+        result = [];
+        i = arra.length - 1; 
+        do {
+            if ((x & (1 << i)) !== 0) {
+                result.push({name: arra[i].name,mile: arra[i].mile});
+            }
+        } while(i--);
+        if (result.length == arra_size) {
+            result_set.push(result.reverse());
+        }
+    }
+    return result_set; 
 }
 
 function enableDifficulty() {
@@ -326,6 +313,26 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
+
+/* Given campsite, return the next campsite */
+function getNextCampsite(campsite) {
+    return trail.campsites[trail.campsites.indexOf(campsite) + 1];
+}
+
+/* Given campsite, return the prev campsite */
+function getPrevCampsite(campsite) {
+    return trail.campsites[trail.campsites.indexOf(campsite) - 1];
+}
+
+/* Given trailhead, return the next trailhead */
+function getNextTrailhead(trailhead) {
+    return trail.trailheads[trail.trailheads.indexOf(trailhead) + 1];
+}
+
+/* Given trailhead, return the prev trailhead */
+function getPrevTrailhead(trailhead) {
+    return trail.trailheads[trail.trailheads.indexOf(trailhead) - 1];
+}
 
 //no pref -> rt 30
 //moderate vs strenuous
