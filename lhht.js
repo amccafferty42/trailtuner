@@ -90,7 +90,7 @@ function addOption(element, name, value) {
 
 function plan() {
     const startDate = new Date(inputDate.value + 'T00:00');
-    let difficulty = (selectDifficulty.value * inputDays.value * 10);
+    let difficulty = selectDifficulty.value * inputDays.value * 9;
     if (inputHalfDay.checked) difficulty -= (7.5 * selectDifficulty.value);
 
     const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], difficulty) : trail.trailheads[selectStart.value - 1];
@@ -108,12 +108,29 @@ function selectStartTrailhead(endTrailhead, difficulty) {
         if (difficulty <= trail.length / 2) {
             return trail.trailheads[Math.floor(Math.random() * trail.trailheads.length)];
         } else {
-            return trail.trailheads[Math.floor(Math.random() * 2) * (trail.trailheads.length - 1)];
+            let validTrailheads = [];
+            for (let i = 0; i < trail.trailheads.length; i++) {
+                if (trail.trailheads[i].mile <= (trail.length - difficulty) || trail.trailheads[i].mile >= difficulty) {
+                    validTrailheads.push(i);
+                }
+            }
+            console.log(validTrailheads);
+            if (validTrailheads.length === 0) return trail.trailheads[Math.floor(Math.random() * 2) * (trail.trailheads.length - 1)];
+            const r = Math.floor(Math.random() * validTrailheads.length);
+            return trail.trailheads[validTrailheads[r]];
         }
     } else {
         const startCandidate1 = getNearestTrailhead(endTrailhead.mile + difficulty);
         const startCandidate2 = getNearestTrailhead(endTrailhead.mile - difficulty);
-        return Math.abs(startCandidate1.mile - difficulty) < Math.abs(startCandidate2.mile - difficulty) ? startCandidate1 : startCandidate2;
+        if ((endTrailhead.mile + difficulty) > trail.length && (endTrailhead.mile - difficulty) < 0) {
+            return Math.abs(endTrailhead.mile - startCandidate1.mile) > Math.abs(endTrailhead.mile - startCandidate2.mile) ? startCandidate1 : startCandidate2;
+        } else if ((endTrailhead.mile + difficulty) > trail.length) {
+            return startCandidate2;
+        } else if ((endTrailhead.mile - difficulty) < 0) {
+            return startCandidate1;
+        }
+        //return Math.abs(startCandidate1.mile - difficulty) < Math.abs(startCandidate2.mile - difficulty) ? startCandidate1 : startCandidate2;
+        return Math.floor(Math.random() * 2) === 0 ? startCandidate1 : startCandidate2;
     }
 }
 
@@ -121,14 +138,15 @@ function selectStartTrailhead(endTrailhead, difficulty) {
 function selectEndTrailhead(startTrailhead, difficulty) {
     const endCandidate1 = getNearestTrailhead(startTrailhead.mile + difficulty);
     const endCandidate2 = getNearestTrailhead(startTrailhead.mile - difficulty);
-    if (endCandidate1 != startTrailhead && Math.abs(endCandidate1.mile - difficulty) < Math.abs(endCandidate2.mile - difficulty)) {
-        return endCandidate1;
-    } else if (endCandidate2 != startTrailhead) {
+    if ((startTrailhead.mile + difficulty) > trail.length && (startTrailhead.mile - difficulty) < 0) {
+        return Math.abs(startTrailhead.mile - endCandidate1.mile) > Math.abs(startTrailhead.mile - endCandidate2.mile) ? endCandidate1 : endCandidate2;
+    } else if ((startTrailhead.mile + difficulty) > trail.length) {
         return endCandidate2;
-    } else {
-        console.error("Error selecting endTrailhead");
+    } else if ((startTrailhead.mile - difficulty) < 0) {
+        return endCandidate1;
     }
-    return undefined;
+    //return Math.abs(endCandidate1.mile - difficulty) < Math.abs(endCandidate2.mile - difficulty) ? endCandidate1 : endCandidate2;
+    return Math.floor(Math.random() * 2) === 0 ? endCandidate1 : endCandidate2;
 }
 
 /* Given mile number, return the nearest campsite in either direction */
@@ -313,27 +331,3 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
-
-/* Given campsite, return the next campsite */
-function getNextCampsite(campsite) {
-    return trail.campsites[trail.campsites.indexOf(campsite) + 1];
-}
-
-/* Given campsite, return the prev campsite */
-function getPrevCampsite(campsite) {
-    return trail.campsites[trail.campsites.indexOf(campsite) - 1];
-}
-
-/* Given trailhead, return the next trailhead */
-function getNextTrailhead(trailhead) {
-    return trail.trailheads[trail.trailheads.indexOf(trailhead) + 1];
-}
-
-/* Given trailhead, return the prev trailhead */
-function getPrevTrailhead(trailhead) {
-    return trail.trailheads[trail.trailheads.indexOf(trailhead) - 1];
-}
-
-//no pref -> rt 30
-//moderate vs strenuous
-// moderate is a tougher route
