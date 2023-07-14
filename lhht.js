@@ -101,7 +101,8 @@ function plan() {
     displayRoute(route);
 }
 
-function selectStartTrailhead(endTrailhead, difficulty, halfDay) {
+/* Given optional end trailhead and difficulty integer, return start trailhead */
+function selectStartTrailhead(endTrailhead, difficulty) {
     if (endTrailhead === undefined) {
         if (difficulty <= trail.length / 2) {
             return trail.trailheads[Math.floor(Math.random() * trail.trailheads.length)];
@@ -115,6 +116,7 @@ function selectStartTrailhead(endTrailhead, difficulty, halfDay) {
     }
 }
 
+/* Given start trailhead and difficulty integer, return end trailhead */
 function selectEndTrailhead(startTrailhead, difficulty) {
     const endCandidate1 = getNearestTrailhead(startTrailhead.mile + difficulty);
     const endCandidate2 = getNearestTrailhead(startTrailhead.mile - difficulty);
@@ -130,7 +132,6 @@ function selectEndTrailhead(startTrailhead, difficulty) {
 
 /* Given mile number, return the nearest campsite in either direction */
 function getNearestCampsite(mile) {
-    //console.log("Calculating nearest campsite to mile " + mile);
     if (mile < 0) return trail.campsites[0];
     if (mile > trail.trailLength) trail.campsites[trail.campsites.length - 1];
     for (let i = 0; i < trail.campsites.length; i++) {
@@ -144,7 +145,6 @@ function getNearestCampsite(mile) {
 
 /* Given mile number, return the nearest trailhead in either direction */
 function getNearestTrailhead(mile) {
-    //console.log("Calculating nearest trailhead to mile " + mile);
     if (mile < 0) return trail.trailheads[0];
     if (mile > trail.trailLength) trail.trailheads[trail.trailheads.length - 1];
     for (let i = 0; i < trail.trailheads.length; i++) {
