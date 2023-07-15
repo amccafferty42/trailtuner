@@ -3,56 +3,67 @@
         <title>Hiking Trip Planner</title>
     </head>
     <body>
-        <div class="container-fluid">
+        <div class="container">
+            <h1 id="title"></h1>
+            <h2><small>Select the number of <strong>days</strong> along with the <strong>start / end trailheads</strong>, or choose "No Preference" to have a route generated for you based on <strong>miles per day</strong></small></h2>
             <div class="row">
-                <div class="col-md-4">
-                    <label for="start">Start Trailhead: </label>
-                    <select id="start" class="form-control" onChange="enableDifficulty()">
+                <div class="col-md-5">
+                    <label for="start"><h2>Start Trailhead</h2></label>
+                    <select id="start" class="form-control" onChange="enableMilesPerDay()">
                         <option value="0">No Preference</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="end">End Trailhead: </label>
-                    <select id="end" class="form-control" onChange="enableDifficulty()">
+                <div class="col-md-5">
+                    <label for="end"><h2>End Trailhead</h2></label>
+                    <select id="end" class="form-control" onChange="enableMilesPerDay()">
                         <option value="0">No Preference</option>
-                    </select>
-                </div>
-                <div class="col-md-2">                
-                    <label for="days">Days:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                      
-                        <input class="half-day-input form-check-input" type="checkbox" id="half">
-                        <label class="half-day-label form-check-label" for="half">
-                            Half Day?
-                        </label></label>
-                    <input type="number" min="1" max="9" value="3" name="days" id="days" class="form-control">
-                </div>
-                <!-- <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="half">
-                        <label class="form-check-label" for="half">
-                            Half Day?
-                        </label>
-                    </div>
-                </div> -->
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="difficulty">Difficulty: </label>
-                    <select id="difficulty" class="form-control" disabled>
-                        <option value="1">Casual</option>
-                        <option value="1.5">Moderate</option>
-                        <option value="2">Strenuous</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date">Start Date: </label>
+                    <label for="date"><h2><small>Start Date</small></h2></label>
                     <br>
                     <input type="date" id="start-date" name="start-date" value="2018-07-22">
                 </div>
             </div>
             <br>
-            <button class="btn btn-primary" type="button" onclick="plan()">Plan</button>
+            <div class="row align-items-center">
+                <div class="col-md-5">                
+                    <label for="days"><h2>Days</h2></label>
+                    <input type="number" min="1" value="3" name="days" id="days" class="form-control">
+                </div>
+                <div class="col-md-5">                
+                    <label for="miles"><h2>Miles / Day</h2></label>
+                    <input type="number" min="1" max="100" value="10" name="miles" id="miles" class="form-control" disabled>
+                </div>
+                <!-- <div class="col-md-1">
+                    <label for="difficulty"><h2><small>Difficulty</small></h2></label>
+                    <select id="difficulty" class="form-control" disabled>
+                        <option value="1">Casual</option>
+                        <option value="1.5">Moderate</option>
+                        <option value="2">Strenuous</option>
+                    </select>
+                </div> -->
+                <div class="col-sm-2 align-self-center">
+                    <input class="half-day-input form-check-input" type="checkbox" id="half">
+                    <label class="half-day-label form-check-label" for="half"><h2><small>Half Day?</small></h2></label>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div class="row">
+                <div class="col-md-12"> 
+                    <button class="btn btn-primary btn-lg btn-block" type="button" onclick="plan()">Generate Route</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-md-12"> 
+                    <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
+                </div>
+            </div>
         </div>
+        
+    </div>
         <p id="route"></p>
     </body>
 </html>

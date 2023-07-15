@@ -68,9 +68,11 @@ const selectStart = document.getElementById('start');
 const selectEnd = document.getElementById('end');
 const inputDays = document.getElementById('days');
 const selectDifficulty = document.getElementById('difficulty');
+const inputMiles = document.getElementById('miles');
 const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
 const pRoute = document.getElementById('route');
+const h1Title = document.getElementById('title');
 
 for (let i = 0; i < trail.trailheads.length; i++) {
     addOption(selectStart, trail.trailheads[i].name, i+1);
@@ -80,6 +82,8 @@ for (let i = 0; i < trail.trailheads.length; i++) {
 selectStart.value = 1;
 selectEnd.value = selectEnd.length - 1;
 inputDate.valueAsDate = new Date();
+inputDays.max = trail.campsites.length + 1;
+h1Title.innerHTML = trail.name + ' Trip Planner';
 
 function addOption(element, name, value) {
     let el = document.createElement("option");
@@ -90,7 +94,7 @@ function addOption(element, name, value) {
 
 function plan() {
     const startDate = new Date(inputDate.value + 'T00:00');
-    let difficulty = selectDifficulty.value * inputDays.value * 9;
+    let difficulty = (inputMiles.value * inputDays.value);
     if (inputHalfDay.checked) difficulty -= (7.5 * selectDifficulty.value);
 
     const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], difficulty) : trail.trailheads[selectStart.value - 1];
@@ -100,6 +104,15 @@ function plan() {
     const route = generateRoute(startTrailhead, endTrailhead, inputDays.value, startDate, inputHalfDay.checked);
 
     displayRoute(route);
+}
+
+function reset() {
+    selectStart.value = 1;
+    selectEnd.value = selectEnd.length - 1;
+    inputDate.valueAsDate = new Date();
+    inputDays.value = 3;
+    inputMiles.value = 10;
+    inputHalfDay.checked = false;
 }
 
 /* Given optional end trailhead and difficulty integer, return start trailhead */
@@ -295,11 +308,11 @@ function subset(arra, arra_size) {
     return result_set; 
 }
 
-function enableDifficulty() {
+function enableMilesPerDay() {
     if (selectStart.value == 0 || selectEnd.value == 0) {
-        selectDifficulty.disabled = false;
+        inputMiles.disabled = false;
     } else {
-        selectDifficulty.disabled = true;
+        inputMiles.disabled = true;
     }
 }
 
