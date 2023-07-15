@@ -1,3 +1,14 @@
+.watermark {
+    display: flex;
+    justify-content: center;
+    height: 50vh;
+    opacity: 0.1;
+}
+
+.route-table {
+    margin-top: 20px
+}
+
 .btn-primary {
 bottom: 0px;
 }

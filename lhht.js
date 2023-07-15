@@ -83,7 +83,7 @@ selectStart.value = 1;
 selectEnd.value = selectEnd.length - 1;
 inputDate.valueAsDate = new Date();
 inputDays.max = trail.campsites.length + 1;
-h1Title.innerHTML = trail.name + ' Trip Planner';
+h1Title.innerHTML = trail.name;
 
 function addOption(element, name, value) {
     let el = document.createElement("option");
@@ -113,6 +113,7 @@ function reset() {
     inputDays.value = 3;
     inputMiles.value = 10;
     inputHalfDay.checked = false;
+    inputMiles.disabled = true;
 }
 
 /* Given optional end trailhead and difficulty integer, return start trailhead */
