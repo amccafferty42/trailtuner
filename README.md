@@ -1,1 +1,1 @@
-# lhht
+Competitive reservation systems and limited overnight options can be a headache when planning a trip. The Itinerary Planning Tool is designed for multi-day backpacking, trail running, and/or bikepacking routes with restricted camping (i.e. parks where dispersed camping is prohibited).

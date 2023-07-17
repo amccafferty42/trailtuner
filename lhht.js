@@ -1,6 +1,7 @@
 const trail = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
+    circuit: false,
     trailheads: [
         {
             name: "Rt. 381",
@@ -67,12 +68,11 @@ const trail = {
 const selectStart = document.getElementById('start');
 const selectEnd = document.getElementById('end');
 const inputDays = document.getElementById('days');
-const selectDifficulty = document.getElementById('difficulty');
 const inputMiles = document.getElementById('miles');
 const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
-const pRoute = document.getElementById('route');
-const h1Title = document.getElementById('title');
+const title = document.getElementById('title');
+const table = document.getElementById('table');
 
 for (let i = 0; i < trail.trailheads.length; i++) {
     addOption(selectStart, trail.trailheads[i].name, i+1);
@@ -83,7 +83,7 @@ selectStart.value = 1;
 selectEnd.value = selectEnd.length - 1;
 inputDate.valueAsDate = new Date();
 inputDays.max = trail.campsites.length + 1;
-h1Title.innerHTML = trail.name;
+title.innerHTML = trail.name;
 
 function addOption(element, name, value) {
     let el = document.createElement("option");
@@ -94,14 +94,30 @@ function addOption(element, name, value) {
 
 function plan() {
     const startDate = new Date(inputDate.value + 'T00:00');
-    let difficulty = (inputMiles.value * inputDays.value);
-    if (inputHalfDay.checked) difficulty -= (7.5 * selectDifficulty.value);
+    let days, distance, distancePerDay;
+    if (selectStart.value != 0 && selectEnd.value != 0) {
+        distance = Math.abs(trail.trailheads[selectStart.value - 1].mile -  trail.trailheads[selectEnd.value - 1].mile);
+        if ((inputDays.value == 0 || inputDays.value == "") && (inputMiles.value == 0 || inputMiles.value == "")) {
+            distancePerDay = Math.floor(Math.random() * 11 + 10); // min = 10, max = 20
+            days = Math.round(distance / distancePerDay);
+        } else if (inputDays.value == 0 || inputDays.value == "") {
+            days = Math.round(distance / inputMiles.value);
+        } else if (inputMiles.value == 0 || inputMiles.value == "") {
+            days = inputDays.value;
+        }
+    } else {
+        days = inputDays.value > 0 ? inputDays.value : Math.floor(Math.random() * (Math.round(trail.campsites.length / 2) - 2) + 2); // min = 2, max = # campsites / 2
+        distancePerDay = inputMiles.value > 0 ? inputMiles.value : Math.floor(Math.random() * 11 + 10); // min = 10, max = 20
+        distance = distancePerDay * days;
+    }
+    if (inputHalfDay.checked) distance -= Math.round(distancePerDay / 2);
+    
+    const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], distance) : trail.trailheads[selectStart.value - 1];
+    const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trail.trailheads[selectEnd.value - 1];
 
-    const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], difficulty) : trail.trailheads[selectStart.value - 1];
-    const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, difficulty) : trail.trailheads[selectEnd.value - 1];
-
-    console.log('Generating ' + Math.abs(startTrailhead.mile - endTrailhead.mile) + ' mile trip from ' + startTrailhead.name + ' to ' + endTrailhead.name);
-    const route = generateRoute(startTrailhead, endTrailhead, inputDays.value, startDate, inputHalfDay.checked);
+    console.log('Generating ' + days + ' day, ' + Math.abs(startTrailhead.mile - endTrailhead.mile) + ' mile trip from ' + startTrailhead.name + ' to ' + endTrailhead.name);
+    const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked);
+    console.log(route);
 
     displayRoute(route);
 }
@@ -111,20 +127,21 @@ function reset() {
     selectEnd.value = selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     inputDays.value = 3;
-    inputMiles.value = 10;
+    inputMiles.value = "";
+    inputMiles.placeholder = "Using Days";
     inputHalfDay.checked = false;
-    inputMiles.disabled = true;
+    table.innerHTML = '';
 }
 
-/* Given optional end trailhead and difficulty integer, return start trailhead */
-function selectStartTrailhead(endTrailhead, difficulty) {
+/* Given optional end trailhead and miles integer, return start trailhead */
+function selectStartTrailhead(endTrailhead, miles) {
     if (endTrailhead === undefined) {
-        if (difficulty <= trail.length / 2) {
+        if (miles <= trail.length / 2) {
             return trail.trailheads[Math.floor(Math.random() * trail.trailheads.length)];
         } else {
             let validTrailheads = [];
             for (let i = 0; i < trail.trailheads.length; i++) {
-                if (trail.trailheads[i].mile <= (trail.length - difficulty) || trail.trailheads[i].mile >= difficulty) {
+                if (trail.trailheads[i].mile <= (trail.length - miles) || trail.trailheads[i].mile >= miles) {
                     validTrailheads.push(i);
                 }
             }
@@ -134,32 +151,32 @@ function selectStartTrailhead(endTrailhead, difficulty) {
             return trail.trailheads[validTrailheads[r]];
         }
     } else {
-        const startCandidate1 = getNearestTrailhead(endTrailhead.mile + difficulty);
-        const startCandidate2 = getNearestTrailhead(endTrailhead.mile - difficulty);
-        if ((endTrailhead.mile + difficulty) > trail.length && (endTrailhead.mile - difficulty) < 0) {
+        const startCandidate1 = getNearestTrailhead(endTrailhead.mile + miles);
+        const startCandidate2 = getNearestTrailhead(endTrailhead.mile - miles);
+        if ((endTrailhead.mile + miles) > trail.length && (endTrailhead.mile - miles) < 0) {
             return Math.abs(endTrailhead.mile - startCandidate1.mile) > Math.abs(endTrailhead.mile - startCandidate2.mile) ? startCandidate1 : startCandidate2;
-        } else if ((endTrailhead.mile + difficulty) > trail.length) {
+        } else if ((endTrailhead.mile + miles) > trail.length) {
             return startCandidate2;
-        } else if ((endTrailhead.mile - difficulty) < 0) {
+        } else if ((endTrailhead.mile - miles) < 0) {
             return startCandidate1;
         }
-        //return Math.abs(startCandidate1.mile - difficulty) < Math.abs(startCandidate2.mile - difficulty) ? startCandidate1 : startCandidate2;
+        //return Math.abs(startCandidate1.mile - miles) < Math.abs(startCandidate2.mile - miles) ? startCandidate1 : startCandidate2;
         return Math.floor(Math.random() * 2) === 0 ? startCandidate1 : startCandidate2;
     }
 }
 
-/* Given start trailhead and difficulty integer, return end trailhead */
-function selectEndTrailhead(startTrailhead, difficulty) {
-    const endCandidate1 = getNearestTrailhead(startTrailhead.mile + difficulty);
-    const endCandidate2 = getNearestTrailhead(startTrailhead.mile - difficulty);
-    if ((startTrailhead.mile + difficulty) > trail.length && (startTrailhead.mile - difficulty) < 0) {
+/* Given start trailhead and miles integer, return end trailhead */
+function selectEndTrailhead(startTrailhead, miles) {
+    const endCandidate1 = getNearestTrailhead(startTrailhead.mile + miles);
+    const endCandidate2 = getNearestTrailhead(startTrailhead.mile - miles);
+    if ((startTrailhead.mile + miles) > trail.length && (startTrailhead.mile - miles) < 0) {
         return Math.abs(startTrailhead.mile - endCandidate1.mile) > Math.abs(startTrailhead.mile - endCandidate2.mile) ? endCandidate1 : endCandidate2;
-    } else if ((startTrailhead.mile + difficulty) > trail.length) {
+    } else if ((startTrailhead.mile + miles) > trail.length) {
         return endCandidate2;
-    } else if ((startTrailhead.mile - difficulty) < 0) {
+    } else if ((startTrailhead.mile - miles) < 0) {
         return endCandidate1;
     }
-    //return Math.abs(endCandidate1.mile - difficulty) < Math.abs(endCandidate2.mile - difficulty) ? endCandidate1 : endCandidate2;
+    //return Math.abs(endCandidate1.mile - miles) < Math.abs(endCandidate2.mile - miles) ? endCandidate1 : endCandidate2;
     return Math.floor(Math.random() * 2) === 0 ? endCandidate1 : endCandidate2;
 }
 
@@ -222,7 +239,7 @@ function generateHalfDay(start, startDate) {
 }
 
 function generateRoute(start, end, days, startDate, halfDay) {
-    if (halfDay) {
+    if (halfDay && days > 1) {
         let route = [];
         const halfDay = generateHalfDay(start, startDate);
         let newStart = {
@@ -241,7 +258,7 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
     let route = [days];
     route[0] = {};
     route[0].date = startDate;
-    route[0].start = startTrailhead.name;
+    route[0].start = startTrailhead.name + ' Trailhead';
     route[0].start_mile = startTrailhead.mile;
     for (let j = 0; j < days; j++) {
         if (j > 0) {
@@ -253,7 +270,7 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
             route[j].start_mile = route[j-1].end_mile;
         }
         if (j == days - 1) {
-            route[j].end = endTrailhead.name;
+            route[j].end = endTrailhead.name + ' Trailhead';
             route[j].end_mile = endTrailhead.mile;
         } else {
             route[j].end = campsites[j] === undefined ? route[j].start : campsites[j].name;
@@ -309,18 +326,62 @@ function subset(arra, arra_size) {
     return result_set; 
 }
 
-function enableMilesPerDay() {
-    if (selectStart.value == 0 || selectEnd.value == 0) {
-        inputMiles.disabled = false;
+function onMilesPerDayChange() {
+    if ((inputDays.value == "" || inputDays.value == 0) && (inputMiles.value == 0 || inputMiles.value == "")) {
+        inputMiles.placeholder = "Using 10-20 Mile Range";
+        inputMiles.value = "";
+    } 
+    else if (inputMiles.value == 0 || inputMiles.value == "") {
+        inputMiles.placeholder = "Using Days";
+        inputMiles.value = "";
     } else {
-        inputMiles.disabled = true;
+        inputMiles.placeholder = "";
+        if (selectStart.value != 0 && selectEnd.value != 0) {
+            inputDays.placeholder = "Using Miles / Day";
+            inputDays.value = "";
+        }
+    }
+}
+
+function onDaysChange() {
+    if (inputDays.value == 0 || inputDays.value == "") {
+        inputDays.placeholder = "Using Miles / Day";
+        inputDays.value = "";
+    } else {
+        inputDays.placeholder = "";
+        if (selectStart.value != 0 && selectEnd.value != 0) {
+            inputMiles.placeholder = "Using Days";
+            inputMiles.value = "";
+        }
+    }
+    onMilesPerDayChange();
+}
+
+function onTrailheadsChange() {
+    if (selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0) && (inputMiles.value != "" || inputMiles.value != 0)) {
+        inputMiles.placeholder = "Using Days";
+        inputMiles.value = "";
     }
 }
 
 function displayRoute(route) {
-    pRoute.innerHTML = '';
+    let totalMiles = 0;
+    table.innerHTML = '';
     for (let i = 0; i < route.length; i++) {
-        pRoute.innerHTML += route[i].date.toLocaleDateString() + ': ' + route[i].miles + ' miles from ' + route[i].start + ' to ' + route[i].end + '<br>';
+        totalMiles += route[i].miles;
+        let row = table.insertRow(i);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+        let cell4 = row.insertCell(3);
+        let cell5 = row.insertCell(4);
+        let cell6 = row.insertCell(5);
+        cell1.innerHTML = i + 1;
+        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
+        cell3.innerHTML = route[i].start;
+        cell4.innerHTML = route[i].end;
+        cell5.innerHTML = route[i].miles.toFixed(1) + ' mi';
+        cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
     }
 }
 

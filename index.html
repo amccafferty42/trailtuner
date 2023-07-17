@@ -4,19 +4,22 @@
     </head>
     <body>
         <div class="container">
-            <h1 id="title"></h1>
+            <div class="title">
+                <h1 id="title"></h1>
+                <a id="change-trail">change trail</a>
+            </div>
             <h1><small>Itinerary Planning Tool</small></h1>
-            <h2><small>Select the number of <strong>days</strong> along with the <strong>start / end trailheads</strong>, or choose "No Preference" to have a route generated for you based on <strong>miles per day</strong></small></h2>
+            <h2><small>Select the <strong>start / end trailheads</strong> with either <strong>days <u>or</u> miles per day</strong>. If you have <strong>no preference</strong> on the start / end trailhead, select <strong>days <u>and</u> miles per day</strong>. Set either value to <strong>0</strong> to defer to the other.</small></h2>
             <div class="row">
                 <div class="col-md-5">
                     <label for="start"><h2>Start Trailhead</h2></label>
-                    <select id="start" class="form-control" onChange="enableMilesPerDay()">
+                    <select id="start" class="form-control" onChange="onTrailheadsChange()">
                         <option value="0">No Preference</option>
                     </select>
                 </div>
                 <div class="col-md-5">
                     <label for="end"><h2>End Trailhead</h2></label>
-                    <select id="end" class="form-control" onChange="enableMilesPerDay()">
+                    <select id="end" class="form-control" onChange="onTrailheadsChange()">
                         <option value="0">No Preference</option>
                     </select>
                 </div>
@@ -29,15 +32,14 @@
                     <label class="half-day-label form-check-label" for="half"><h2><small>Half Day?</small></h2></label>
                 </div>
             </div>
-            <br>
             <div class="row align-items-center">
                 <div class="col-md-5">                
                     <label for="days"><h2>Days</h2></label>
-                    <input type="number" min="1" value="3" name="days" id="days" class="form-control">
+                    <input type="number" min="0" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
                 </div>
                 <div class="col-md-5">                
                     <label for="miles"><h2>Miles / Day</h2></label>
-                    <input type="number" min="1" max="100" value="10" name="miles" id="miles" class="form-control" disabled>
+                    <input type="number" min="0" max="100" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <!-- <div class="col-md-1">
                     <label for="difficulty"><h2><small>Difficulty</small></h2></label>
@@ -87,12 +89,13 @@
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">Date</th>
-                <th scope="col">Miles</th>
-                <th scope="col">Start</th>
+                <th scope="col">Origin</th>
                 <th scope="col">Destination</th>
+                <th scope="col">Daily Distance</th>
+                <th scope="col">Total Distance</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="table">
             </tbody>
         </table>
     </div>
