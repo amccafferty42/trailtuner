@@ -74,23 +74,7 @@ const inputHalfDay = document.getElementById('half');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 
-for (let i = 0; i < trail.trailheads.length; i++) {
-    addOption(selectStart, trail.trailheads[i].name, i+1);
-    addOption(selectEnd, trail.trailheads[i].name, i+1);
-}
-
-selectStart.value = 1;
-selectEnd.value = selectEnd.length - 1;
-inputDate.valueAsDate = new Date();
-inputDays.max = trail.campsites.length + 1;
-title.innerHTML = trail.name;
-
-function addOption(element, name, value) {
-    let el = document.createElement("option");
-    el.text = name;
-    el.value = value;
-    element.appendChild(el);
-}
+reset();
 
 function plan() {
     const startDate = new Date(inputDate.value + 'T00:00');
@@ -120,17 +104,6 @@ function plan() {
     console.log(route);
 
     displayRoute(route);
-}
-
-function reset() {
-    selectStart.value = 1;
-    selectEnd.value = selectEnd.length - 1;
-    inputDate.valueAsDate = new Date();
-    inputDays.value = 3;
-    inputMiles.value = "";
-    inputMiles.placeholder = "Using Days";
-    inputHalfDay.checked = false;
-    table.innerHTML = '';
 }
 
 /* Given optional end trailhead and miles integer, return start trailhead */
@@ -383,6 +356,38 @@ function displayRoute(route) {
         cell5.innerHTML = route[i].miles.toFixed(1) + ' mi';
         cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
     }
+}
+
+function reset() {
+    removeOptions(selectStart);
+    removeOptions(selectEnd);
+    for (let i = 0; i < trail.trailheads.length; i++) {
+        addOption(selectStart, trail.trailheads[i].name, i+1);
+        addOption(selectEnd, trail.trailheads[i].name, i+1);
+    }
+    table.innerHTML = '';
+    selectStart.value = 1;
+    selectEnd.value = selectEnd.length - 1;
+    inputDate.valueAsDate = new Date();
+    inputDays.max = trail.campsites.length + 1;
+    title.innerHTML = trail.name;
+    inputDays.value = 3;
+    inputMiles.value = "";
+    inputMiles.placeholder = "Using Days";
+    inputHalfDay.checked = false;
+}
+
+function removeOptions(element) {
+    for (let i = element.options.length - 1; i > 0; i--) {
+       element.remove(i);
+    }
+ }
+
+function addOption(element, name, value) {
+    let opt = document.createElement("option");
+    opt.text = name;
+    opt.value = value;
+    element.appendChild(opt);
 }
 
 // Calculate the average of all the numbers
