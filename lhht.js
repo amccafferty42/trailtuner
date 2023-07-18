@@ -101,18 +101,25 @@ function validateForm() {
 function getDays() {
     if (inputDays.value > 0) {
         return inputDays.value;
-    } else if (selectStart.value != 0 && selectEnd.value != 0) {
-        const totalDistance = Math.abs(trail.trailheads[selectStart.value - 1].mile -  trail.trailheads[selectEnd.value - 1].mile);
-        const distancePerDay = getDistancePerDay();
-        let days = totalDistance / distancePerDay < trail.campsites.length ? Math.round(totalDistance / distancePerDay) : trail.campsites.length;
+    } else if ((selectStart.value != 0 && selectEnd.value != 0) || inputMiles.value > 0) {
+        let days;
+        if (selectStart.value != 0 && selectEnd.value != 0) {
+            const totalDistance = Math.abs(trail.trailheads[selectStart.value - 1].mile -  trail.trailheads[selectEnd.value - 1].mile);
+            const distancePerDay = getDistancePerDay();
+            days = totalDistance / distancePerDay < trail.campsites.length ? Math.round(totalDistance / distancePerDay) : trail.campsites.length;
+        } else if (inputMiles.value > 0) {
+            if (selectStart.value != 0) {
+                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectStart.value - 1].mile), Math.abs(0 - trail.trailheads[selectStart.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
+            } else if (selectEnd.value != 0) {
+                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectEnd.value - 1].mile), Math.abs(0 - trail.trailheads[selectEnd.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
+            } else {
+                days = Math.floor(Math.random() * (Math.round(trail.length / inputMiles.value)) + 1); // min = 1, max = trail length / miles per day
+            }
+        }
         if (days <= 0 || inputHalfDay.checked) days++;
         return days;
-    } else if (inputMiles.value > 0) {
-        // find possible miles remaining (if start or end is selected) 
-        // get total miles if (no start or end is selected)
-        // select low num days if high value miles
     }
-    return Math.floor(Math.random() * (Math.round(trail.campsites.length / 2)) + 2); // min = 2, max = (# campsites / 2) + 2
+    return Math.floor(Math.random() * (Math.ceil(trail.campsites.length / 2)) + 2); // min = 2, max = (# campsites / 2) + 2
 }
 
 function getDistancePerDay() {
