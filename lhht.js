@@ -73,6 +73,12 @@ const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
+const btnMiles = document.getElementById('miles');
+const unit1 = document.getElementById('unit1');
+const unit2 = document.getElementById('unit2');
+const unit3 = document.getElementById('unit3');
+
+let distanceUnit = 'miles';
 
 reset();
 
@@ -377,10 +383,18 @@ function displayRoute(route) {
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
         cell3.innerHTML = route[i].start;
         cell4.innerHTML = route[i].end;
-        cell5.innerHTML = route[i].miles.toFixed(1) + ' mi';
-        cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
+        cell5.innerHTML = route[i].miles.toFixed(1) + ' ' + distanceUnit;
+        cell6.innerHTML = totalMiles.toFixed(1) + ' ' + distanceUnit;
     }
     console.log(route);
+}
+
+function setUnit(unit) {
+    distanceUnit = unit.id;
+    unit1.innerHTML = unit.id;
+    unit2.innerHTML = unit.id;
+    unit3.innerHTML = unit.id.charAt(0).toUpperCase() + unit.id.slice(1);
+    for (let day of route) {}
 }
 
 function reset() {
@@ -399,6 +413,7 @@ function reset() {
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputHalfDay.checked = false;
+    btnMiles.click();
 }
 
 function removeOptions(element) {
