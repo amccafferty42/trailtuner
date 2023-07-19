@@ -2,6 +2,31 @@
     display: flex;
 }
 
+.changeCampBtn {
+    width: 100%;
+}
+
+.right {
+    text-align: right
+}
+
+.center {
+    text-align: center
+}
+
+.blue {
+    color: royalblue;
+}
+
+.grey {
+    color: rgb(98, 98, 98);
+}
+
+.route-table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
 #change-trail {
     align-self: end;
     margin-bottom: 1%;

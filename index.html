@@ -1,6 +1,8 @@
 <html>
     <head>
         <title>Itinerary Planning Tool</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+        <link rel="stylesheet" href="main.css">
     </head>
     <body>
         <div class="container">
@@ -35,11 +37,11 @@
             <div class="row align-items-center">
                 <div class="col-md-5">                
                     <label for="days"><h2>Days</h2></label>
-                    <input type="number" min="0" max="100" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
+                    <input type="number" min="0" max="99" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
                 </div>
                 <div class="col-md-5">                
                     <label for="miles"><h2>Miles / Day</h2></label>
-                    <input type="number" min="0" max="100" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
+                    <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <div class="col-sm-2">
                     <!-- <br>
@@ -68,26 +70,21 @@
         </div>
         <br>
         <br>
-        <table class="table route-table table-striped">
+        <table class="table route-table table-striped" id="table">
             <thead class="thead-dark">
               <tr>
-                <th scope="col">#</th>
-                <th scope="col">Date</th>
-                <th scope="col">Origin</th>
-                <th scope="col">Destination</th>
-                <th scope="col">Daily Distance</th>
-                <th scope="col">Total Distance</th>
+                <th style="width: 3%" scope="col">#</th>
+                <th style="width: 10%" scope="col">Date</th>
+                <th style="width: 17%" scope="col">Origin</th>
+                <th style="width: 17%" scope="col">Destination</th>
+                <th class="right" style="width: 8%" scope="col">Daily</th>
+                <th class="right" style="width: 8%" scope="col">Total</th>
+                <th class="center" style="width: 37%" scope="col" colspan="2">Modify Route</th>
               </tr>
             </thead>
-            <tbody id="table">
+            <tbody id="table-body">
             </tbody>
         </table>
-    </div>
-        <div class="watermark">
-            <img src="https://www.onlinelogomaker.com/blog/wp-content/uploads/2017/07/hiking-logo-design.jpg" alt="hiking-logo-design">
-        </div>
+        <script src="lhht.js"></script>
     </body>
 </html>
-<script src="lhht.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-<link rel="stylesheet" href="main.css">

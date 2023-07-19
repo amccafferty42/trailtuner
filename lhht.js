@@ -32,34 +32,42 @@ const trail = {
         {
             name: "Ohiopyle Shelter Area",
             mile: 6.3,
+            pos: 0
         },
         {   
             name: "Rt. 653 Shelter Area",
             mile: 18.5,
+            pos: 1
         },
         {
             name: "Grindle Ridge Shelter Area",
             mile: 24.0,
+            pos: 2
         },
         {
             name: "Rt. 31 Shelter Area",
             mile: 32.5,
+            pos: 3
         },
         {
             name: "Turnpike Shelter Area",
             mile: 38.2,
+            pos: 4
         },
         {
             name: "Rt. 30 Shelter Area",
             mile: 46.5,
+            pos: 5
         },
         {
             name: "Rt. 271 Shelter Area",
             mile: 56.5,
+            pos: 6
         },
         {
             name: "Rt. 56 Shelter Area",
             mile: 64.9,
+            pos: 7
         }
     ]
 }
@@ -73,8 +81,22 @@ const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
+const tableBody = document.getElementById('table-body');
+const divRoute = document.getElementById('route');
+
+let route;
 
 reset();
+
+function changeCamp(dayIndex, isNext) {
+    this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
+    this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
+    this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
+    this.route[dayIndex].next_site = trail.campsites[this.route[dayIndex].end.pos + 1];
+    this.route[dayIndex + 1].start = this.route[dayIndex].end;
+    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
+    displayRoute(this.route);
+}
 
 function plan() {
     if (validateForm()) {
@@ -85,13 +107,14 @@ function plan() {
         const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], distance) : trail.trailheads[selectStart.value - 1];
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trail.trailheads[selectEnd.value - 1];
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked);
+        this.route = route;
         displayRoute(route);
     }
 }
 
 function validateForm() {
-    if (inputDays.value != '' && (inputDays.value < 0 || inputDays.value > 100)) return false;
-    if (inputMiles.value != '' && (inputMiles.value < 0 || inputMiles.value > 100)) return false;
+    if (inputDays.value != '' && (inputDays.value < 0 || inputDays.value > 99)) return false;
+    if (inputMiles.value != '' && (inputMiles.value < 0 || inputMiles.value > 99)) return false;
     if (selectStart.value < 0 || selectStart.value > trail.trailheads.length + 1) return false;
     if (selectEnd.value < 0 || selectEnd.value > trail.trailheads.length + 1) return false;
     if (selectStart.value > 0 && selectEnd.value > 0 && inputDays.value > 0 && inputMiles.value > 0) return false; 
@@ -181,14 +204,10 @@ function generateRoute(start, end, days, startDate, halfDay) {
     if (halfDay && days > 1) {
         let route = [];
         const halfDay = generateHalfDay(start, startDate);
-        let newStart = {
-            name: halfDay.end,
-            mile: halfDay.end_mile
-        };
         let tomorrow = new Date(halfDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
         route.push(halfDay);
-        return route.concat(calculateRoute(newStart, end, days - 1, tomorrow));
+        return route.concat(calculateRoute(halfDay, end, days - 1, tomorrow));
     }
     return calculateRoute(start, end, days, startDate);  
 }
@@ -196,12 +215,12 @@ function generateRoute(start, end, days, startDate, halfDay) {
 function generateHalfDay(start, startDate) {
     const end = getNearestCampsite(start.mile);
     return {
-        start: start.name,
-        start_mile: start.mile,
+        start: start,
         date: startDate,
-        end: end.name,
-        end_mile: end.mile,
-        miles: Math.round(Math.abs(start.mile - end.mile) * 10) / 10
+        end: end,
+        miles: Math.round(Math.abs(start.mile - end.mile) * 10) / 10,
+        prev_site: trail.campsites[end.pos - 1] === undefined ? undefined : trail.campsites[end.pos - 1],
+        next_site: trail.campsites[end.pos + 1] === undefined ? undefined : trail.campsites[end.pos + 1],
     }
 }
 
@@ -239,7 +258,8 @@ function subset(campsites, nights) {
         i = campsites.length - 1; 
         do {
             if ((x & (1 << i)) !== 0) {
-                result.push({name: campsites[i].name,mile: campsites[i].mile});
+                //result.push({name: campsites[i].name, mile: campsites[i].mile, pos: campsites[i].pos});
+                result.push(campsites[i]);
             }
         } while(i--);
         if (result.length == nights) {
@@ -254,8 +274,7 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
     let route = [days];
     route[0] = {};
     route[0].date = startDate;
-    route[0].start = startTrailhead.name;
-    route[0].start_mile = startTrailhead.mile;
+    route[0].start = startTrailhead;
     for (let j = 0; j < days; j++) {
         if (j > 0) {
             let tomorrow = new Date(route[j-1].date);
@@ -263,16 +282,15 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
             route[j] = {};
             route[j].date = tomorrow;
             route[j].start = route[j-1].end;
-            route[j].start_mile = route[j-1].end_mile;
         }
         if (j == days - 1) {
-            route[j].end = endTrailhead.name;
-            route[j].end_mile = endTrailhead.mile;
+            route[j].end = endTrailhead;
         } else {
-            route[j].end = campsites[j] === undefined ? route[j].start : campsites[j].name;
-            route[j].end_mile = campsites[j] === undefined ? route[j].start_mile : campsites[j].mile;
+            route[j].end = campsites[j] === undefined ? route[j].start : campsites[j];
+            route[j].prev_site = trail.campsites[route[j].end.pos - 1] === undefined ? undefined : trail.campsites[route[j].end.pos - 1];
+            route[j].next_site = trail.campsites[route[j].end.pos + 1] === undefined ? undefined : trail.campsites[route[j].end.pos + 1];
         }
-        route[j].miles = Math.round(Math.abs(route[j].end_mile - route[j].start_mile) * 10) / 10;
+        route[j].miles = Math.round(Math.abs(route[j].end.mile - route[j].start.mile) * 10) / 10;
     }
     return route;
 }
@@ -363,24 +381,46 @@ function onTrailheadsChange() {
 
 function displayRoute(route) {
     let totalMiles = 0;
-    table.innerHTML = '';
+    tableBody.innerHTML = '';
     for (let i = 0; i < route.length; i++) {
         totalMiles += route[i].miles;
-        let row = table.insertRow(i);
+        let row = tableBody.insertRow(i);
         let cell1 = row.insertCell(0);
         let cell2 = row.insertCell(1);
         let cell3 = row.insertCell(2);
         let cell4 = row.insertCell(3);
         let cell5 = row.insertCell(4);
+        cell5.classList.add("right", "blue");
         let cell6 = row.insertCell(5);
-        cell1.innerHTML = i + 1;
-        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
-        cell3.innerHTML = route[i].start;
-        cell4.innerHTML = route[i].end;
-        cell5.innerHTML = route[i].miles.toFixed(1) + ' mi';
+        cell6.classList.add("right");
+        let cell7 = row.insertCell(6);
+        let cell8 = row.insertCell(7);
+        cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
+        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
+        cell3.innerHTML = route[i].start.name;
+        cell4.innerHTML = route[i].end.name;
+        cell5.innerHTML = '<strong>' + route[i].miles.toFixed(1) + ' mi</strong>';
         cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
+        cell7.innerHTML = closerCampBtn(route[i], route);
+        cell8.innerHTML = furtherCampBtn(route[i], route);
     }
+    table.style.visibility = 'visible';
+    table.scrollIntoView({behavior: 'smooth'});
     console.log(route);
+}
+
+function closerCampBtn(day, route) {
+    const prevDay = route[route.indexOf(day) - 1];
+    if (day.prev_site === undefined || (prevDay != undefined && day.end.pos === prevDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    const mileDif = Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">Choose Closer Camp<br>'+day.prev_site.name+', -'+mileDif+' mi</button>'
+}
+
+function furtherCampBtn(day, route) {
+    const nextDay = route[route.indexOf(day) + 1];
+    if (day.next_site === undefined || (nextDay != undefined && day.end.pos === nextDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    const mileDif = Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">Choose Further Camp<br>'+day.next_site.name+', +'+mileDif+' mi</button>'
 }
 
 function reset() {
@@ -390,7 +430,7 @@ function reset() {
         addOption(selectStart, trail.trailheads[i].name.replace(" Trailhead", ""), i+1);
         addOption(selectEnd, trail.trailheads[i].name.replace(" Trailhead", ""), i+1);
     }
-    table.innerHTML = '';
+    tableBody.innerHTML = '';
     selectStart.value = 1;
     selectEnd.value = selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
@@ -399,6 +439,8 @@ function reset() {
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputHalfDay.checked = false;
+    table.style.visibility = 'hidden';
+    title.scrollIntoView({behavior: 'smooth'});
 }
 
 function removeOptions(element) {
