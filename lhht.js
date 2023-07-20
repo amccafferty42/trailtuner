@@ -1,7 +1,7 @@
 const trail = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
-    circuit: true,
+    circuit: false,
     trailheads: [
         {
             name: "Rt. 381 Trailhead",
