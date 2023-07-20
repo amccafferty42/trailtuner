@@ -1,7 +1,7 @@
 const trail = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
-    circuit: false,
+    circuit: true,
     trailheads: [
         {
             name: "Rt. 381 Trailhead",
@@ -79,6 +79,8 @@ const inputDays = document.getElementById('days');
 const inputMiles = document.getElementById('miles');
 const inputDate = document.getElementById('start-date');
 const inputHalfDay = document.getElementById('half');
+const inputCW = document.getElementById('cw');
+const inputCCW = document.getElementById('ccw');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
@@ -439,6 +441,8 @@ function reset() {
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputHalfDay.checked = false;
+    inputCW.disabled = trail.circuit ? false : true;
+    inputCCW.disabled = trail.circuit ? false : true;
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
 }
