@@ -90,16 +90,6 @@ let route;
 
 reset();
 
-function changeCamp(dayIndex, isNext) {
-    this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
-    this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
-    this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
-    this.route[dayIndex].next_site = trail.campsites[this.route[dayIndex].end.pos + 1];
-    this.route[dayIndex + 1].start = this.route[dayIndex].end;
-    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
-    displayRoute(this.route);
-}
-
 function plan() {
     if (validateForm()) {
         const startDate = new Date(inputDate.value + 'T00:00');
@@ -260,7 +250,6 @@ function subset(campsites, nights) {
         i = campsites.length - 1; 
         do {
             if ((x & (1 << i)) !== 0) {
-                //result.push({name: campsites[i].name, mile: campsites[i].mile, pos: campsites[i].pos});
                 result.push(campsites[i]);
             }
         } while(i--);
@@ -271,7 +260,7 @@ function subset(campsites, nights) {
     return result_set; 
 }
 
-// Map trailheads, list of campsites, days, and startDate into a route array
+// Map trailheads, list of campsites, days, and startDate into a list of routes
 function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
     let route = [days];
     route[0] = {};
@@ -341,6 +330,16 @@ function getNearestTrailhead(mile) {
         }
     }
     return trail.trailheads[trail.trailheads.length - 1];
+}
+
+function changeCamp(dayIndex, isNext) {
+    this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
+    this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
+    this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
+    this.route[dayIndex].next_site = trail.campsites[this.route[dayIndex].end.pos + 1];
+    this.route[dayIndex + 1].start = this.route[dayIndex].end;
+    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
+    displayRoute(this.route);
 }
 
 function onMilesPerDayChange() {
