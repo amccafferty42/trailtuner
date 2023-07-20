@@ -209,7 +209,7 @@ function generateRoute(start, end, days, startDate, halfDay) {
         let tomorrow = new Date(halfDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
         route.push(halfDay);
-        return route.concat(calculateRoute(halfDay, end, days - 1, tomorrow));
+        return route.concat(calculateRoute(halfDay.end, end, days - 1, tomorrow));
     }
     return calculateRoute(start, end, days, startDate);  
 }
