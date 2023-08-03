@@ -412,14 +412,16 @@ function closerCampBtn(day, route) {
     const prevDay = route[route.indexOf(day) - 1];
     if (day.prev_site === undefined || (prevDay != undefined && day.end.pos === prevDay.end.pos) || day.prev_site.mile < route[0].start.mile) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     const mileDif = Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">Choose Closer Camp<br>'+day.prev_site.name+', -'+mileDif+' mi</button>'
+    //return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">Choose Closer Camp<br>'+day.prev_site.name+', -'+mileDif+' mi</button>'
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>'
 }
 
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
     if (day.next_site === undefined || (nextDay != undefined && day.end.pos === nextDay.end.pos) || day.next_site.mile > route[route.length - 1].end.mile) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     const mileDif = Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">Choose Further Camp<br>'+day.next_site.name+', +'+mileDif+' mi</button>'
+    // return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">Choose Further Camp<br>'+day.next_site.name+', +'+mileDif+' mi</button>'
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>'
 }
 
 function reset() {
