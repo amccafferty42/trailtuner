@@ -1,0 +1,143 @@
+const trail = {
+    name: 'Laurel Highlands Hiking Trail',
+    length: 70,
+    circuit: false,
+    trailheads: [
+        {
+            name: "Rt. 381 Trailhead",
+            mile: 0.0
+        },
+        {
+            name: "Rt. 653 Trailhead",
+            mile: 18.9
+        },
+        {
+            name: "Rt. 31 Trailhead",
+            mile: 30.9
+        },
+        {
+            name: "Rt. 30 Trailhead",
+            mile: 45.6
+        },
+        {
+            name: "Rt. 271 Trailhead",
+            mile: 56.8
+        },
+        {
+            name: "Rt. 56 Trailhead",
+            mile: 70.0
+        }
+    ],
+    campsites: [
+        {
+            name: "Ohiopyle Shelter Area",
+            mile: 6.3,
+            pos: 0
+        },
+        {   
+            name: "Rt. 653 Shelter Area",
+            mile: 18.5,
+            pos: 1
+        },
+        {
+            name: "Grindle Ridge Shelter Area",
+            mile: 24.0,
+            pos: 2
+        },
+        {
+            name: "Rt. 31 Shelter Area",
+            mile: 32.5,
+            pos: 3
+        },
+        {
+            name: "Turnpike Shelter Area",
+            mile: 38.2,
+            pos: 4
+        },
+        {
+            name: "Rt. 30 Shelter Area",
+            mile: 46.5,
+            pos: 5
+        },
+        {
+            name: "Rt. 271 Shelter Area",
+            mile: 56.5,
+            pos: 6
+        },
+        {
+            name: "Rt. 56 Shelter Area",
+            mile: 64.9,
+            pos: 7
+        }
+    ]
+}
+
+const trail = {
+    name: 'Laurel Highlands Loop Trail',
+    length: 70,
+    circuit: true,
+    trailheads: [
+        {
+            name: "Rt. 381 Trailhead",
+            mile: 0.0
+        },
+        {
+            name: "Rt. 653 Trailhead",
+            mile: 18.9
+        },
+        {
+            name: "Rt. 31 Trailhead",
+            mile: 30.9
+        },
+        {
+            name: "Rt. 30 Trailhead",
+            mile: 45.6
+        },
+        {
+            name: "Rt. 271 Trailhead",
+            mile: 56.8
+        }
+    ],
+    campsites: [
+        {
+            name: "Ohiopyle Shelter Area",
+            mile: 6.3,
+            pos: 0
+        },
+        {   
+            name: "Rt. 653 Shelter Area",
+            mile: 18.5,
+            pos: 1
+        },
+        {
+            name: "Grindle Ridge Shelter Area",
+            mile: 24.0,
+            pos: 2
+        },
+        {
+            name: "Rt. 31 Shelter Area",
+            mile: 32.5,
+            pos: 3
+        },
+        {
+            name: "Turnpike Shelter Area",
+            mile: 38.2,
+            pos: 4
+        },
+        {
+            name: "Rt. 30 Shelter Area",
+            mile: 46.5,
+            pos: 5
+        },
+        {
+            name: "Rt. 271 Shelter Area",
+            mile: 56.5,
+            pos: 6
+        },
+        {
+            name: "Rt. 56 Shelter Area",
+            mile: 64.9,
+            pos: 7
+        }
+    ]
+}

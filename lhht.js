@@ -1,8 +1,8 @@
 let route;
 const trail = {
-    name: 'Laurel Highlands Hiking Trail',
+    name: 'Laurel Highlands Loop Trail',
     length: 70,
-    circuit: false,
+    circuit: true,
     trailheads: [
         {
             name: "Rt. 381 Trailhead",
@@ -23,10 +23,6 @@ const trail = {
         {
             name: "Rt. 271 Trailhead",
             mile: 56.8
-        },
-        {
-            name: "Rt. 56 Trailhead",
-            mile: 70.0
         }
     ],
     campsites: [
@@ -215,20 +211,31 @@ function generateHalfDay(start, startDate) {
 }
 
 function calculateRoute(start, end, days, startDate) {
-    const isNobo = start.mile < end.mile ? true : false;
-    const firstPossibleCampsite = isNobo ? getNearestCampsiteGreaterThan(start.mile) : getNearestCampsiteLessThan(start.mile);
-    const lastPossibleCampsite = isNobo ? getNearestCampsiteLessThan(end.mile) : getNearestCampsiteGreaterThan(end.mile);
-    let allPossibleCampsites = isNobo ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();
+    let firstPossibleCampsite, lastPossibleCampsite, allPossibleCampsites, routes, campsites, bestRoute;
+    if (trail.circuit) {
+        if (start == end) {
+            console.log('Full Circuit');
+        } else {
+            console.log('Partial Circuit');
+        }
+    }
+    const isPositiveDirection = (!trail.circuit && start.mile < end.mile || trail.circuit && inputCW.checked) ? true : false;
+    console.log(isPositiveDirection);
+    firstPossibleCampsite = isPositiveDirection ? getNearestCampsiteGreaterThan(start.mile) : getNearestCampsiteLessThan(start.mile);
+    lastPossibleCampsite = isPositiveDirection ? getNearestCampsiteLessThan(end.mile) : getNearestCampsiteGreaterThan(end.mile);
+    console.log(firstPossibleCampsite);
+    console.log(lastPossibleCampsite);
+    allPossibleCampsites = isPositiveDirection ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();
     if (allPossibleCampsites.length < days) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
         return buildRoute(start, end, allPossibleCampsites, days, startDate);
     }
-    let campsites = subset(allPossibleCampsites, days - 1);
-    let routes = [];
+    campsites = subset(allPossibleCampsites, days - 1);
+    routes = [];
     for (let campsite of campsites) {
         routes.push(buildRoute(start, end, campsite, days, startDate));
     }
-    let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
+    bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
     for(let i = 0; i < routes.length; i++) {
         let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.miles)));
         if (sd < lowestSD) {
