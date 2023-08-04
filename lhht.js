@@ -1,8 +1,9 @@
 let route;
+let isPositiveDirection;
 const trail = {
-    name: 'Laurel Highlands Loop Trail',
+    name: 'Laurel Highlands Hiking Trail',
     length: 70,
-    circuit: true,
+    circuit: false,
     trailheads: [
         {
             name: "Rt. 381 Trailhead",
@@ -23,6 +24,10 @@ const trail = {
         {
             name: "Rt. 271 Trailhead",
             mile: 56.8
+        },
+        {
+            name: "Rt. 56 Trailhead",
+            mile: 70.0
         }
     ],
     campsites: [
@@ -68,6 +73,75 @@ const trail = {
         }
     ]
 }
+// const trail = {
+//     name: 'Laurel Highlands Loop Trail',
+//     length: 70,
+//     circuit: true,
+//     trailheads: [
+//         {
+//             name: "Rt. 381 Trailhead",
+//             mile: 0.0
+//         },
+//         {
+//             name: "Rt. 653 Trailhead",
+//             mile: 18.9
+//         },
+//         {
+//             name: "Rt. 31 Trailhead",
+//             mile: 30.9
+//         },
+//         {
+//             name: "Rt. 30 Trailhead",
+//             mile: 45.6
+//         },
+//         {
+//             name: "Rt. 271 Trailhead",
+//             mile: 56.8
+//         }
+//     ],
+//     campsites: [
+//         {
+//             name: "Ohiopyle Shelter Area",
+//             mile: 6.3,
+//             pos: 0
+//         },
+//         {   
+//             name: "Rt. 653 Shelter Area",
+//             mile: 18.5,
+//             pos: 1
+//         },
+//         {
+//             name: "Grindle Ridge Shelter Area",
+//             mile: 24.0,
+//             pos: 2
+//         },
+//         {
+//             name: "Rt. 31 Shelter Area",
+//             mile: 32.5,
+//             pos: 3
+//         },
+//         {
+//             name: "Turnpike Shelter Area",
+//             mile: 38.2,
+//             pos: 4
+//         },
+//         {
+//             name: "Rt. 30 Shelter Area",
+//             mile: 46.5,
+//             pos: 5
+//         },
+//         {
+//             name: "Rt. 271 Shelter Area",
+//             mile: 56.5,
+//             pos: 6
+//         },
+//         {
+//             name: "Rt. 56 Shelter Area",
+//             mile: 64.9,
+//             pos: 7
+//         }
+//     ]
+// }
 
 // select DOM elements
 const selectStart = document.getElementById('start');
@@ -92,7 +166,9 @@ function plan() {
         const distance = getDistance(days, distancePerDay);
         const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], distance) : trail.trailheads[selectStart.value - 1];
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trail.trailheads[selectEnd.value - 1];
-        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked);
+        const isPositiveDirection = getDirection(startTrailhead, endTrailhead);
+        this.isPositiveDirection = isPositiveDirection;
+        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked, isPositiveDirection);
         this.route = route;
         displayRoute(route);
     }
@@ -185,7 +261,7 @@ function selectEndTrailhead(startTrailhead, miles) {
     return Math.floor(Math.random() * 2) === 0 ? endCandidate1 : endCandidate2;
 }
 
-function generateRoute(start, end, days, startDate, halfDay) {
+function generateRoute(start, end, days, startDate, halfDay, isPositiveDirection) {
     console.log('Generating ' + days + ' day, ' + Math.abs(start.mile - end.mile) + ' mile trip from ' + start.name + ' to ' + end.name);
     if (halfDay && days > 1) {
         let route = [];
@@ -195,7 +271,7 @@ function generateRoute(start, end, days, startDate, halfDay) {
         route.push(halfDay);
         return route.concat(calculateRoute(halfDay.end, end, days - 1, tomorrow));
     }
-    return calculateRoute(start, end, days, startDate);  
+    return calculateRoute(start, end, days, startDate, isPositiveDirection);  
 }
 
 function generateHalfDay(start, startDate) {
@@ -237,8 +313,11 @@ function getMiles(startMile, endMile, days, isPositiveDirection) {
     return Math.round(Math.abs(startMile - endMile) * 10) / 10;
 }
 
-function calculateRoute(start, end, days, startDate) {
-    const isPositiveDirection = (trail.circuit && inputCW.checked) || (!trail.circuit && start.mile < end.mile) ? true : false;
+function getDirection(start, end) {
+    return (trail.circuit && inputCW.checked) || (!trail.circuit && start.mile < end.mile) ? true : false;
+}
+
+function calculateRoute(start, end, days, startDate, isPositiveDirection) {
     let allPossibleCampsites = getAllCampsites(start.mile, end.mile, isPositiveDirection);
     if (allPossibleCampsites.length < days) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
@@ -358,7 +437,7 @@ function changeCamp(dayIndex, isNext) {
     this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
     this.route[dayIndex].next_site = trail.campsites[this.route[dayIndex].end.pos + 1];
     this.route[dayIndex + 1].start = this.route[dayIndex].end;
-    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
+    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;    
     displayRoute(this.route);
 }
 
@@ -418,8 +497,8 @@ function displayRoute(route) {
         let cell8 = row.insertCell(7);
         cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
-        cell3.innerHTML = route[i].start.name;
-        cell4.innerHTML = route[i].end.name;
+        cell3.innerHTML = i == 0 ? '<u>' + route[i].start.name + '</u>' : route[i].start.name;
+        cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.name + '</u>' : route[i].end.name;
         cell5.innerHTML = '<strong>' + route[i].miles.toFixed(1) + ' mi</strong>';
         cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
         cell7.innerHTML = closerCampBtn(route[i], route);
@@ -432,18 +511,18 @@ function displayRoute(route) {
 
 function closerCampBtn(day, route) {
     const prevDay = route[route.indexOf(day) - 1];
-    if (day.prev_site === undefined || (prevDay != undefined && day.end.pos === prevDay.end.pos) || day.prev_site.mile < route[0].start.mile) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    const mileDif = Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
-    //return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">Choose Closer Camp<br>'+day.prev_site.name+', -'+mileDif+' mi</button>'
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>'
+    if ((this.isPositiveDirection && day.prev_site === undefined) || (!this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.next_site != undefined && day.next_site.mile > route[0].start.mile) || (this.isPositiveDirection && day.prev_site != undefined && day.prev_site.mile < route[0].start.mile) || (prevDay != undefined && day.end.pos === prevDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>'
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>'
 }
 
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
-    if (day.next_site === undefined || (nextDay != undefined && day.end.pos === nextDay.end.pos) || day.next_site.mile > route[route.length - 1].end.mile) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    const mileDif = Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
-    // return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">Choose Further Camp<br>'+day.next_site.name+', +'+mileDif+' mi</button>'
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>'
+    if ((this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined) || (this.isPositiveDirection && day.next_site != undefined && day.next_site.mile > route[route.length - 1].end.mile) || (!this.isPositiveDirection && day.prev_site != undefined && day.prev_site.mile < route[route.length - 1].end.mile) || (nextDay != undefined && day.end.pos === nextDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>'
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>+'+mileDif+' miles</button>'
 }
 
 function reset() {
