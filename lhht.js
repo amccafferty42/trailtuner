@@ -1,82 +1,9 @@
 let route;
 let isPositiveDirection;
-const trail = {
-    name: 'Laurel Highlands Hiking Trail',
-    length: 70,
-    circuit: false,
-    trailheads: [
-        {
-            name: "Rt. 381 Trailhead",
-            mile: 0.0
-        },
-        {
-            name: "Rt. 653 Trailhead",
-            mile: 18.9
-        },
-        {
-            name: "Rt. 31 Trailhead",
-            mile: 30.9
-        },
-        {
-            name: "Rt. 30 Trailhead",
-            mile: 45.6
-        },
-        {
-            name: "Rt. 271 Trailhead",
-            mile: 56.8
-        },
-        {
-            name: "Rt. 56 Trailhead",
-            mile: 70.0
-        }
-    ],
-    campsites: [
-        {
-            name: "Ohiopyle Shelter Area",
-            mile: 6.3,
-            pos: 0
-        },
-        {   
-            name: "Rt. 653 Shelter Area",
-            mile: 18.5,
-            pos: 1
-        },
-        {
-            name: "Grindle Ridge Shelter Area",
-            mile: 24.0,
-            pos: 2
-        },
-        {
-            name: "Rt. 31 Shelter Area",
-            mile: 32.5,
-            pos: 3
-        },
-        {
-            name: "Turnpike Shelter Area",
-            mile: 38.2,
-            pos: 4
-        },
-        {
-            name: "Rt. 30 Shelter Area",
-            mile: 46.5,
-            pos: 5
-        },
-        {
-            name: "Rt. 271 Shelter Area",
-            mile: 56.5,
-            pos: 6
-        },
-        {
-            name: "Rt. 56 Shelter Area",
-            mile: 64.9,
-            pos: 7
-        }
-    ]
-}
 // const trail = {
-//     name: 'Laurel Highlands Loop Trail',
+//     name: 'Laurel Highlands Hiking Trail',
 //     length: 70,
-//     circuit: true,
+//     circuit: false,
 //     trailheads: [
 //         {
 //             name: "Rt. 381 Trailhead",
@@ -97,6 +24,10 @@ const trail = {
 //         {
 //             name: "Rt. 271 Trailhead",
 //             mile: 56.8
+//         },
+//         {
+//             name: "Rt. 56 Trailhead",
+//             mile: 70.0
 //         }
 //     ],
 //     campsites: [
@@ -142,6 +73,75 @@ const trail = {
 //         }
 //     ]
 // }
+const trail = {
+    name: 'Laurel Highlands Loop Trail',
+    length: 70,
+    circuit: true,
+    trailheads: [
+        {
+            name: "Rt. 381 Trailhead",
+            mile: 0.0
+        },
+        {
+            name: "Rt. 653 Trailhead",
+            mile: 18.9
+        },
+        {
+            name: "Rt. 31 Trailhead",
+            mile: 30.9
+        },
+        {
+            name: "Rt. 30 Trailhead",
+            mile: 45.6
+        },
+        {
+            name: "Rt. 271 Trailhead",
+            mile: 56.8
+        }
+    ],
+    campsites: [
+        {
+            name: "Ohiopyle Shelter Area",
+            mile: 6.3,
+            pos: 0
+        },
+        {   
+            name: "Rt. 653 Shelter Area",
+            mile: 18.5,
+            pos: 1
+        },
+        {
+            name: "Grindle Ridge Shelter Area",
+            mile: 24.0,
+            pos: 2
+        },
+        {
+            name: "Rt. 31 Shelter Area",
+            mile: 32.5,
+            pos: 3
+        },
+        {
+            name: "Turnpike Shelter Area",
+            mile: 38.2,
+            pos: 4
+        },
+        {
+            name: "Rt. 30 Shelter Area",
+            mile: 46.5,
+            pos: 5
+        },
+        {
+            name: "Rt. 271 Shelter Area",
+            mile: 56.5,
+            pos: 6
+        },
+        {
+            name: "Rt. 56 Shelter Area",
+            mile: 64.9,
+            pos: 7
+        }
+    ]
+}
 
 // select DOM elements
 const selectStart = document.getElementById('start');
@@ -323,10 +323,10 @@ function calculateRoute(start, end, days, startDate, isPositiveDirection) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
         return buildRoute(start, end, allPossibleCampsites, days, startDate, isPositiveDirection);
     }
-    const campsites = subset(allPossibleCampsites, days - 1);
+    const groupedCampsites = subset(allPossibleCampsites, days - 1);
     let routes = [];
-    for (let campsite of campsites) {
-        routes.push(buildRoute(start, end, campsite, days, startDate, isPositiveDirection));
+    for (let campsites of groupedCampsites) {
+        routes.push(buildRoute(start, end, campsites, days, startDate, isPositiveDirection));
     }
     let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
     for(let i = 0; i < routes.length; i++) {
@@ -379,7 +379,6 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate, is
             route[j].prev_site = trail.campsites[route[j].end.pos - 1] === undefined ? undefined : trail.campsites[route[j].end.pos - 1];
             route[j].next_site = trail.campsites[route[j].end.pos + 1] === undefined ? undefined : trail.campsites[route[j].end.pos + 1];
         }
-        //route[j].miles = Math.round(Math.abs(route[j].end.mile - route[j].start.mile) * 10) / 10;
         route[j].miles = getMiles(route[j].start.mile, route[j].end.mile, days, isPositiveDirection);
     }
     return route;
@@ -534,7 +533,7 @@ function reset() {
     }
     tableBody.innerHTML = '';
     selectStart.value = 1;
-    selectEnd.value = selectEnd.length - 1;
+    selectEnd.value = trail.circuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trail.name;
     inputDays.value = 3;
@@ -543,6 +542,8 @@ function reset() {
     inputHalfDay.checked = false;
     inputCW.disabled = trail.circuit ? false : true;
     inputCCW.disabled = trail.circuit ? false : true;
+    inputCW.checked = trail.circuit ? true : false;
+    inputCCW.checked = false;
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
 }
