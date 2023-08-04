@@ -212,7 +212,11 @@ function generateHalfDay(start, startDate) {
 
 function getAllCampsites(startMile, endMile, isPositiveDirection) {
     let campsites = [];
-    if (trail.circuit && isPositiveDirection) {
+    if (!trail.circuit) {
+        firstPossibleCampsite = isPositiveDirection ? getNearestCampsiteGreaterThan(startMile) : getNearestCampsiteLessThan(startMile);
+        lastPossibleCampsite = isPositiveDirection ? getNearestCampsiteLessThan(endMile) : getNearestCampsiteGreaterThan(endMile);
+        campsites = isPositiveDirection ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();    
+    } else if (trail.circuit && isPositiveDirection) {
         for (let i = 0; i < trail.campsites.length; i++) {
             if ((startMile >= endMile && (trail.campsites[i].mile > startMile || trail.campsites[i].mile < endMile)) || (startMile < endMile && (trail.campsites[i].mile > startMile && trail.campsites[i].mile < endMile))) campsites.push(trail.campsites[i]);
         }
@@ -234,56 +238,27 @@ function getMiles(startMile, endMile, days, isPositiveDirection) {
 }
 
 function calculateRoute(start, end, days, startDate) {
-    let firstPossibleCampsite, lastPossibleCampsite, allPossibleCampsites = [], routes, campsites, bestRoute, isPositiveDirection;
-    if (trail.circuit) {
-        isPositiveDirection = inputCW.checked ? true : false;
-        let allPossibleCampsites = getAllCampsites(start.mile, end.mile, isPositiveDirection);
-        console.log(allPossibleCampsites);
-        if (allPossibleCampsites.length < days) {
-            console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
-            return buildRoute(start, end, allPossibleCampsites, days, startDate, isPositiveDirection);
-        }
-        campsites = subset(allPossibleCampsites, days - 1);
-        routes = [];
-        for (let campsite of campsites) {
-            routes.push(buildRoute(start, end, campsite, days, startDate, isPositiveDirection));
-        }
-        console.log(routes);
-        bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
-        for(let i = 0; i < routes.length; i++) {
-            let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.miles)));
-            if (sd < lowestSD) {
-                bestRoute = routes[i];
-                lowestSD = sd;
-            }
-        }
-        console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD);
-        return bestRoute;
-    } else {
-        isPositiveDirection = start.mile < end.mile ? true : false;
-        firstPossibleCampsite = isPositiveDirection ? getNearestCampsiteGreaterThan(start.mile) : getNearestCampsiteLessThan(start.mile);
-        lastPossibleCampsite = isPositiveDirection ? getNearestCampsiteLessThan(end.mile) : getNearestCampsiteGreaterThan(end.mile);
-        allPossibleCampsites = isPositiveDirection ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();
-        if (allPossibleCampsites.length < days) {
-            console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
-            return buildRoute(start, end, allPossibleCampsites, days, startDate, isPositiveDirection);
-        }
-        campsites = subset(allPossibleCampsites, days - 1);
-        routes = [];
-        for (let campsite of campsites) {
-            routes.push(buildRoute(start, end, campsite, days, startDate, isPositiveDirection));
-        }
-        bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
-        for(let i = 0; i < routes.length; i++) {
-            let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.miles)));
-            if (sd < lowestSD) {
-                bestRoute = routes[i];
-                lowestSD = sd;
-            }
-        }
-        console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD);
-        return bestRoute;
+    const isPositiveDirection = (trail.circuit && inputCW.checked) || (!trail.circuit && start.mile < end.mile) ? true : false;
+    let allPossibleCampsites = getAllCampsites(start.mile, end.mile, isPositiveDirection);
+    if (allPossibleCampsites.length < days) {
+        console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
+        return buildRoute(start, end, allPossibleCampsites, days, startDate, isPositiveDirection);
     }
+    const campsites = subset(allPossibleCampsites, days - 1);
+    let routes = [];
+    for (let campsite of campsites) {
+        routes.push(buildRoute(start, end, campsite, days, startDate, isPositiveDirection));
+    }
+    let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
+    for(let i = 0; i < routes.length; i++) {
+        let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.miles)));
+        if (sd < lowestSD) {
+            bestRoute = routes[i];
+            lowestSD = sd;
+        }
+    }
+    console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD);
+    return bestRoute;
 }
 
 // Generate subset of all campsite combinations that equal the number of nights
