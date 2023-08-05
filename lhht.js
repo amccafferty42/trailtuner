@@ -433,6 +433,7 @@ function getNearestTrailhead(mile) {
 }
 
 function changeCamp(dayIndex, isNext) {
+
     this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
     this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
     this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
