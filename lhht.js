@@ -33,112 +33,140 @@ let isPositiveDirection;
 //     campsites: [
 //         {
 //             name: "Ohiopyle Shelter Area",
-//             mile: 6.3,
-//             pos: 0
+//             mile: 6.3
 //         },
 //         {   
 //             name: "Rt. 653 Shelter Area",
-//             mile: 18.5,
-//             pos: 1
+//             mile: 18.5
 //         },
 //         {
 //             name: "Grindle Ridge Shelter Area",
-//             mile: 24.0,
-//             pos: 2
+//             mile: 24.0
 //         },
 //         {
 //             name: "Rt. 31 Shelter Area",
-//             mile: 32.5,
-//             pos: 3
+//             mile: 32.5
 //         },
 //         {
 //             name: "Turnpike Shelter Area",
-//             mile: 38.2,
-//             pos: 4
+//             mile: 38.2
 //         },
 //         {
 //             name: "Rt. 30 Shelter Area",
-//             mile: 46.5,
-//             pos: 5
+//             mile: 46.5
 //         },
 //         {
 //             name: "Rt. 271 Shelter Area",
-//             mile: 56.5,
-//             pos: 6
+//             mile: 56.5
 //         },
 //         {
 //             name: "Rt. 56 Shelter Area",
-//             mile: 64.9,
-//             pos: 7
+//             mile: 64.9
 //         }
 //     ]
 // }
 const trail = {
-    name: 'Laurel Highlands Loop Trail',
-    length: 70,
+    name: 'Wonderland Trail',
+    length: 84.7,
     circuit: true,
     trailheads: [
         {
-            name: "Rt. 381 Trailhead",
+            name: "Longmire Trailhead",
             mile: 0.0
         },
         {
-            name: "Rt. 653 Trailhead",
-            mile: 18.9
+            name: "Mowich Lake Trailhead",
+            mile: 31.5
         },
         {
-            name: "Rt. 31 Trailhead",
-            mile: 30.9
-        },
-        {
-            name: "Rt. 30 Trailhead",
-            mile: 45.6
-        },
-        {
-            name: "Rt. 271 Trailhead",
-            mile: 56.8
-        }
+            name: "White River Trailhead",
+            mile: 55
+        }  
     ],
-    campsites: [
+    campsites:[
         {
-            name: "Ohiopyle Shelter Area",
-            mile: 6.3,
-            pos: 0
-        },
-        {   
-            name: "Rt. 653 Shelter Area",
-            mile: 18.5,
-            pos: 1
+            name: "Pyramid Creek",
+            mile: 3.0
         },
         {
-            name: "Grindle Ridge Shelter Area",
-            mile: 24.0,
-            pos: 2
+            name: "Devil's Dream",
+            mile: 5.2
         },
         {
-            name: "Rt. 31 Shelter Area",
-            mile: 32.5,
-            pos: 3
+            name: "South Puyallup River",
+            mile: 11.2
         },
         {
-            name: "Turnpike Shelter Area",
-            mile: 38.2,
-            pos: 4
+            name: "Klapatche Park",
+            mile: 15.0
         },
         {
-            name: "Rt. 30 Shelter Area",
-            mile: 46.5,
-            pos: 5
+            name: "North Puyallup River",
+            mile: 17.5
         },
         {
-            name: "Rt. 271 Shelter Area",
-            mile: 56.5,
-            pos: 6
+            name: "Golden Lakes",
+            mile: 22.1
         },
         {
-            name: "Rt. 56 Shelter Area",
-            mile: 64.9,
-            pos: 7
+            name: "South Mowich River",
+            mile: 27.9
+        },
+        {
+            name: "Mowich Lake Campground",
+            mile: 31.5
+        },
+        {
+            name: "Ipsut Creek Campground",
+            mile: 36.1
+        },
+        {
+            name: "Carbon River",
+            mile: 39.3
+        },
+        {
+            name: "Dick Creek",
+            mile: 40.5
+        },
+        {
+            name: "Mystic Camp",
+            mile: 43.9
+        },
+        {
+            name: "Granite Creek",
+            mile: 47.4
+        },
+        {
+            name: "Sunrise Camp",
+            mile: 51.7
+        },
+        {
+            name: "White River Campground",
+            mile: 55.0
+        },
+        {
+            name: "Summerland",
+            mile: 61.6
+        },
+        {
+            name: "Indian Bar",
+            mile: 65.8
+        },
+        {
+            name: "Nickle Creek",
+            mile: 72.0
+        },
+        {
+            name: "Maple Creek",
+            mile: 75.0
+        },
+        {
+            name: "Paradise River",
+            mile: 81.3
+        },
+        {
+            name: "Cougar Rock Campground",
+            mile: 83.4
         }
     ]
 }
@@ -157,6 +185,7 @@ const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
 
 reset();
+appendPos();
 
 function plan() {
     if (validateForm()) {
@@ -520,7 +549,7 @@ function displayRoute(route) {
 }
 
 function closerCampBtn(day, route) {
-    if (trail.length === 1 || day === route[route.length - 1] || day.miles === 0 || (this.isPositiveDirection && day.prev_site === undefined) || (!this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (trail.length === 1 || day === route[route.length - 1] || day.miles === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trail.circuit && this.isPositiveDirection && day.prev_site === undefined) || (!trail.circuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     let mileDif = 0;
     if (trail.circuit && this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = ((trail.length - day.prev_site.mile) + day.end.mile).toFixed(1);
     else if (trail.circuit && !this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
@@ -554,7 +583,7 @@ function reset() {
     selectEnd.value = trail.circuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trail.name;
-    inputDays.value = 3;
+    inputDays.value = Math.round(trail.length / 10);
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputHalfDay.checked = false;
@@ -564,6 +593,12 @@ function reset() {
     inputCCW.checked = false;
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
+}
+
+function appendPos() {
+    for (let i = 0; i < trail.campsites.length; i++) {
+        trail.campsites[i].pos = i;
+    }
 }
 
 function removeOptions(element) {
