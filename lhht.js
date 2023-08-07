@@ -183,6 +183,7 @@ const inputCCW = document.getElementById('ccw');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
+const loopDirection = document.getElementById('loop-direction-form');
 
 reset();
 appendPos();
@@ -369,7 +370,7 @@ function calculateRoute(start, end, days, startDate, isPositiveDirection) {
     return bestRoute;
 }
 
-// Generate subset of all campsite combinations that equal the number of nights
+// Generate subset of all campsite permutations that equal the number of nights
 function subset(campsites, nights) {
     let result_set = [], result;
     for (let x = 0; x < Math.pow(2, campsites.length); x++) {
@@ -591,6 +592,7 @@ function reset() {
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
+    loopDirection.style.visibility = trail.circuit ? 'visible' : 'hidden';
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
 }

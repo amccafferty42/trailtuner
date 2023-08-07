@@ -8,6 +8,14 @@
     margin-left: 1%;
 }
 
+.loop-direction {
+    max-height: 2em;
+}
+
+#loop-direction-form {
+    visibility: hidden;
+}
+
 .changeCampBtn {
     width: 90%;
     display: block;
