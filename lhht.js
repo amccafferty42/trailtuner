@@ -183,7 +183,7 @@ const inputCCW = document.getElementById('ccw');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
-const loopDirection = document.getElementById('loop-direction-form');
+const loopDirection = document.getElementById('loop-direction-label');
 
 reset();
 appendPos();
@@ -605,7 +605,8 @@ function reset() {
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
-    loopDirection.style.visibility = trail.circuit ? 'visible' : 'hidden';
+    loopDirection.innerHTML = trail.circuit ? '<h2><small><strong>Loop Direction</strong></small></h2>' : '<h2><small><strong><s>Loop Direction</s></strong></small></h2>';
+    if (!trail.circuit) loopDirection.classList.remove('strikethrough');
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
 }

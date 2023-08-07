@@ -8,17 +8,22 @@
     margin-left: 1%;
 }
 
+.form-check-label {
+    margin: 0;
+}
+
+#break {
+    margin-bottom: 0;
+}
+
 .loop-direction {
-    max-height: 1.8em;
+    max-height: 1.5em;
+    margin: 0;
 }
 
 .half-day-label {
-    max-height: 1.8em;
-}
-
-#loop-direction-form {
-    top: 0;
-    visibility: hidden;
+    max-height: 1.5em;
+    margin: 0;
 }
 
 .changeCampBtn {
