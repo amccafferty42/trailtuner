@@ -326,19 +326,14 @@ function getNextCampsite(campsite) {
     return trail.campsites[campsite.pos + 1] === undefined ? undefined : trail.campsites[campsite.pos + 1];
 }
 
-//TODO refactor this method. non-circuit routes can be calculated the same way as circuit
 function getAllCampsites(startMile, endMile) {
     let campsites = [];
-    if (!trail.circuit) {
-        firstPossibleCampsite = this.isPositiveDirection ? getNearestCampsiteGreaterThan(startMile) : getNearestCampsiteLessThan(startMile);
-        lastPossibleCampsite = this.isPositiveDirection ? getNearestCampsiteLessThan(endMile) : getNearestCampsiteGreaterThan(endMile);
-        campsites = this.isPositiveDirection ? trail.campsites.slice(trail.campsites.indexOf(firstPossibleCampsite), trail.campsites.indexOf(lastPossibleCampsite) + 1) : trail.campsites.slice(trail.campsites.indexOf(lastPossibleCampsite), trail.campsites.indexOf(firstPossibleCampsite) + 1).reverse();    
-    } else if (trail.circuit && this.isPositiveDirection) {
+    if (this.isPositiveDirection) {
         for (let i = 0; i < trail.campsites.length; i++) {
             if ((startMile >= endMile && (trail.campsites[i].mile > startMile || trail.campsites[i].mile < endMile)) || (startMile < endMile && (trail.campsites[i].mile > startMile && trail.campsites[i].mile < endMile))) campsites.push(trail.campsites[i]);
         }
         while (startMile < trail.campsites[trail.campsites.length - 1].mile && campsites[0].mile < startMile) campsites.push(campsites.shift());
-    } else if (trail.circuit && !this.isPositiveDirection) {
+    } else {
         for (let i = trail.campsites.length - 1; i >= 0; i--) {
             if ((startMile <= endMile && (trail.campsites[i].mile < startMile || trail.campsites[i].mile > endMile)) || (startMile > endMile && (trail.campsites[i].mile < startMile && trail.campsites[i].mile > endMile))) campsites.push(trail.campsites[i]);
         }
@@ -443,26 +438,6 @@ function getNextCampsiteFromTrailhead(mile) {
         }
         return trail.circuit ? trail.campsites[trail.campsites.length - 1] : undefined;
     }
-}
-
-// Given mile number, return the nearest campsite with a greater mile
-function getNearestCampsiteGreaterThan(mile) {
-    if (mile < 0) return trail.campsites[0];
-    if (mile > trail.length) return;
-    for (let i = 0; i < trail.campsites.length; i++) {
-        if (trail.campsites[i].mile > mile) return trail.campsites[i];
-    }
-    return;
-}
-
-// Given mile number, return the nearest campsite with a lesser mile
-function getNearestCampsiteLessThan(mile) {
-    if (mile < 0) return;
-    if (mile > trail.length) return trail.campsites[trail.campsites.length - 1];
-    for (let i = trail.campsites.length - 1; i >= 0; i--) {
-        if (trail.campsites[i].mile < mile) return trail.campsites[i];
-    }
-    return;
 }
 
 // Given mile number, return the nearest trailhead in either direction
