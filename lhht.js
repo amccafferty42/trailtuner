@@ -218,13 +218,14 @@ function getDays() {
     } else if ((selectStart.value != 0 && selectEnd.value != 0) || inputMiles.value > 0) {
         let days;
         if (selectStart.value != 0 && selectEnd.value != 0) {
-            const totalDistance = Math.abs(trail.trailheads[selectStart.value - 1].mile -  trail.trailheads[selectEnd.value - 1].mile);
+            this.isPositiveDirection = getDirection(trail.trailheads[selectStart.value - 1], trail.trailheads[selectEnd.value - 1]);
+            const totalDistance = (trail.circuit && selectStart.value == selectEnd.value) ? trail.length : getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
             const distancePerDay = getDistancePerDay();
             days = totalDistance / distancePerDay < trail.campsites.length ? Math.round(totalDistance / distancePerDay) : trail.campsites.length;
         } else if (inputMiles.value > 0) {
-            if (selectStart.value != 0) {
+            if (!trail.circuit && selectStart.value != 0) {
                 days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectStart.value - 1].mile), Math.abs(0 - trail.trailheads[selectStart.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
-            } else if (selectEnd.value != 0) {
+            } else if (!trail.circuit && selectEnd.value != 0) {
                 days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectEnd.value - 1].mile), Math.abs(0 - trail.trailheads[selectEnd.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
             } else {
                 days = Math.floor(Math.random() * (Math.round(trail.length / inputMiles.value)) + 1); // min = 1, max = trail length / miles per day
@@ -242,13 +243,14 @@ function getDistancePerDay() {
 
 // Returned value is only used when trailheads are not set
 function getDistance(days, distancePerDay) {
-    if (selectStart.value != 0 && selectEnd.value != 0) return Math.abs(trail.trailheads[selectStart.value - 1].mile - trail.trailheads[selectEnd.value - 1].mile);
-    return (!inputHalfDay.checked) ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
+    //if (selectStart.value != 0 && selectEnd.value != 0) return Math.abs(trail.trailheads[selectStart.value - 1].mile - trail.trailheads[selectEnd.value - 1].mile);
+    if (selectStart.value != 0 && selectEnd.value != 0) return getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
+    return !inputHalfDay.checked ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
 }
 
 function selectStartTrailhead(endTrailhead, miles) {
     if (endTrailhead === undefined) {
-        if (miles <= trail.length / 2) {
+        if (trail.circuit || miles <= trail.length / 2) {
             return trail.trailheads[Math.floor(Math.random() * trail.trailheads.length)];
         } else {
             let validTrailheads = [];
@@ -262,6 +264,7 @@ function selectStartTrailhead(endTrailhead, miles) {
             return trail.trailheads[validTrailheads[r]];
         }
     } else {
+        if (trail.circuit) return endTrailhead; //prioritize full loops for route generation
         const startCandidate1 = getNearestTrailhead(endTrailhead.mile + miles);
         const startCandidate2 = getNearestTrailhead(endTrailhead.mile - miles);
         if ((endTrailhead.mile + miles) > trail.length && (endTrailhead.mile - miles) < 0) {
@@ -277,6 +280,7 @@ function selectStartTrailhead(endTrailhead, miles) {
 }
 
 function selectEndTrailhead(startTrailhead, miles) {
+    if (trail.circuit) return startTrailhead; //prioritize full loops for route generation
     const endCandidate1 = getNearestTrailhead(startTrailhead.mile + miles);
     const endCandidate2 = getNearestTrailhead(startTrailhead.mile - miles);
     if ((startTrailhead.mile + miles) > trail.length && (startTrailhead.mile - miles) < 0) {
@@ -343,7 +347,7 @@ function getAllCampsites(startMile, endMile) {
 }
 
 function getMiles(startMile, endMile) {
-    if (trail.circuit && startMile == endMile) return trail.length;
+    if (startMile === endMile) return 0;
     if (trail.circuit && this.isPositiveDirection && startMile > endMile) return (trail.length - startMile) + endMile;
     if (trail.circuit && !this.isPositiveDirection && startMile < endMile) return (trail.length - endMile) + startMile;
     return Math.round(Math.abs(startMile - endMile) * 10) / 10;
@@ -419,7 +423,7 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
             // if (trail.circuit && route[j].end == trail.campsites[0]) route[j].prev_site = trail.campsites[trail.campsites.length - 1];
             // else if (trail.circuit && route[j].end == trail.campsites[trail.campsites.length - 1]) route[j].next_site = trail.campsites[0];
         }
-        route[j].miles = getMiles(route[j].start.mile, route[j].end.mile);
+        route[j].miles = (days == 1 && trail.circuit && route[j].start === route[j].end) ? trail.length : getMiles(route[j].start.mile, route[j].end.mile);
     }
     return route;
 }
@@ -442,8 +446,10 @@ function getNextCampsiteFromTrailhead(mile) {
 
 // Given mile number, return the nearest trailhead in either direction
 function getNearestTrailhead(mile) {
-    if (mile < 0) return trail.trailheads[0];
-    if (mile > trail.length) return trail.trailheads[trail.trailheads.length - 1];
+    if (!trail.circuit && mile < 0) return trail.trailheads[0];
+    else if (trail.circuit && mile < 0) mile = trail.length - mile;
+    if (!trail.circuit && mile > trail.length) return trail.trailheads[trail.trailheads.length - 1];
+    else if (trail.circuit && mile > trail.length) mile = mile - trail.length;
     for (let i = 0; i < trail.trailheads.length; i++) {
         if (trail.trailheads[i].mile > mile) {
             if (i == 0) return trail.trailheads[0];
@@ -626,3 +632,5 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
+
+//lingmire -> wr (8miles per day) gen for CW then switch to CCW. 1st gen is bad, 2nd+ is correct
