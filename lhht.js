@@ -212,6 +212,7 @@ function validateForm() {
     return true;
 }
 
+// If days is not provided, determine a reasonable number of days
 function getDays() {
     if (inputDays.value > 0) {
         return inputDays.value;
@@ -241,13 +242,13 @@ function getDistancePerDay() {
     return inputMiles.value > 0 ? inputMiles.value : Math.floor(Math.random() * 11 + 10); // min = 10, max = 20
 }
 
-// Returned value is only used when trailheads are not set
+// Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
 function getDistance(days, distancePerDay) {
-    //if (selectStart.value != 0 && selectEnd.value != 0) return Math.abs(trail.trailheads[selectStart.value - 1].mile - trail.trailheads[selectEnd.value - 1].mile);
     if (selectStart.value != 0 && selectEnd.value != 0) return getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
     return !inputHalfDay.checked ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
 }
 
+// If start trailhead is not provided, determine a reasonable start
 function selectStartTrailhead(endTrailhead, miles) {
     if (endTrailhead === undefined) {
         if (trail.circuit || miles <= trail.length / 2) {
@@ -279,6 +280,7 @@ function selectStartTrailhead(endTrailhead, miles) {
     }
 }
 
+// If end trailhead is not provided, determine a reasonable end
 function selectEndTrailhead(startTrailhead, miles) {
     if (trail.circuit) return startTrailhead; //prioritize full loops for route generation
     const endCandidate1 = getNearestTrailhead(startTrailhead.mile + miles);
@@ -295,11 +297,10 @@ function selectEndTrailhead(startTrailhead, miles) {
 }
 
 function generateRoute(start, end, days, startDate, halfDay) {
-    console.log('Generating ' + days + ' day, ' + Math.abs(start.mile - end.mile) + ' mile trip from ' + start.name + ' to ' + end.name);
+    console.log('Generating ' + days + ' day trip from ' + start.name + ' to ' + end.name);
     if (halfDay && days > 1) {
         let route = [];
         const halfDay = generateHalfDay(start, startDate);
-        console.log(halfDay);
         let tomorrow = new Date(halfDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
         route.push(halfDay);
@@ -320,16 +321,19 @@ function generateHalfDay(start, startDate) {
     }
 }
 
+// Given a campsite, return the previous campsite in the list. Regardless of route direction, prev_site will always be the site in the list before the given site
 function getPrevCampsite(campsite) {
     if (trail.circuit && campsite == trail.campsites[0]) return trail.campsites[trail.campsites.length - 1];
     return trail.campsites[campsite.pos - 1] === undefined ? undefined : trail.campsites[campsite.pos - 1];
 }
 
+// Given a campsite, return the next campsite in the list. Regardless of route direction, next_site will always be the site in the list after the given site
 function getNextCampsite(campsite) {
     if (trail.circuit && campsite == trail.campsites[trail.campsites.length - 1]) return trail.campsites[0];
     return trail.campsites[campsite.pos + 1] === undefined ? undefined : trail.campsites[campsite.pos + 1];
 }
 
+// Return list of all campsites between a start and end mile (includes wrapping around a circuit)
 function getAllCampsites(startMile, endMile) {
     let campsites = [];
     if (this.isPositiveDirection) {
@@ -346,17 +350,20 @@ function getAllCampsites(startMile, endMile) {
     return campsites;
 }
 
+// Calculate miles between start and end (includes wrapping around a circuit)
 function getMiles(startMile, endMile) {
     if (startMile === endMile) return 0;
-    if (trail.circuit && this.isPositiveDirection && startMile > endMile) return (trail.length - startMile) + endMile;
-    if (trail.circuit && !this.isPositiveDirection && startMile < endMile) return (trail.length - endMile) + startMile;
+    if (trail.circuit && this.isPositiveDirection && startMile > endMile) return Math.round((trail.length - startMile + endMile) * 10) / 10;
+    if (trail.circuit && !this.isPositiveDirection && startMile < endMile) return Math.round((trail.length - endMile + startMile) * 10) / 10;
     return Math.round(Math.abs(startMile - endMile) * 10) / 10;
 }
 
+// Determine positive or negative direction
 function getDirection(start, end) {
     return (trail.circuit && inputCW.checked) || (!trail.circuit && start.mile < end.mile) ? true : false;
 }
 
+// Generate a subset of all possible campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
     let allPossibleCampsites = getAllCampsites(start.mile, end.mile);
     if (allPossibleCampsites.length < days) {
@@ -418,10 +425,6 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
             route[j].end = campsites[j] === undefined ? route[j].start : campsites[j];    
             route[j].prev_site = getPrevCampsite(route[j].end);
             route[j].next_site = getNextCampsite(route[j].end);     
-            // route[j].prev_site = trail.campsites[route[j].end.pos - 1] === undefined ? undefined : trail.campsites[route[j].end.pos - 1];
-            // route[j].next_site = trail.campsites[route[j].end.pos + 1] === undefined ? undefined : trail.campsites[route[j].end.pos + 1];
-            // if (trail.circuit && route[j].end == trail.campsites[0]) route[j].prev_site = trail.campsites[trail.campsites.length - 1];
-            // else if (trail.circuit && route[j].end == trail.campsites[trail.campsites.length - 1]) route[j].next_site = trail.campsites[0];
         }
         route[j].miles = (days == 1 && trail.circuit && route[j].start === route[j].end) ? trail.length : getMiles(route[j].start.mile, route[j].end.mile);
     }
@@ -459,22 +462,29 @@ function getNearestTrailhead(mile) {
     return trail.trailheads[trail.trailheads.length - 1];
 }
 
-// TODO make this more readable
+// Change destination and recalculate miles, next_site, and prev_site, as well as the next day's start and miles
 function changeCamp(dayIndex, isNext) {
     this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
-    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex].start.mile > this.route[dayIndex].end.mile) {
+
+    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex].start.mile > this.route[dayIndex].end.mile) { //dest wraps around start of trail CW
         this.route[dayIndex].miles = (trail.length - this.route[dayIndex].start.mile) + this.route[dayIndex].end.mile;
-    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex].start.mile < this.route[dayIndex].end.mile) {
+    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex].start.mile < this.route[dayIndex].end.mile) { //dest wraps around start of trail CCW
         this.route[dayIndex].miles = this.route[dayIndex].start.mile + (trail.length - this.route[dayIndex].end.mile);
-    } else this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
+    } else {
+        this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
+    }
+
     this.route[dayIndex].prev_site = trail.circuit && this.route[dayIndex].end == trail.campsites[0] ? trail.campsites[trail.campsites.length - 1] : trail.campsites[this.route[dayIndex].end.pos - 1];
     this.route[dayIndex].next_site = trail.circuit && this.route[dayIndex].end == trail.campsites[trail.campsites.length - 1] ? this.route[dayIndex].next_site = trail.campsites[0] : trail.campsites[this.route[dayIndex].end.pos + 1];
     this.route[dayIndex + 1].start = this.route[dayIndex].end;
-    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex + 1].start.mile > this.route[dayIndex + 1].end.mile) {
+
+    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex + 1].start.mile > this.route[dayIndex + 1].end.mile) { //next day dest wraps around start of trail CW
         this.route[dayIndex + 1].miles = (trail.length - this.route[dayIndex + 1].start.mile) + this.route[dayIndex + 1].end.mile;
-    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.mile < this.route[dayIndex + 1].end.mile) {
+    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.mile < this.route[dayIndex + 1].end.mile) { //next day dest wraps around start of trail CCW
         this.route[dayIndex + 1].miles = this.route[dayIndex + 1].start.mile + (trail.length - this.route[dayIndex + 1].end.mile);
-    } else this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
+    } else {
+        this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
+    }
     displayRoute(this.route);
 }
 
@@ -546,24 +556,30 @@ function displayRoute(route) {
     console.log(route);
 }
 
+// Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
 function closerCampBtn(day, route) {
     if (trail.length === 1 || day === route[route.length - 1] || day.miles === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trail.circuit && this.isPositiveDirection && day.prev_site === undefined) || (!trail.circuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    
     let mileDif = 0;
     if (trail.circuit && this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = ((trail.length - day.prev_site.mile) + day.end.mile).toFixed(1);
     else if (trail.circuit && !this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
     else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
+    
     if (day === route[0] && day.miles - mileDif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>';
     return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>';    
 }
 
+// Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
     if (trail.length === 1 || day === route[route.length - 1] || nextDay.miles === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    
     let mileDif = 0;
     if (trail.circuit && this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
     else if (trail.circuit && !this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = (day.end.mile + (trail.length - day.prev_site.mile)).toFixed(1);
     else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    
     if ((day === route[route.length - 2] && nextDay.miles - mileDif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>';
     return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>+'+mileDif+' miles</button>';
@@ -632,5 +648,3 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
-
-//lingmire -> wr (8miles per day) gen for CW then switch to CCW. 1st gen is bad, 2nd+ is correct
