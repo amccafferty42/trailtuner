@@ -9,10 +9,15 @@
 }
 
 .loop-direction {
-    max-height: 2em;
+    max-height: 1.8em;
+}
+
+.half-day-label {
+    max-height: 1.8em;
 }
 
 #loop-direction-form {
+    top: 0;
     visibility: hidden;
 }
 

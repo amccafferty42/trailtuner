@@ -26,12 +26,17 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date"><h2><small>Start Date</small></h2></label>
+                    <label for="date"><h2><small><strong>Start Date</strong></small></h2></label>
                     <br>
                     <input type="date" id="start-date" name="start-date" value="2018-07-22">
                     <br>
-                    <label class="half-day-label form-check-label" for="half" title="Select to shorten first day"><h2><small>Half Day?&nbsp;</small></h2></label>
-                    <input class="half-day-input form-check-input" type="checkbox" id="half">
+                    <label class="half-day-label form-check-label" for="half" title=""><h2><small><strong>Half Day?</strong>&nbsp;</small></h2></label>
+                    <br>
+                    <input class="half-day-input form-check-input" type="checkbox" id="hike-in">
+                    <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h2><small>&nbsp;Hike-in</small></h2></label>
+                    <br>
+                    <input class="half-day-input form-check-input" type="checkbox" id="hike-out">
+                    <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite to the end"><h2><small>&nbsp;Hike-out</small></h2></label>
                 </div>
             </div>
             <div class="row align-items-center">
@@ -44,15 +49,14 @@
                     <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <div class="col-sm-2">
-                    <br>
                     <div id="loop-direction-form" class="form-check">
-                        <label class="loop-direction form-check-label" title="Select which direction to travel around loop"><h2><small>Loop Direction</small></h2></label>
+                        <label class="loop-direction form-check-label" title="Select which direction to travel around loop"><h2><small><strong>Loop Direction</strong></small></h2></label>
                         <br>
                         <input class="form-check-input" type="radio" name="exampleRadios" id="cw" value="cw" disabled>
-                        <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2><small>CW<strong>&nbsp;↻</strong></small></h2></label>
+                        <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2><small>&nbsp;CW<strong>&nbsp;↻</strong></small></h2></label>
                         <br>
                         <input class="form-check-input" type="radio" name="exampleRadios" id="ccw" value="ccw" disabled>
-                        <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2><small>CCW<strong>&nbsp;↺</strong></small></h2></label>
+                        <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2><small>&nbsp;CCW<strong>&nbsp;↺</strong></small></h2></label>
                      </div>
                 </div>
             </div>
