@@ -432,16 +432,22 @@ function getNearestTrailhead(mile) {
     return trail.trailheads[trail.trailheads.length - 1];
 }
 
+// TODO make this more readable
 function changeCamp(dayIndex, isNext) {
-
     this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
-    this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
-    this.route[dayIndex].prev_site = trail.campsites[this.route[dayIndex].end.pos - 1];
-    this.route[dayIndex].next_site = trail.campsites[this.route[dayIndex].end.pos + 1];
-    if (trail.circuit && this.route[dayIndex].end == trail.campsites[0]) this.route[dayIndex].prev_site = trail.campsites[trail.campsites.length - 1];
-    else if (trail.circuit && this.route[dayIndex].end == trail.campsites[trail.campsites.length - 1]) this.route[dayIndex].next_site = trail.campsites[0];
+    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex].start.mile > this.route[dayIndex].end.mile) {
+        this.route[dayIndex].miles = (trail.length - this.route[dayIndex].start.mile) + this.route[dayIndex].end.mile;
+    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex].start.mile < this.route[dayIndex].end.mile) {
+        this.route[dayIndex].miles = this.route[dayIndex].start.mile + (trail.length - this.route[dayIndex].end.mile);
+    } else this.route[dayIndex].miles = Math.round(Math.abs(this.route[dayIndex].start.mile - this.route[dayIndex].end.mile) * 10) / 10;
+    this.route[dayIndex].prev_site = trail.circuit && this.route[dayIndex].end == trail.campsites[0] ? trail.campsites[trail.campsites.length - 1] : trail.campsites[this.route[dayIndex].end.pos - 1];
+    this.route[dayIndex].next_site = trail.circuit && this.route[dayIndex].end == trail.campsites[trail.campsites.length - 1] ? this.route[dayIndex].next_site = trail.campsites[0] : trail.campsites[this.route[dayIndex].end.pos + 1];
     this.route[dayIndex + 1].start = this.route[dayIndex].end;
-    this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;    
+    if (trail.circuit && this.isPositiveDirection && this.route[dayIndex + 1].start.mile > this.route[dayIndex + 1].end.mile) {
+        this.route[dayIndex + 1].miles = (trail.length - this.route[dayIndex + 1].start.mile) + this.route[dayIndex + 1].end.mile;
+    } else if (trail.circuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.mile < this.route[dayIndex + 1].end.mile) {
+        this.route[dayIndex + 1].miles = this.route[dayIndex + 1].start.mile + (trail.length - this.route[dayIndex + 1].end.mile);
+    } else this.route[dayIndex + 1].miles = Math.round(Math.abs(this.route[dayIndex + 1].start.mile - this.route[dayIndex + 1].end.mile) * 10) / 10;
     displayRoute(this.route);
 }
 
@@ -514,29 +520,24 @@ function displayRoute(route) {
 }
 
 function closerCampBtn(day, route) {
-    const prevDay = route[route.indexOf(day) - 1];
-    if (trail.circuit) {
-        if (day.prev_site === undefined || day.next_site === undefined) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-        const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
-        if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>';
-        return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>';    
-    }
-    if ((this.isPositiveDirection && day.prev_site === undefined) || (!this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.next_site != undefined && day.next_site.mile > route[0].start.mile) || (this.isPositiveDirection && day.prev_site != undefined && day.prev_site.mile < route[0].start.mile) || (prevDay != undefined && day.end.pos === prevDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
+    if (trail.length === 1 || day === route[route.length - 1] || day.miles === 0 || (this.isPositiveDirection && day.prev_site === undefined) || (!this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    let mileDif = 0;
+    if (trail.circuit && this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = ((trail.length - day.prev_site.mile) + day.end.mile).toFixed(1);
+    else if (trail.circuit && !this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
+    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
+    if (day === route[0] && day.miles - mileDif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>';    
 }
 
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
-    if (trail.circuit) {
-        if (day.prev_site === undefined || day.next_site === undefined) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-        const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
-        if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>';
-        return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>+'+mileDif+' miles</button>';    
-    }
-    if ((this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined) || (this.isPositiveDirection && day.next_site != undefined && day.next_site.mile > route[route.length - 1].end.mile) || (!this.isPositiveDirection && day.prev_site != undefined && day.prev_site.mile < route[route.length - 1].end.mile) || (nextDay != undefined && day.end.pos === nextDay.end.pos)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    const mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    if (trail.length === 1 || day === route[route.length - 1] || nextDay.miles === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    let mileDif = 0;
+    if (trail.circuit && this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
+    else if (trail.circuit && !this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = (day.end.mile + (trail.length - day.prev_site.mile)).toFixed(1);
+    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    if ((day === route[route.length - 2] && nextDay.miles - mileDif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>';
     return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>+'+mileDif+' miles</button>';
 }
