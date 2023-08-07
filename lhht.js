@@ -171,7 +171,7 @@ const trail = {
     ]
 }
 
-// select DOM elements
+// Select DOM elements
 const selectStart = document.getElementById('start');
 const selectEnd = document.getElementById('end');
 const inputDays = document.getElementById('days');
