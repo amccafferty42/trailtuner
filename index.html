@@ -14,13 +14,25 @@
             <h2><small>Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> miles / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> miles / day</strong>. Set either value to <strong>0</strong> to defer to the other.</small></h2>
             <div class="row">
                 <div class="col-md-5">
-                    <label for="start"><h2>Start Trailhead</h2></label>
+                    <div class="trailhead-col">
+                        <label for="start"><h2>Start Trailhead</h2></label>
+                        <div class="hike-in-label">
+                            <input class="half-day-input form-check-input" type="checkbox" id="hike-in" title="Hike-in to the first campsite from the start">
+                            <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h2 class="half-day-label"><small>&nbsp;Short hike-in</small></h2></label>
+                        </div>
+                    </div>
                     <select id="start" class="form-control" onChange="onTrailheadsChange()">
                         <option value="0">No Preference</option>
                     </select>
                 </div>
                 <div class="col-md-5">
-                    <label for="end"><h2>End Trailhead</h2></label>
+                    <div class="trailhead-col">
+                        <label for="end"><h2>End Trailhead</h2></label>
+                        <div class="hike-out-label">
+                            <input class="half-day-input form-check-input" type="checkbox" id="hike-out" title="Hike-out from the last campsite before the end">
+                            <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite before the end"><h2 class="half-day-label"><small>&nbsp;Short hike-out</small></h2></label>
+                        </div>
+                    </div>
                     <select id="end" class="form-control" onChange="onTrailheadsChange()">
                         <option value="0">No Preference</option>
                     </select>
@@ -29,16 +41,14 @@
                     <label for="date"><h2><small><strong>Start Date</strong></small></h2></label>
                     <br>
                     <input type="date" id="start-date" name="start-date" value="2018-07-22">
-                    <br>
-                    <label class="form-check-label" for="half" title=""><h2><small><strong>Half Day?</strong>&nbsp;</small></h2></label>
-                    <br>
-                    <input class="half-day-input form-check-input" type="checkbox" id="hike-in">
-                    <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h2 class="half-day-label"><small>&nbsp;Hike-in</small></h2></label>
-                    <br>
-                    <input class="half-day-input form-check-input" type="checkbox" id="hike-out">
-                    <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite to the end"><h2 class="half-day-label"><small>&nbsp;Hike-out</small></h2></label>
+                    <!-- <input class="half-day-input form-check-input" type="checkbox" id="hike-in" title="Hike-in to the first campsite from the start">
+                    <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h2 class="half-day-label"><small>&nbsp;Short hike-in</small></h2></label>
+                    <br> -->
+                    <!-- <input class="half-day-input form-check-input" type="checkbox" id="hike-out" title="Hike-out from the last campsite before the end">
+                    <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite before the end"><h2 class="half-day-label"><small>&nbsp;Short hike-out</small></h2></label> -->
                 </div>
             </div>
+            <br>
             <div class="row align-items-center">
                 <div class="col-md-5">                
                     <label for="days"><h2>Days</h2></label>
@@ -49,14 +59,13 @@
                     <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <div class="col-sm-2">
-                    <hr id="break">
                     <div id="loop-direction-form" class="form-check">
                         <label class="form-check-label" id="loop-direction-label" title="Select which direction to travel around loop"><h2 class="loop-direction"><small><strong>Loop Direction</strong></small></h2></label>
                         <br>
-                        <input class="form-check-input" type="radio" name="direction" id="cw" value="cw" disabled>
+                        <input class="form-check-input" type="radio" name="direction" id="cw" value="cw" title="Clockwise" disabled>
                         <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2 class="loop-direction"><small>&nbsp;CW<strong>&nbsp;↻</strong></small></h2></label>
                         <br>
-                        <input class="form-check-input" type="radio" name="direction" id="ccw" value="ccw" disabled>
+                        <input class="form-check-input" type="radio" name="direction" id="ccw" value="ccw" title="Counter-clockwise" disabled>
                         <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2 class="loop-direction"><small>&nbsp;CCW<strong>&nbsp;↺</strong></small></h2></label>
                      </div>
                 </div>

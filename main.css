@@ -8,6 +8,16 @@
     margin-left: 1%;
 }
 
+.trailhead-col {
+    display: flex;
+    justify-content: space-between;
+}
+
+.hike-in-label, .hike-out-label {
+    margin: auto;
+    margin-right: 0;
+}
+
 .form-check-label {
     margin: 0;
 }
@@ -23,7 +33,7 @@
 
 .half-day-label {
     max-height: 1.5em;
-    margin: 0;
+    /* margin: 0; */
 }
 
 .changeCampBtn {

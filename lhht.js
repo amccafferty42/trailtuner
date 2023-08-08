@@ -177,7 +177,8 @@ const selectEnd = document.getElementById('end');
 const inputDays = document.getElementById('days');
 const inputMiles = document.getElementById('miles');
 const inputDate = document.getElementById('start-date');
-const inputHalfDay = document.getElementById('hike-in');
+const inputShortHikeIn = document.getElementById('hike-in');
+const inputShortHikeOut = document.getElementById('hike-out');
 const inputCW = document.getElementById('cw');
 const inputCCW = document.getElementById('ccw');
 const title = document.getElementById('title');
@@ -197,7 +198,7 @@ function plan() {
         const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], distance) : trail.trailheads[selectStart.value - 1];
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trail.trailheads[selectEnd.value - 1];
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
-        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputHalfDay.checked);
+        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked);
         this.route = route;
         displayRoute(route);
     }
@@ -232,7 +233,7 @@ function getDays() {
                 days = Math.floor(Math.random() * (Math.round(trail.length / inputMiles.value)) + 1); // min = 1, max = trail length / miles per day
             }
         }
-        if (days <= 0 || inputHalfDay.checked) days++;
+        if (days <= 0 || inputShortHikeIn.checked) days++;
         return days;
     }
     return Math.floor(Math.random() * (Math.ceil(trail.campsites.length / 2)) + 2); // min = 2, max = (# campsites / 2) + 2
@@ -245,7 +246,7 @@ function getDistancePerDay() {
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
 function getDistance(days, distancePerDay) {
     if (selectStart.value != 0 && selectEnd.value != 0) return getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
-    return !inputHalfDay.checked ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
+    return !inputShortHikeIn.checked ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
 }
 
 // If start trailhead is not provided, determine a reasonable start
@@ -600,7 +601,7 @@ function reset() {
     inputDays.value = Math.round(trail.length / 10);
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
-    inputHalfDay.checked = false;
+    inputShortHikeIn.checked = false;
     inputCW.disabled = trail.circuit ? false : true;
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
