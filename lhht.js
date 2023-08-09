@@ -1,6 +1,7 @@
 let route;
 let isPositiveDirection;
-const trail = {
+let userSetDays = false;
+const trail1 = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
     circuit: false,
@@ -65,111 +66,111 @@ const trail = {
         }
     ]
 }
-// const trail = {
-//     name: 'Wonderland Trail',
-//     length: 84.7,
-//     circuit: true,
-//     trailheads: [
-//         {
-//             name: "Longmire Trailhead",
-//             mile: 0.0
-//         },
-//         {
-//             name: "Mowich Lake Trailhead",
-//             mile: 31.5
-//         },
-//         {
-//             name: "White River Trailhead",
-//             mile: 55
-//         }  
-//     ],
-//     campsites:[
-//         {
-//             name: "Pyramid Creek",
-//             mile: 3.0
-//         },
-//         {
-//             name: "Devil's Dream",
-//             mile: 5.2
-//         },
-//         {
-//             name: "South Puyallup River",
-//             mile: 11.2
-//         },
-//         {
-//             name: "Klapatche Park",
-//             mile: 15.0
-//         },
-//         {
-//             name: "North Puyallup River",
-//             mile: 17.5
-//         },
-//         {
-//             name: "Golden Lakes",
-//             mile: 22.1
-//         },
-//         {
-//             name: "South Mowich River",
-//             mile: 27.9
-//         },
-//         {
-//             name: "Mowich Lake Campground",
-//             mile: 31.5
-//         },
-//         {
-//             name: "Ipsut Creek Campground",
-//             mile: 36.1
-//         },
-//         {
-//             name: "Carbon River",
-//             mile: 39.3
-//         },
-//         {
-//             name: "Dick Creek",
-//             mile: 40.5
-//         },
-//         {
-//             name: "Mystic Camp",
-//             mile: 43.9
-//         },
-//         {
-//             name: "Granite Creek",
-//             mile: 47.4
-//         },
-//         {
-//             name: "Sunrise Camp",
-//             mile: 51.7
-//         },
-//         {
-//             name: "White River Campground",
-//             mile: 55.0
-//         },
-//         {
-//             name: "Summerland",
-//             mile: 61.6
-//         },
-//         {
-//             name: "Indian Bar",
-//             mile: 65.8
-//         },
-//         {
-//             name: "Nickle Creek",
-//             mile: 72.0
-//         },
-//         {
-//             name: "Maple Creek",
-//             mile: 75.0
-//         },
-//         {
-//             name: "Paradise River",
-//             mile: 81.3
-//         },
-//         {
-//             name: "Cougar Rock Campground",
-//             mile: 83.4
-//         }
-//     ]
-// }
+const trail = {
+    name: 'Wonderland Trail',
+    length: 84.7,
+    circuit: true,
+    trailheads: [
+        {
+            name: "Longmire Trailhead",
+            mile: 0.0
+        },
+        {
+            name: "Mowich Lake Trailhead",
+            mile: 31.5
+        },
+        {
+            name: "White River Trailhead",
+            mile: 55
+        }  
+    ],
+    campsites:[
+        {
+            name: "Pyramid Creek",
+            mile: 3.0
+        },
+        {
+            name: "Devil's Dream",
+            mile: 5.2
+        },
+        {
+            name: "South Puyallup River",
+            mile: 11.2
+        },
+        {
+            name: "Klapatche Park",
+            mile: 15.0
+        },
+        {
+            name: "North Puyallup River",
+            mile: 17.5
+        },
+        {
+            name: "Golden Lakes",
+            mile: 22.1
+        },
+        {
+            name: "South Mowich River",
+            mile: 27.9
+        },
+        {
+            name: "Mowich Lake Campground",
+            mile: 31.5
+        },
+        {
+            name: "Ipsut Creek Campground",
+            mile: 36.1
+        },
+        {
+            name: "Carbon River",
+            mile: 39.3
+        },
+        {
+            name: "Dick Creek",
+            mile: 40.5
+        },
+        {
+            name: "Mystic Camp",
+            mile: 43.9
+        },
+        {
+            name: "Granite Creek",
+            mile: 47.4
+        },
+        {
+            name: "Sunrise Camp",
+            mile: 51.7
+        },
+        {
+            name: "White River Campground",
+            mile: 55.0
+        },
+        {
+            name: "Summerland",
+            mile: 61.6
+        },
+        {
+            name: "Indian Bar",
+            mile: 65.8
+        },
+        {
+            name: "Nickle Creek",
+            mile: 72.0
+        },
+        {
+            name: "Maple Creek",
+            mile: 75.0
+        },
+        {
+            name: "Paradise River",
+            mile: 81.3
+        },
+        {
+            name: "Cougar Rock Campground",
+            mile: 83.4
+        }
+    ]
+}
 
 // Select DOM elements
 const selectStart = document.getElementById('start');
@@ -185,9 +186,6 @@ const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
-const loopDirectionCWLabel = document.getElementById('loop-direction-cw');
-const loopDirectionCCWLabel = document.getElementById('loop-direction-ccw');
-
 
 reset();
 appendPos();
@@ -228,16 +226,19 @@ function getDays() {
             const distancePerDay = getDistancePerDay();
             days = totalDistance / distancePerDay < trail.campsites.length ? Math.round(totalDistance / distancePerDay) : trail.campsites.length;
         } else if (inputMiles.value > 0) {
-            if (!trail.circuit && selectStart.value != 0) {
+            if (trail.circuit) {
+                days = Math.round(trail.length / inputMiles.value); // If start or end are not set, route length will always be full length so days must always be trail length / miles/days
+            } else if (selectStart.value != 0) {
                 days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectStart.value - 1].mile), Math.abs(0 - trail.trailheads[selectStart.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
-            } else if (!trail.circuit && selectEnd.value != 0) {
+            } else if (selectEnd.value != 0) {
                 days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectEnd.value - 1].mile), Math.abs(0 - trail.trailheads[selectEnd.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
             } else {
                 days = Math.floor(Math.random() * (Math.round(trail.length / inputMiles.value)) + 1); // min = 1, max = trail length / miles per day
             }
         }
-        if (days <= 0 || inputShortHikeIn.checked) days++;
-        return days;
+        if (inputShortHikeIn.checked) days++;
+        if (inputShortHikeOut.checked) days++;
+        return Math.max(1, days);
     }
     return Math.floor(Math.random() * (Math.ceil(trail.campsites.length / 2)) + 2); // min = 2, max = (# campsites / 2) + 2
 }
@@ -542,6 +543,7 @@ function onMilesPerDayChange() {
 }
 
 function onDaysChange() {
+    this.userSetDays = true;
     if (inputDays.value == 0 || inputDays.value == "") {
         inputDays.placeholder = "Using Miles / Day";
         inputDays.value = "";
@@ -559,6 +561,12 @@ function onTrailheadsChange() {
     if (selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0) && (inputMiles.value != "" || inputMiles.value != 0)) {
         inputMiles.placeholder = "Using Days";
         inputMiles.value = "";
+    } 
+    // If days has not been set by the user, determine a reasonable number based on distance between trailheads
+    if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0)) {
+        this.isPositiveDirection = getDirection(trail.trailheads[selectStart.value - 1], trail.trailheads[selectEnd.value - 1]);
+        const miles = (trail.circuit && selectStart.value == selectEnd.value) ? trail.length : getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
+        inputDays.value = Math.max(1, Math.round(miles / 10));
     }
 }
 
@@ -642,6 +650,7 @@ function reset() {
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
+    this.userSetDays = false;
     if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trail.circuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
