@@ -227,7 +227,7 @@ function getDays() {
             days = totalDistance / distancePerDay < trail.campsites.length ? Math.round(totalDistance / distancePerDay) : trail.campsites.length;
         } else if (inputMiles.value > 0) {
             if (trail.circuit) {
-                days = Math.round(trail.length / inputMiles.value); // If start or end are not set, route length will always be full length so days must always be trail length / miles/days
+                days = Math.round(trail.length / inputMiles.value); // if start or end are not set, route length will always be full length so days must always be trail length / miles/days
             } else if (selectStart.value != 0) {
                 days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trail.length - trail.trailheads[selectStart.value - 1].mile), Math.abs(0 - trail.trailheads[selectStart.value - 1].mile)) / inputMiles.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
             } else if (selectEnd.value != 0) {
@@ -236,7 +236,7 @@ function getDays() {
                 days = Math.floor(Math.random() * (Math.round(trail.length / inputMiles.value)) + 1); // min = 1, max = trail length / miles per day
             }
         }
-        if (inputShortHikeIn.checked) days++;
+        if (inputShortHikeIn.checked) days++; // add an additional day for short days so route gen will make the remaining days closer to the input value
         if (inputShortHikeOut.checked) days++;
         return Math.max(1, days);
     }
