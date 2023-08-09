@@ -198,7 +198,7 @@ function plan() {
         const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trail.trailheads[selectEnd.value - 1], distance) : trail.trailheads[selectStart.value - 1];
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trail.trailheads[selectEnd.value - 1];
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
-        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked);
+        const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
         displayRoute(route);
     }
@@ -297,21 +297,39 @@ function selectEndTrailhead(startTrailhead, miles) {
     return Math.floor(Math.random() * 2) === 0 ? endCandidate1 : endCandidate2;
 }
 
-function generateRoute(start, end, days, startDate, halfDay) {
+function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
     console.log('Generating ' + days + ' day trip from ' + start.name + ' to ' + end.name);
-    if (halfDay && days > 1) {
-        let route = [];
-        const halfDay = generateHalfDay(start, startDate);
-        let tomorrow = new Date(halfDay.date);
+    if (shortHikeIn && shortHikeOut && days > 2) {
+        const firstDay = generateShortHikeIn(start, startDate);
+        let lastDate = new Date(startDate);
+        lastDate.setUTCDate(lastDate.getUTCDate() + (days - 1));
+        const lastDay = generateShortHikeOut(end, lastDate);
+        let tomorrow = new Date(firstDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-        route.push(halfDay);
-        return route.concat(calculateRoute(halfDay.end, end, days - 1, tomorrow));
+        route = calculateRoute(firstDay.end, lastDay.start, days - 2, tomorrow);
+        route.unshift(firstDay);
+        route.push(lastDay);
+        return route;
+    } else if (shortHikeIn && days > 1) {
+        const firstDay = generateShortHikeIn(start, startDate);
+        let tomorrow = new Date(firstDay.date);
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+        route = calculateRoute(firstDay.end, end, days - 1, tomorrow);
+        route.unshift(firstDay);
+        return route;
+    } else if (shortHikeOut && days > 1) {
+        let lastDate = new Date(startDate);
+        lastDate.setUTCDate(lastDate.getUTCDate() + (days - 1));
+        const lastDay = generateShortHikeOut(end, lastDate);
+        route = calculateRoute(start, lastDay.start, days - 1, startDate);
+        route.push(lastDay);
+        return route;
     }
     return calculateRoute(start, end, days, startDate);  
 }
 
-function generateHalfDay(start, startDate) {
-    const end = getNextCampsiteFromTrailhead(start.mile);
+function generateShortHikeIn(start, startDate) {
+    const end = getNextCampsiteFromTrailhead(start.mile, this.isPositiveDirection);
     return {
         start: start,
         date: startDate,
@@ -322,14 +340,28 @@ function generateHalfDay(start, startDate) {
     }
 }
 
+function generateShortHikeOut(end, startDate) {
+    const start = getNextCampsiteFromTrailhead(end.mile, !this.isPositiveDirection);
+    return {
+        start: start,
+        date: startDate,
+        end: end,
+        miles: getMiles(start.mile, end.mile),
+        prev_site: undefined,
+        next_site: undefined
+    }
+}
+
 // Given a campsite, return the previous campsite in the list. Regardless of route direction, prev_site will always be the site in the list before the given site
 function getPrevCampsite(campsite) {
+    if (campsite.pos === undefined) return undefined;
     if (trail.circuit && campsite == trail.campsites[0]) return trail.campsites[trail.campsites.length - 1];
     return trail.campsites[campsite.pos - 1] === undefined ? undefined : trail.campsites[campsite.pos - 1];
 }
 
 // Given a campsite, return the next campsite in the list. Regardless of route direction, next_site will always be the site in the list after the given site
 function getNextCampsite(campsite) {
+    if (campsite.pos === undefined) return undefined;
     if (trail.circuit && campsite == trail.campsites[trail.campsites.length - 1]) return trail.campsites[0];
     return trail.campsites[campsite.pos + 1] === undefined ? undefined : trail.campsites[campsite.pos + 1];
 }
@@ -424,18 +456,18 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
             route[j].end = endTrailhead;
         } else {
             route[j].end = campsites[j] === undefined ? route[j].start : campsites[j];    
-            route[j].prev_site = getPrevCampsite(route[j].end);
-            route[j].next_site = getNextCampsite(route[j].end);     
         }
+        route[j].prev_site = getPrevCampsite(route[j].end);
+        route[j].next_site = getNextCampsite(route[j].end);     
         route[j].miles = (days == 1 && trail.circuit && route[j].start === route[j].end) ? trail.length : getMiles(route[j].start.mile, route[j].end.mile);
     }
     return route;
 }
 
 // Given mile number, return the nearest campsite in the direction of the route
-function getNextCampsiteFromTrailhead(mile) {
+function getNextCampsiteFromTrailhead(mile, isPositiveDirection) {
     if (mile < 0 || mile > trail.length) return undefined;
-    if (this.isPositiveDirection) {
+    if (isPositiveDirection) {
         for (let i = 0; i < trail.campsites.length; i++) {
             if (trail.campsites[i].mile > mile) return trail.campsites[i];
         }

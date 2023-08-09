@@ -38,17 +38,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date"><h2><small><strong>Start Date</strong></small></h2></label>
+                    <label class="start-date" for="date"><h2><small><strong>Start Date</strong></small></h2></label>
                     <br>
                     <input type="date" id="start-date" name="start-date" value="2018-07-22">
-                    <!-- <input class="half-day-input form-check-input" type="checkbox" id="hike-in" title="Hike-in to the first campsite from the start">
-                    <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h2 class="half-day-label"><small>&nbsp;Short hike-in</small></h2></label>
-                    <br> -->
-                    <!-- <input class="half-day-input form-check-input" type="checkbox" id="hike-out" title="Hike-out from the last campsite before the end">
-                    <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite before the end"><h2 class="half-day-label"><small>&nbsp;Short hike-out</small></h2></label> -->
                 </div>
             </div>
-            <br>
             <div class="row align-items-center">
                 <div class="col-md-5">                
                     <label for="days"><h2>Days</h2></label>
@@ -59,6 +53,8 @@
                     <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <div class="col-sm-2">
+                    <hr id="break">
+
                     <div id="loop-direction-form" class="form-check">
                         <label class="form-check-label" id="loop-direction-label" title="Select which direction to travel around loop"><h2 class="loop-direction"><small><strong>Loop Direction</strong></small></h2></label>
                         <br>
