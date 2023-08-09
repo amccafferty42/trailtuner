@@ -9,6 +9,14 @@
             <div class="title">
                 <h1 id="title"></h1>
                 <!-- <a id="change-trail">change trail</a> -->
+                <div class="distance-unit btn-group" data-toggle="buttons">
+                    <label class="btn btn-default active">
+                        <input type="radio" name="unit" id="miles" onChange="setUnit(this)" checked> Miles
+                    </label>
+                    <label class="btn btn-default">
+                        <input type="radio" name="unit" id="km" onChange="setUnit(this)"> Kilometers
+                    </label>
+                </div>
             </div>
             <h1><small>Itinerary Planning Tool</small></h1>
             <h2><small>Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> miles / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> miles / day</strong>. Set either value to <strong>0</strong> to defer to the other.</small></h2>
