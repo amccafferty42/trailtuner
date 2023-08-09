@@ -1,3 +1,7 @@
+.lightgray {
+    color: lightgray !important;
+}
+
 .title {
     display: flex;
 }

@@ -1,175 +1,175 @@
 let route;
 let isPositiveDirection;
-// const trail = {
-//     name: 'Laurel Highlands Hiking Trail',
-//     length: 70,
-//     circuit: false,
-//     trailheads: [
-//         {
-//             name: "Rt. 381 Trailhead",
-//             mile: 0.0
-//         },
-//         {
-//             name: "Rt. 653 Trailhead",
-//             mile: 18.9
-//         },
-//         {
-//             name: "Rt. 31 Trailhead",
-//             mile: 30.9
-//         },
-//         {
-//             name: "Rt. 30 Trailhead",
-//             mile: 45.6
-//         },
-//         {
-//             name: "Rt. 271 Trailhead",
-//             mile: 56.8
-//         },
-//         {
-//             name: "Rt. 56 Trailhead",
-//             mile: 70.0
-//         }
-//     ],
-//     campsites: [
-//         {
-//             name: "Ohiopyle Shelter Area",
-//             mile: 6.3
-//         },
-//         {   
-//             name: "Rt. 653 Shelter Area",
-//             mile: 18.5
-//         },
-//         {
-//             name: "Grindle Ridge Shelter Area",
-//             mile: 24.0
-//         },
-//         {
-//             name: "Rt. 31 Shelter Area",
-//             mile: 32.5
-//         },
-//         {
-//             name: "Turnpike Shelter Area",
-//             mile: 38.2
-//         },
-//         {
-//             name: "Rt. 30 Shelter Area",
-//             mile: 46.5
-//         },
-//         {
-//             name: "Rt. 271 Shelter Area",
-//             mile: 56.5
-//         },
-//         {
-//             name: "Rt. 56 Shelter Area",
-//             mile: 64.9
-//         }
-//     ]
-// }
 const trail = {
-    name: 'Wonderland Trail',
-    length: 84.7,
-    circuit: true,
+    name: 'Laurel Highlands Hiking Trail',
+    length: 70,
+    circuit: false,
     trailheads: [
         {
-            name: "Longmire Trailhead",
+            name: "Rt. 381 Trailhead",
             mile: 0.0
         },
         {
-            name: "Mowich Lake Trailhead",
-            mile: 31.5
+            name: "Rt. 653 Trailhead",
+            mile: 18.9
         },
         {
-            name: "White River Trailhead",
-            mile: 55
-        }  
+            name: "Rt. 31 Trailhead",
+            mile: 30.9
+        },
+        {
+            name: "Rt. 30 Trailhead",
+            mile: 45.6
+        },
+        {
+            name: "Rt. 271 Trailhead",
+            mile: 56.8
+        },
+        {
+            name: "Rt. 56 Trailhead",
+            mile: 70.0
+        }
     ],
-    campsites:[
+    campsites: [
         {
-            name: "Pyramid Creek",
-            mile: 3.0
+            name: "Ohiopyle Shelter Area",
+            mile: 6.3
+        },
+        {   
+            name: "Rt. 653 Shelter Area",
+            mile: 18.5
         },
         {
-            name: "Devil's Dream",
-            mile: 5.2
+            name: "Grindle Ridge Shelter Area",
+            mile: 24.0
         },
         {
-            name: "South Puyallup River",
-            mile: 11.2
+            name: "Rt. 31 Shelter Area",
+            mile: 32.5
         },
         {
-            name: "Klapatche Park",
-            mile: 15.0
+            name: "Turnpike Shelter Area",
+            mile: 38.2
         },
         {
-            name: "North Puyallup River",
-            mile: 17.5
+            name: "Rt. 30 Shelter Area",
+            mile: 46.5
         },
         {
-            name: "Golden Lakes",
-            mile: 22.1
+            name: "Rt. 271 Shelter Area",
+            mile: 56.5
         },
         {
-            name: "South Mowich River",
-            mile: 27.9
-        },
-        {
-            name: "Mowich Lake Campground",
-            mile: 31.5
-        },
-        {
-            name: "Ipsut Creek Campground",
-            mile: 36.1
-        },
-        {
-            name: "Carbon River",
-            mile: 39.3
-        },
-        {
-            name: "Dick Creek",
-            mile: 40.5
-        },
-        {
-            name: "Mystic Camp",
-            mile: 43.9
-        },
-        {
-            name: "Granite Creek",
-            mile: 47.4
-        },
-        {
-            name: "Sunrise Camp",
-            mile: 51.7
-        },
-        {
-            name: "White River Campground",
-            mile: 55.0
-        },
-        {
-            name: "Summerland",
-            mile: 61.6
-        },
-        {
-            name: "Indian Bar",
-            mile: 65.8
-        },
-        {
-            name: "Nickle Creek",
-            mile: 72.0
-        },
-        {
-            name: "Maple Creek",
-            mile: 75.0
-        },
-        {
-            name: "Paradise River",
-            mile: 81.3
-        },
-        {
-            name: "Cougar Rock Campground",
-            mile: 83.4
+            name: "Rt. 56 Shelter Area",
+            mile: 64.9
         }
     ]
 }
+// const trail = {
+//     name: 'Wonderland Trail',
+//     length: 84.7,
+//     circuit: true,
+//     trailheads: [
+//         {
+//             name: "Longmire Trailhead",
+//             mile: 0.0
+//         },
+//         {
+//             name: "Mowich Lake Trailhead",
+//             mile: 31.5
+//         },
+//         {
+//             name: "White River Trailhead",
+//             mile: 55
+//         }  
+//     ],
+//     campsites:[
+//         {
+//             name: "Pyramid Creek",
+//             mile: 3.0
+//         },
+//         {
+//             name: "Devil's Dream",
+//             mile: 5.2
+//         },
+//         {
+//             name: "South Puyallup River",
+//             mile: 11.2
+//         },
+//         {
+//             name: "Klapatche Park",
+//             mile: 15.0
+//         },
+//         {
+//             name: "North Puyallup River",
+//             mile: 17.5
+//         },
+//         {
+//             name: "Golden Lakes",
+//             mile: 22.1
+//         },
+//         {
+//             name: "South Mowich River",
+//             mile: 27.9
+//         },
+//         {
+//             name: "Mowich Lake Campground",
+//             mile: 31.5
+//         },
+//         {
+//             name: "Ipsut Creek Campground",
+//             mile: 36.1
+//         },
+//         {
+//             name: "Carbon River",
+//             mile: 39.3
+//         },
+//         {
+//             name: "Dick Creek",
+//             mile: 40.5
+//         },
+//         {
+//             name: "Mystic Camp",
+//             mile: 43.9
+//         },
+//         {
+//             name: "Granite Creek",
+//             mile: 47.4
+//         },
+//         {
+//             name: "Sunrise Camp",
+//             mile: 51.7
+//         },
+//         {
+//             name: "White River Campground",
+//             mile: 55.0
+//         },
+//         {
+//             name: "Summerland",
+//             mile: 61.6
+//         },
+//         {
+//             name: "Indian Bar",
+//             mile: 65.8
+//         },
+//         {
+//             name: "Nickle Creek",
+//             mile: 72.0
+//         },
+//         {
+//             name: "Maple Creek",
+//             mile: 75.0
+//         },
+//         {
+//             name: "Paradise River",
+//             mile: 81.3
+//         },
+//         {
+//             name: "Cougar Rock Campground",
+//             mile: 83.4
+//         }
+//     ]
+// }
 
 // Select DOM elements
 const selectStart = document.getElementById('start');
@@ -184,7 +184,10 @@ const inputCCW = document.getElementById('ccw');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
-const loopDirection = document.getElementById('loop-direction-label');
+const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
+const loopDirectionCWLabel = document.getElementById('loop-direction-cw');
+const loopDirectionCCWLabel = document.getElementById('loop-direction-ccw');
+
 
 reset();
 appendPos();
@@ -634,12 +637,13 @@ function reset() {
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputShortHikeIn.checked = false;
+    inputShortHikeOut.checked = false;
     inputCW.disabled = trail.circuit ? false : true;
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
-    loopDirection.innerHTML = trail.circuit ? '<h2><small><strong>Loop Direction</strong></small></h2>' : '<h2><small><strong><s>Loop Direction</s></strong></small></h2>';
-    if (!trail.circuit) loopDirection.classList.remove('strikethrough');
+    if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
+    if (trail.circuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
     title.scrollIntoView({behavior: 'smooth'});
 }
