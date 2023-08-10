@@ -251,7 +251,8 @@ function getDays() {
 }
 
 function getDistancePerDay() {
-    return inputMiles.value > 0 ? inputMiles.value : Math.floor(Math.random() * 11 + 10); // min = 10, max = 20
+    if (inputMiles.value > 0) return inputMiles.value;
+    return trail.unit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
 }
 
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
@@ -570,10 +571,10 @@ function onTrailheadsChange() {
         inputMiles.value = "";
     } 
     // If days has not been set by the user, determine a reasonable number based on distance between trailheads
-    if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0)) {
+    if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {
         this.isPositiveDirection = getDirection(trail.trailheads[selectStart.value - 1], trail.trailheads[selectEnd.value - 1]);
         const miles = (trail.circuit && selectStart.value == selectEnd.value) ? trail.length : getMiles(trail.trailheads[selectStart.value - 1].mile, trail.trailheads[selectEnd.value - 1].mile);
-        inputDays.value = Math.max(1, Math.round(miles / 10));
+        inputDays.value = trail.unit === 'km' ? Math.max(1, Math.round(miles / 16.0934)) : Math.max(1, Math.round(miles / 10));
     }
 }
 
@@ -648,7 +649,7 @@ function reset() {
     selectEnd.value = trail.circuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trail.name;
-    inputDays.value = Math.round(trail.length / 10);
+    inputDays.value = trail.unit === 'km' ? Math.round(trail.length / 16) : Math.round(trail.length / 10);
     inputMiles.value = "";
     inputMiles.placeholder = "Using Days";
     inputShortHikeIn.checked = false;
@@ -658,7 +659,7 @@ function reset() {
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
     if (trail.unit === 'km') inputKm.click();
-    else inputKm.click();
+    else inputMi.click();
     setUnitLabels(trail.unit);
     this.userSetDays = false;
     if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
@@ -698,7 +699,7 @@ function setUnit(unit) {
         trail.unit = unit;
         trail.length = unit === 'km' ? Math.round(trail.length * 1.609344 * 10) / 10 : Math.round(trail.length * 0.6213711922 * 10) / 10;
         setUnitLabels(unit);
-        onDaysChange();
+        if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         for (trailhead of trail.trailheads) {
             trailhead.mile = unit === 'km' ? Math.round(trailhead.mile * 1.609344 * 10) / 10 : Math.round(trailhead.mile * 0.6213711922 * 10) / 10;
         }
