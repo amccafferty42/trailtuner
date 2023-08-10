@@ -6,6 +6,11 @@
     display: flex;
 }
 
+.distance-unit {
+    align-self: center;
+    margin-left: auto;
+}
+
 #change-trail {
     align-self: end;
     margin-bottom: 1%;

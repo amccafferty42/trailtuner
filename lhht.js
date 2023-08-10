@@ -4,6 +4,7 @@ let userSetDays = false;
 const trail1 = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
+    unit: 'mi',
     circuit: false,
     trailheads: [
         {
@@ -69,6 +70,7 @@ const trail1 = {
 const trail = {
     name: 'Wonderland Trail',
     length: 84.7,
+    unit: 'mi',
     circuit: true,
     trailheads: [
         {
@@ -182,9 +184,14 @@ const inputShortHikeIn = document.getElementById('hike-in');
 const inputShortHikeOut = document.getElementById('hike-out');
 const inputCW = document.getElementById('cw');
 const inputCCW = document.getElementById('ccw');
+const inputMi = document.getElementById('mi');
+const inputKm = document.getElementById('km');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
 const tableBody = document.getElementById('table-body');
+const unitLabel1 = document.getElementById('unit1');
+const unitLabel2 = document.getElementById('unit2');
+const unitLabel3 = document.getElementById('unit3');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
 
 reset();
@@ -527,7 +534,7 @@ function changeCamp(dayIndex, isNext) {
 
 function onMilesPerDayChange() {
     if ((inputDays.value == "" || inputDays.value == 0) && (inputMiles.value == 0 || inputMiles.value == "")) {
-        inputMiles.placeholder = "Using 10-20 Mile Range";
+        inputMiles.placeholder = trail.unit === 'mi' ? "Using 10-20 Mile Range" : "Using 16-32 Km Range";
         inputMiles.value = "";
     } 
     else if (inputMiles.value == 0 || inputMiles.value == "") {
@@ -536,7 +543,7 @@ function onMilesPerDayChange() {
     } else {
         inputMiles.placeholder = "";
         if (selectStart.value != 0 && selectEnd.value != 0) {
-            inputDays.placeholder = "Using Miles / Day";
+            inputDays.placeholder = trail.unit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
             inputDays.value = "";
         }
     }
@@ -545,7 +552,7 @@ function onMilesPerDayChange() {
 function onDaysChange() {
     this.userSetDays = true;
     if (inputDays.value == 0 || inputDays.value == "") {
-        inputDays.placeholder = "Using Miles / Day";
+        inputDays.placeholder = trail.unit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
         inputDays.value = "";
     } else {
         inputDays.placeholder = "";
@@ -590,8 +597,8 @@ function displayRoute(route) {
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
         cell3.innerHTML = i == 0 ? '<u>' + route[i].start.name + '</u>' : route[i].start.name;
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.name + '</u>' : route[i].end.name;
-        cell5.innerHTML = '<strong>' + route[i].miles.toFixed(1) + ' mi</strong>';
-        cell6.innerHTML = totalMiles.toFixed(1) + ' mi';
+        cell5.innerHTML = '<strong>' + route[i].miles.toFixed(1) + ' ' + trail.unit + '</strong>';
+        cell6.innerHTML = totalMiles.toFixed(1) + ' ' + trail.unit;
         cell7.innerHTML = closerCampBtn(route[i], route);
         cell8.innerHTML = furtherCampBtn(route[i], route);
     }
@@ -605,13 +612,13 @@ function closerCampBtn(day, route) {
     if (trail.length === 1 || day === route[route.length - 1] || day.miles === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trail.circuit && this.isPositiveDirection && day.prev_site === undefined) || (!trail.circuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let mileDif = 0;
-    if (trail.circuit && this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = ((trail.length - day.prev_site.mile) + day.end.mile).toFixed(1);
-    else if (trail.circuit && !this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
-    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile).toFixed(1) : Math.abs(day.end.mile - day.next_site.mile).toFixed(1);
-    
+    if (trail.circuit && this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = ((trail.length - day.prev_site.mile) + day.end.mile);
+    else if (trail.circuit && !this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile));
+    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.prev_site.mile) : Math.abs(day.end.mile - day.next_site.mile);
+
     if (day === route[0] && day.miles - mileDif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>-'+mileDif+' miles</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>-'+mileDif+' miles</button>';    
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.name + '</br>-' + mileDif.toFixed(1) + ' ' + trail.unit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.name + '</br>-' + mileDif.toFixed(1) + ' ' + trail.unit + '</button>';    
 }
 
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
@@ -620,13 +627,13 @@ function furtherCampBtn(day, route) {
     if (trail.length === 1 || day === route[route.length - 1] || nextDay.miles === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let mileDif = 0;
-    if (trail.circuit && this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile)).toFixed(1);
-    else if (trail.circuit && !this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = (day.end.mile + (trail.length - day.prev_site.mile)).toFixed(1);
-    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile).toFixed(1) : Math.abs(day.end.mile - day.prev_site.mile).toFixed(1);
+    if (trail.circuit && this.isPositiveDirection && day.next_site.mile < day.end.mile) mileDif = (day.next_site.mile + (trail.length - day.end.mile));
+    else if (trail.circuit && !this.isPositiveDirection && day.prev_site.mile > day.end.mile) mileDif = (day.end.mile + (trail.length - day.prev_site.mile));
+    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.mile - day.next_site.mile) : Math.abs(day.end.mile - day.prev_site.mile);
     
     if ((day === route[route.length - 2] && nextDay.miles - mileDif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">'+day.next_site.name+'</br>+'+mileDif+' miles</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">'+day.prev_site.name+'</br>+'+mileDif+' miles</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.name + '</br>+' + mileDif.toFixed(1) + ' ' + trail.unit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.name+'</br>+' + mileDif.toFixed(1) +' ' + trail.unit + '</button>';
 }
 
 function reset() {
@@ -650,6 +657,8 @@ function reset() {
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
+    if (trail.unit === 'mi') inputMi.click();
+    else inputKm.click();
     this.userSetDays = false;
     if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trail.circuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
@@ -674,6 +683,29 @@ function addOption(element, name, value) {
     opt.text = name;
     opt.value = value;
     element.appendChild(opt);
+}
+
+function setUnit(unit) {
+    if (trail.unit != unit.id) {
+        console.log('Switching unit from ' + trail.unit + ' to ' + unit.id);
+        trail.unit = unit.id;
+        trail.length = unit.id === 'km' ? Math.round(trail.length * 1.609344 * 10) / 10 : Math.round(trail.length * 0.6213711922 * 10) / 10;
+        unitLabel1.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
+        unitLabel2.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
+        unitLabel3.innerHTML = unit.id === 'mi' ? 'Miles' : 'Km';
+        for (trailhead of trail.trailheads) {
+            trailhead.mile = unit.id === 'km' ? Math.round(trailhead.mile * 1.609344 * 10) / 10 : Math.round(trailhead.mile * 0.6213711922 * 10) / 10;
+        }
+        for (campsite of trail.campsites) {
+            campsite.mile = unit.id === 'km' ? Math.round(campsite.mile * 1.609344 * 10) / 10 : Math.round(campsite.mile * 0.6213711922 * 10) / 10;
+        }
+        if (this.route != undefined) {
+            for (day of this.route) {
+                day.miles = unit.id === 'km' ? Math.round(day.miles * 1.609344 * 10) / 10 : Math.round(day.miles * 0.6213711922 * 10) / 10;
+            }
+            displayRoute(this.route);
+        }
+    }
 }
 
 // Calculate the average of all the numbers

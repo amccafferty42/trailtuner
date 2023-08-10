@@ -11,15 +11,15 @@
                 <!-- <a id="change-trail">change trail</a> -->
                 <div class="distance-unit btn-group" data-toggle="buttons">
                     <label class="btn btn-default active">
-                        <input type="radio" name="unit" id="miles" onChange="setUnit(this)" checked> Miles
+                        <input type="radio" name="unit" id="mi" onChange="setUnit(this)" checked> mi
                     </label>
                     <label class="btn btn-default">
-                        <input type="radio" name="unit" id="km" onChange="setUnit(this)"> Kilometers
+                        <input type="radio" name="unit" id="km" onChange="setUnit(this)"> km
                     </label>
                 </div>
             </div>
             <h1><small>Itinerary Planning Tool</small></h1>
-            <h2><small>Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> miles / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> miles / day</strong>. Set either value to <strong>0</strong> to defer to the other.</small></h2>
+            <h2><small>Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> <span id="unit1">miles</span> / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> <span id="unit2">miles</span> / day</strong>. Set either value to <strong>0</strong> to defer to the other.</small></h2>
             <div class="row">
                 <div class="col-md-5">
                     <div class="trailhead-col">
@@ -57,7 +57,7 @@
                     <input type="number" min="0" max="99" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
                 </div>
                 <div class="col-md-5">                
-                    <label for="miles"><h2>Miles / Day</h2></label>
+                    <label for="miles"><h2><span id="unit3">Miles</span> / Day</h2></label>
                     <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onMilesPerDayChange()" name="miles" id="miles" class="form-control">
                 </div>
                 <div class="col-sm-2">
@@ -105,6 +105,8 @@
             <tbody id="table-body">
             </tbody>
         </table>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>    </body>
         <script src="lhht.js"></script>
     </body>
 </html>
