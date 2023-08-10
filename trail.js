@@ -1,108 +1,68 @@
 const file = document.getElementById('trailFile');
 let newTrail;
 let trail = {
-    name: 'Wonderland Trail',
-    length: 84.7,
-    unit: 'mi',
-    circuit: true,
-    trailheads: [
+    "name": "Laurel Highlands Hiking Trail",
+    "length": 70,
+    "unit": "mi",
+    "circuit": false,
+    "trailheads": [
         {
-            name: "Longmire Trailhead",
-            mile: 0.0
+            "name": "Rt. 381 Trailhead",
+            "mile": 0.0
         },
         {
-            name: "Mowich Lake Trailhead",
-            mile: 31.5
+            "name": "Rt. 653 Trailhead",
+            "mile": 18.9
         },
         {
-            name: "White River Trailhead",
-            mile: 55
-        }  
+            "name": "Rt. 31 Trailhead",
+            "mile": 30.9
+        },
+        {
+            "name": "Rt. 30 Trailhead",
+            "mile": 45.6
+        },
+        {
+            "name": "Rt. 271 Trailhead",
+            "mile": 56.8
+        },
+        {
+            "name": "Rt. 56 Trailhead",
+            "mile": 70.0
+        }
     ],
-    campsites:[
+    "campsites": [
         {
-            name: "Pyramid Creek",
-            mile: 3.0
+            "name": "Ohiopyle Shelter Area",
+            "mile": 6.3
+        },
+        {   
+            "name": "Rt. 653 Shelter Area",
+            "mile": 18.5
         },
         {
-            name: "Devil's Dream",
-            mile: 5.2
+            "name": "Grindle Ridge Shelter Area",
+            "mile": 24.0
         },
         {
-            name: "South Puyallup River",
-            mile: 11.2
+            "name": "Rt. 31 Shelter Area",
+            "mile": 32.5
         },
         {
-            name: "Klapatche Park",
-            mile: 15.0
+            "name": "Turnpike Shelter Area",
+            "mile": 38.2
         },
         {
-            name: "North Puyallup River",
-            mile: 17.5
+            "name": "Rt. 30 Shelter Area",
+            "mile": 46.5
         },
         {
-            name: "Golden Lakes",
-            mile: 22.1
+            "name": "Rt. 271 Shelter Area",
+            "mile": 56.5
         },
         {
-            name: "South Mowich River",
-            mile: 27.9
-        },
-        {
-            name: "Mowich Lake Campground",
-            mile: 31.5
-        },
-        {
-            name: "Ipsut Creek Campground",
-            mile: 36.1
-        },
-        {
-            name: "Carbon River",
-            mile: 39.3
-        },
-        {
-            name: "Dick Creek",
-            mile: 40.5
-        },
-        {
-            name: "Mystic Camp",
-            mile: 43.9
-        },
-        {
-            name: "Granite Creek",
-            mile: 47.4
-        },
-        {
-            name: "Sunrise Camp",
-            mile: 51.7
-        },
-        {
-            name: "White River Campground",
-            mile: 55.0
-        },
-        {
-            name: "Summerland",
-            mile: 61.6
-        },
-        {
-            name: "Indian Bar",
-            mile: 65.8
-        },
-        {
-            name: "Nickle Creek",
-            mile: 72.0
-        },
-        {
-            name: "Maple Creek",
-            mile: 75.0
-        },
-        {
-            name: "Paradise River",
-            mile: 81.3
-        },
-        {
-            name: "Cougar Rock Campground",
-            mile: 83.4
+            "name": "Rt. 56 Shelter Area",
+            "mile": 64.9
         }
     ]
 }
