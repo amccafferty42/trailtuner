@@ -693,6 +693,7 @@ function setUnit(unit) {
         unitLabel1.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
         unitLabel2.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
         unitLabel3.innerHTML = unit.id === 'mi' ? 'Miles' : 'Km';
+        onDaysChange();
         for (trailhead of trail.trailheads) {
             trailhead.mile = unit.id === 'km' ? Math.round(trailhead.mile * 1.609344 * 10) / 10 : Math.round(trailhead.mile * 0.6213711922 * 10) / 10;
         }
