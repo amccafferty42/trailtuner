@@ -657,8 +657,9 @@ function reset() {
     inputCCW.disabled = trail.circuit ? false : true;
     inputCW.checked = trail.circuit ? true : false;
     inputCCW.checked = false;
-    if (trail.unit === 'mi') inputMi.click();
+    if (trail.unit === 'km') inputKm.click();
     else inputKm.click();
+    setUnitLabels(trail.unit);
     this.userSetDays = false;
     if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trail.circuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
@@ -685,24 +686,28 @@ function addOption(element, name, value) {
     element.appendChild(opt);
 }
 
+function setUnitLabels(unit) {
+    unitLabel1.innerHTML = unit === 'mi' ? 'miles' : 'km';
+    unitLabel2.innerHTML = unit === 'mi' ? 'miles' : 'km';
+    unitLabel3.innerHTML = unit === 'mi' ? 'Miles' : 'Km';
+}
+
 function setUnit(unit) {
-    if (trail.unit != unit.id) {
-        console.log('Switching unit from ' + trail.unit + ' to ' + unit.id);
-        trail.unit = unit.id;
-        trail.length = unit.id === 'km' ? Math.round(trail.length * 1.609344 * 10) / 10 : Math.round(trail.length * 0.6213711922 * 10) / 10;
-        unitLabel1.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
-        unitLabel2.innerHTML = unit.id === 'mi' ? 'miles' : 'km';
-        unitLabel3.innerHTML = unit.id === 'mi' ? 'Miles' : 'Km';
+    if (trail.unit != unit) {
+        console.log('Switching unit from ' + trail.unit + ' to ' + unit);
+        trail.unit = unit;
+        trail.length = unit === 'km' ? Math.round(trail.length * 1.609344 * 10) / 10 : Math.round(trail.length * 0.6213711922 * 10) / 10;
+        setUnitLabels(unit);
         onDaysChange();
         for (trailhead of trail.trailheads) {
-            trailhead.mile = unit.id === 'km' ? Math.round(trailhead.mile * 1.609344 * 10) / 10 : Math.round(trailhead.mile * 0.6213711922 * 10) / 10;
+            trailhead.mile = unit === 'km' ? Math.round(trailhead.mile * 1.609344 * 10) / 10 : Math.round(trailhead.mile * 0.6213711922 * 10) / 10;
         }
         for (campsite of trail.campsites) {
-            campsite.mile = unit.id === 'km' ? Math.round(campsite.mile * 1.609344 * 10) / 10 : Math.round(campsite.mile * 0.6213711922 * 10) / 10;
+            campsite.mile = unit === 'km' ? Math.round(campsite.mile * 1.609344 * 10) / 10 : Math.round(campsite.mile * 0.6213711922 * 10) / 10;
         }
         if (this.route != undefined) {
             for (day of this.route) {
-                day.miles = unit.id === 'km' ? Math.round(day.miles * 1.609344 * 10) / 10 : Math.round(day.miles * 0.6213711922 * 10) / 10;
+                day.miles = unit === 'km' ? Math.round(day.miles * 1.609344 * 10) / 10 : Math.round(day.miles * 0.6213711922 * 10) / 10;
             }
             displayRoute(this.route);
         }
