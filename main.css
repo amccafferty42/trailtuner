@@ -1,5 +1,22 @@
+.select-trail-modal {
+    text-align: center;
+}
+
+.upload-trail, .select-trail {
+    display: flex;
+}
+
+#selectTrailLabel, #uploadTrailLabel {
+    margin-right: 5%;
+}
+
 .info {
     font-size: small;
+    cursor: pointer;
+    color: rgb(99, 99, 99);
+}
+
+#change-trail {
     cursor: pointer;
 }
 

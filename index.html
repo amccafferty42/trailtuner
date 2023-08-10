@@ -8,7 +8,31 @@
         <div class="container">
             <div class="title">
                 <h1 id="title"></h1>
-                <!-- <a id="change-trail">change trail</a> -->
+                <a id="change-trail" data-toggle="modal" data-target="#changeTrail">change</a>
+                <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="select-trail-modal modal-body">
+                            <div class="select-trail">
+                                <h4 class="modal-title" id="selectTrailLabel">Select: </h4>
+                                <select id="trail" class="form-control" onChange="">
+                                    <option value="0">Unavailable</option>
+                                </select>
+                            </div>
+                            <h2><small>- OR -</small></h2>
+                            <div class="upload-trail">
+                                <h4 class="modal-title" id="uploadTrailLabel">Upload: </h4>
+                                <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
+                            </div>
+                            <div id="content-target"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()">Select</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 <div class="distance-unit btn-group" data-toggle="buttons">
                     <label class="btn btn-default active">
                         <input type="radio" name="unit" id="mi" onChange="setUnit(this.id)" checked> mi
@@ -162,6 +186,7 @@
         </table>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>    </body>
-        <script src="lhht.js"></script>
+        <script src="trail.js"></script>
+        <script src="route.js"></script>
     </body>
 </html>
