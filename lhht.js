@@ -1,7 +1,7 @@
 let route;
 let isPositiveDirection;
 let userSetDays = false;
-const trail1 = {
+const trail = {
     name: 'Laurel Highlands Hiking Trail',
     length: 70,
     unit: 'mi',
@@ -67,7 +67,7 @@ const trail1 = {
         }
     ]
 }
-const trail = {
+const trail1 = {
     name: 'Wonderland Trail',
     length: 84.7,
     unit: 'mi',

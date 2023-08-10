@@ -1,3 +1,8 @@
+.info {
+    font-size: small;
+    cursor: pointer;
+}
+
 .lightgray {
     color: lightgray !important;
 }
