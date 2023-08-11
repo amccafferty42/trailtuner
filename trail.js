@@ -8,61 +8,61 @@ let trail = {
     "trailheads": [
         {
             "name": "Rt. 381 Trailhead",
-            "mile": 0.0
+            "distance": 0.0
         },
         {
             "name": "Rt. 653 Trailhead",
-            "mile": 18.9
+            "distance": 18.9
         },
         {
             "name": "Rt. 31 Trailhead",
-            "mile": 30.9
+            "distance": 30.9
         },
         {
             "name": "Rt. 30 Trailhead",
-            "mile": 45.6
+            "distance": 45.6
         },
         {
             "name": "Rt. 271 Trailhead",
-            "mile": 56.8
+            "distance": 56.8
         },
         {
             "name": "Rt. 56 Trailhead",
-            "mile": 70.0
+            "distance": 70.0
         }
     ],
     "campsites": [
         {
             "name": "Ohiopyle Shelter Area",
-            "mile": 6.3
+            "distance": 6.3
         },
         {   
             "name": "Rt. 653 Shelter Area",
-            "mile": 18.5
+            "distance": 18.5
         },
         {
             "name": "Grindle Ridge Shelter Area",
-            "mile": 24.0
+            "distance": 24.0
         },
         {
             "name": "Rt. 31 Shelter Area",
-            "mile": 32.5
+            "distance": 32.5
         },
         {
             "name": "Turnpike Shelter Area",
-            "mile": 38.2
+            "distance": 38.2
         },
         {
             "name": "Rt. 30 Shelter Area",
-            "mile": 46.5
+            "distance": 46.5
         },
         {
             "name": "Rt. 271 Shelter Area",
-            "mile": 56.5
+            "distance": 56.5
         },
         {
             "name": "Rt. 56 Shelter Area",
-            "mile": 64.9
+            "distance": 64.9
         }
     ]
 }
@@ -109,9 +109,9 @@ function validJson(file) {
         if (!trail.unit || (trail.unit !== 'mi' && trail.unit !== 'km')) return false;
         if (typeof trail.circuit != "boolean") return false;
         if (!trail.campsites || trail.campsites.length < 1 || trail.campsites > 99) return false;
-        if (!trail.trailheads || trail.trailheads.length < 2 || trail.trailheads.length > 99 || trail.trailheads[0].mile != 0 || (!trail.circuit && trail.trailheads[trail.trailheads.length - 1].mile != trail.length)) return false;
-        for (campsite of trail.campsites) if (!campsite.name || typeof campsite.name != "string" || campsite.name == '' || campsite.name.length > 50 || typeof campsite.mile != "number" || campsite.mile < 0 || campsite.mile > 999) return false;
-        for (trailhead of trail.trailheads) if (!trailhead.name || typeof trailhead.name != "string" || trailhead.name == '' || trailhead.name.length > 50 || typeof trailhead.mile != "number" || trailhead.mile < 0 || trailhead.mile > 999) return false;
+        if (!trail.trailheads || trail.trailheads.length < 2 || trail.trailheads.length > 99 || trail.trailheads[0].distance != 0 || (!trail.circuit && trail.trailheads[trail.trailheads.length - 1].distance != trail.length)) return false;
+        for (campsite of trail.campsites) if (!campsite.name || typeof campsite.name != "string" || campsite.name == '' || campsite.name.length > 50 || typeof campsite.distance != "number" || campsite.distance < 0 || campsite.distance > 999) return false;
+        for (trailhead of trail.trailheads) if (!trailhead.name || typeof trailhead.name != "string" || trailhead.name == '' || trailhead.name.length > 50 || typeof trailhead.distance != "number" || trailhead.distance < 0 || trailhead.distance > 999) return false;
         return trail;
     } catch (e) {
         console.error(e);

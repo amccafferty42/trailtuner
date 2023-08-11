@@ -6,21 +6,21 @@
     "trailheads": [
         {
             "name": "",
-            "mile": 0.0
+            "distance": 0.0
         },
         {
             "name": "",
-            "mile": 0.0
+            "distance": 0.0
         }
     ],
     "campsites": [
         {
             "name": "",
-            "mile": 0.0
+            "distance": 0.0
         },
         {
             "name": "",
-            "mile": 0.0
+            "distance": 0.0
         }
     ]
 }
