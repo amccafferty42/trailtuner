@@ -6,6 +6,12 @@
     text-align: left;
 }
 
+#json-template {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+}
+
 .download-template {
     margin-left:auto;
 }
@@ -16,6 +22,7 @@
 
 .upload-trail, .select-trail {
     display: flex;
+    flex-direction: column;
 }
 
 #selectTrailLabel, #uploadTrailLabel {

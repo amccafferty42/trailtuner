@@ -22,8 +22,9 @@
                             <!-- <h2><small>- OR -</small></h2> -->
                             <h2>Upload Trail</h2>
                             <div class="template">
-                                <h4 id="uploadTrailLabel">&nbsp;Template: </h4>
-                                <pre id="json-template"></pre>
+                                <!-- <h4 id="uploadTrailLabel">&nbsp;Template: </h4> -->
+                                <!-- <pre id="json-template"><textarea></textarea></pre> -->
+                                <textarea id="json-template" cols=50 rows=30></textarea>
                             </div>
                             <br>
                             <div class="upload">
@@ -31,6 +32,7 @@
                                     <!-- <span class="info glyphicon glyphicon-info-sign"></span> -->
                                     <!-- <h4 class="modal-title" id="uploadTrailLabel">&nbsp;Upload: </h4> -->
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
+                                    <p></p>
                                 </div>
                                 <div class="download-template">
                                     <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()">Upload</button>
