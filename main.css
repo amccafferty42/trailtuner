@@ -1,3 +1,11 @@
+.upload {
+    display: flex;
+}
+
+.download-template {
+    margin-left:auto;
+}
+
 .select-trail-modal {
     text-align: center;
 }

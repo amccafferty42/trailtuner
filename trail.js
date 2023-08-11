@@ -85,6 +85,7 @@ function setNewTrail(file) {
         console.log("Successfully validated " + trail.name);
         this.newTrail = trail;
     } else {
+        console.log("Failed");
         this.newTrail = undefined;
     }
 }
@@ -107,6 +108,10 @@ function validJson(file) {
         if (!trail.length || typeof trail.length != "number" || trail.length < 1 || trail.length > 999) return false;
         if (!trail.unit || (trail.unit !== 'mi' && trail.unit !== 'km')) return false;
         if (typeof trail.circuit != "boolean") return false;
+        if (!trail.campsites || trail.campsites.length < 1 || trail.campsites > 99) return false;
+        if (!trail.trailheads || trail.trailheads.length < 2 || trail.trailheads.length > 99 || trail.trailheads[0].mile != 0 || (!trail.circuit && trail.trailheads[trail.trailheads.length - 1].mile != trail.length)) return false;
+        for (campsite of trail.campsites) if (!campsite.name || typeof campsite.name != "string" || campsite.name == '' || campsite.name.length > 50 || typeof campsite.mile != "number" || campsite.mile < 0 || campsite.mile > 999) return false;
+        for (trailhead of trail.trailheads) if (!trailhead.name || typeof trailhead.name != "string" || trailhead.name == '' || trailhead.name.length > 50 || typeof trailhead.mile != "number" || trailhead.mile < 0 || trailhead.mile > 999) return false;
         return trail;
     } catch (e) {
         console.error(e);

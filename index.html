@@ -20,9 +20,14 @@
                                 </select>
                             </div>
                             <h2><small>- OR -</small></h2>
-                            <div class="upload-trail">
-                                <h4 class="modal-title" id="uploadTrailLabel">Upload: </h4>
-                                <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
+                            <div class="upload">
+                                <div class="upload-trail">
+                                    <h4 class="modal-title" id="uploadTrailLabel">Upload: </h4>
+                                    <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
+                                </div>
+                                <div class="download-template">
+                                    <a href="/template.json" download>Download JSON Template&nbsp;</a><span class="info glyphicon glyphicon-info-sign"></span>
+                                </div>
                             </div>
                             <div id="content-target"></div>
                         </div>
@@ -58,26 +63,26 @@
                             <br>
                             <h4 class="modal-title" id="myModalLabel">Generate Route</h4>
                             <br>
+                            Change the unit of distance to <b>mi</b> or <b>km</b> by switching the toggle in the upper right corner.
+                            <br>
+                            <br>
                             Select the <b>Start</b> and <b>End Trailheads</b> from the dropdown lists, or let the tool select them for you by selecting <b>No Preference</b> at the top of each list.
                             <br>
                             <br>
                             Set <b>Days</b> and/or <b>Distance / Day</b> by typing the desired number in the input field. If you previously selected both a start and an end trailhead, then only one of these fields is applicable. Otherwise, you can set both. You can also opt to defer these fields by setting the value to "0". If neither are set, the tool defaults to a random ranged distance / day.
                             <br>
                             <br>
-                            You can set the <b>Start Date</b> to the day the route will begin by clicking on the calendar.
+                            Set the <b>Start Date</b> when route will begin by clicking on the calendar.
                             <br>
                             <br>
-                            If the trail is a loop, radio buttons denoting the <b>Loop Direction</b> will be enabled. These inputs determine which direction your route will travel around the loop, either <b>Clockwise (CW)</b> or <b>Counter-clockwise (CCW)</b>.
+                            If the trail is a loop, radio buttons labeled <b>Loop Direction</b> will be enabled. These inputs determine which direction your route will travel around the loop, either <b>Clockwise (CW)</b> or <b>Counter-clockwise (CCW)</b>.
                             <br>
                             <br>
                             The <b>Short hike-in</b> and <b>Short hike-out</b> checkboxes will force the resulting route to include a short day at the beginning or end of the route respectively. If <b>Short hike-in</b> is checked, the first night will always end at the first possible destination leading away from the start trailhead.
                             Likewise for <b>Short hike-out</b>, the final night will always be the last possible destination before reaching the end trailhead. The remaining days will still be generated according to normal inputs. These checkboxes are useful if, for example, you are starting your route late on a Friday after work and you do not have the entire day available.
                             <br>
                             <br>
-                            Change the unit of distance to <b>mi</b> or <b>km</b> by switching the toggle in the upper right corner.
-                            <br>
-                            <br>
-                            When you are finished, click <b>Generate Route</b> to view your optimized itinerary. The distance of each day will be as close to equal length as possible. Keep in mind, due to the unpredictable and irregular spacing of destinations, <b>distance / day</b> is generally only used as a guideline. The resulting itinerary will rarely align exactly, but you can rest assured that it will be as close to the provided number as statisically possible.  
+                            When you are finished, click <b>Generate Route</b> to view your optimized itinerary. The distance of each day will be as consitent as possible. Keep in mind that due to unpredictable and irregular spacing of destinations, the resulting itinerary will rarely be "perfect". <b>Days</b> will always match (if set), but <b>Distance / Day</b> is simply used as a guideline to select the closest option. Rest assured that your route will be as similar to the provided input as statisically possible.  
                             <br>
                             <br>
                             Click <b>Reset</b> to clear the generated route and reset the inputs back to their default values.
