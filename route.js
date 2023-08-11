@@ -21,9 +21,11 @@ const unitLabel1 = document.getElementById('unit1');
 const unitLabel2 = document.getElementById('unit2');
 const unitLabel3 = document.getElementById('unit3');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
+const jsonTemplate = document.getElementById('json-template');
 
 reset();
 appendPos();
+jsonTemplate.innerHTML = JSON.stringify(template, null, 2);
 
 function plan() {
     if (validateForm()) {

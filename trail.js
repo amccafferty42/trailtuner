@@ -1,5 +1,31 @@
 const file = document.getElementById('trailFile');
 let newTrail;
+const template = {
+    "name": "Example Trail",
+    "length": 30.0,
+    "unit": "mi",
+    "circuit": false,
+    "trailheads": [
+        {
+            "name": "First Trailhead",
+            "distance": 0.0
+        },
+        {
+            "name": "Second Trailhead",
+            "distance": 30.0
+        }
+    ],
+    "campsites": [
+        {
+            "name": "First Campground",
+            "distance": 10.0
+        },
+        {
+            "name": "Second Campground",
+            "distance": 20.0
+        }
+    ]
+};
 let trail = {
     "name": "Laurel Highlands Hiking Trail",
     "length": 70,

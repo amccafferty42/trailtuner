@@ -2,6 +2,10 @@
     display: flex;
 }
 
+.template {
+    text-align: left;
+}
+
 .download-template {
     margin-left:auto;
 }

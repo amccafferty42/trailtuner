@@ -13,27 +13,31 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
                         <div class="select-trail-modal modal-body">
-                            <div class="select-trail">
+                            <!-- <div class="select-trail">
                                 <h4 class="modal-title" id="selectTrailLabel">Select: </h4>
                                 <select id="trail" class="form-control" onChange="">
                                     <option value="0">Unavailable</option>
                                 </select>
+                            </div> -->
+                            <!-- <h2><small>- OR -</small></h2> -->
+                            <h2>Upload Trail</h2>
+                            <div class="template">
+                                <h4 id="uploadTrailLabel">&nbsp;Template: </h4>
+                                <pre id="json-template"></pre>
                             </div>
-                            <h2><small>- OR -</small></h2>
+                            <br>
                             <div class="upload">
                                 <div class="upload-trail">
-                                    <h4 class="modal-title" id="uploadTrailLabel">Upload: </h4>
+                                    <!-- <span class="info glyphicon glyphicon-info-sign"></span> -->
+                                    <!-- <h4 class="modal-title" id="uploadTrailLabel">&nbsp;Upload: </h4> -->
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
                                 </div>
                                 <div class="download-template">
-                                    <a href="/template.json" download>Download JSON Template&nbsp;</a><span class="info glyphicon glyphicon-info-sign"></span>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()">Upload</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                                    <!-- <a href="/template.json" download>Download JSON Template&nbsp;</a><span class="info glyphicon glyphicon-info-sign"></span> -->
                                 </div>
                             </div>
-                            <div id="content-target"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()">Select</button>
-                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
                         </div>
                       </div>
                     </div>
