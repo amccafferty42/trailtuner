@@ -1,17 +1,27 @@
 .upload {
     display: flex;
+    flex-direction: column;
+}
+
+#submit-trail-btn, #reset-trail-btn{
+    margin: 5px;
+}
+
+.upload-btns, #choose-file, .submit-btns {
+    display: flex;
+    margin-top: 2%;
+    margin-right: auto;
 }
 
 #validJson {
-    align-self: flex-start;
-}
-
-#upload-trail-btn {
-
+    margin-top: auto;
+    margin-bottom: auto;
+    font-weight: 100;
+    color: red;
 }
 
 #submit-trail-btn {
-    
+
 }
 
 .template {
@@ -22,10 +32,6 @@
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-}
-
-.download-template {
-    margin-left:auto;
 }
 
 .select-trail-modal {

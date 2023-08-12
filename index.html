@@ -19,27 +19,30 @@
                                     <option value="0">Unavailable</option>
                                 </select>
                             </div> -->
-                            <h2>Upload Trail</h2>
+                            <div class="modal-header">
+                                <h2 class="modal-title">Change Trail</h2>
+                            </div>
                             <div class="upload">
                                 <div class="upload-trail">
-                                    <!-- <span class="info glyphicon glyphicon-info-sign"></span> -->
-                                    <!-- <h4 class="modal-title" id="uploadTrailLabel">&nbsp;Upload: </h4> -->
+                                    <h4 id="choose-file">Upload file: </h4>
+
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
-                                    <p id="validJson"></p>
                                 </div>
-                                <div class="download-template">
-                                    <button id="upload-trail-btn" type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()" disabled>Upload</button>
-                                    <!-- <a href="/template.json" download>Download JSON Template&nbsp;</a><span class="info glyphicon glyphicon-info-sign"></span> -->
-                                </div>
+                                <div class="upload-btns">
+                                    <!-- <button type="button" class="btn btn-primary" id="upload-trail-btn" data-dismiss="modal" onclick="changeTrail()">Upload</button> -->
+                                    <span id="validJson"></span>
+                                </div>                                
                             </div>
                             <h2><small>- OR -</small></h2>
                             <br>
                             <div class="template">
-                                <!-- <h4 id="uploadTrailLabel">&nbsp;Template: </h4> -->
-                                <!-- <pre id="json-template"><textarea></textarea></pre> -->
-                                <textarea id="json-template" cols=50 rows=30></textarea>
+                                <h4>Fill out template: </h4>
+                                <textarea id="json-template" cols=50 rows=26></textarea>
                                 <br>
-                                <button id="submit-trail-btn" type="button" class="btn btn-primary" data-dismiss="modal" onclick="changeTrail()" disabled>Submit</button>
+                                <div class="submit-btns">
+                                    <button id="submit-trail-btn" type="button" class="btn btn-primary" onclick="submitTrail()">Submit</button>
+                                    <button id="reset-trail-btn" type="button" class="btn btn-secondary" onclick="resetTemplate()">Reset</button>      
+                                </div>
                             </div>
                         </div>
                       </div>
