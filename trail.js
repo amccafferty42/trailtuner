@@ -1,4 +1,7 @@
 const file = document.getElementById('trailFile');
+const validJsonLabel = document.getElementById('validJson');
+const uploadTrailBtn = document.getElementById('upload-trail-btn');
+
 let newTrail;
 const template = {
     "name": "Example Trail",
@@ -108,10 +111,11 @@ function readFile(input) {
 function setNewTrail(file) {
     const trail = validJson(file);
     if (trail) {
+        validJsonLabel.innerHTML = '<i>' + trail.name + '</i>';
         console.log("Successfully validated " + trail.name);
         this.newTrail = trail;
     } else {
-        console.log("Failed");
+        validJsonLabel.innerHTML = "Invalid";
         this.newTrail = undefined;
     }
 }
@@ -138,9 +142,11 @@ function validJson(file) {
         if (!trail.trailheads || trail.trailheads.length < 2 || trail.trailheads.length > 99 || trail.trailheads[0].distance != 0 || (!trail.circuit && trail.trailheads[trail.trailheads.length - 1].distance != trail.length)) return false;
         for (campsite of trail.campsites) if (!campsite.name || typeof campsite.name != "string" || campsite.name == '' || campsite.name.length > 50 || typeof campsite.distance != "number" || campsite.distance < 0 || campsite.distance > 999) return false;
         for (trailhead of trail.trailheads) if (!trailhead.name || typeof trailhead.name != "string" || trailhead.name == '' || trailhead.name.length > 50 || typeof trailhead.distance != "number" || trailhead.distance < 0 || trailhead.distance > 999) return false;
+        uploadTrailBtn.disabled = false;
         return trail;
     } catch (e) {
         console.error(e);
     }
+    uploadTrailBtn.disabled = true;
     return false;
 }

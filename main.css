@@ -2,6 +2,18 @@
     display: flex;
 }
 
+#validJson {
+    align-self: flex-start;
+}
+
+#upload-trail-btn {
+
+}
+
+#submit-trail-btn {
+    
+}
+
 .template {
     text-align: left;
 }

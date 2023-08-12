@@ -363,7 +363,7 @@ function changeCamp(dayIndex, isNext) {
     displayRoute(this.route);
 }
 
-function onMilesPerDayChange() {
+function onDistancePerDayChange() {
     if ((inputDays.value == "" || inputDays.value == 0) && (inputDistance.value == 0 || inputDistance.value == "")) {
         inputDistance.placeholder = trail.unit === 'mi' ? "Using 10-20 Mile Range" : "Using 16-32 Km Range";
         inputDistance.value = "";
@@ -392,7 +392,7 @@ function onDaysChange() {
             inputDistance.value = "";
         }
     }
-    onMilesPerDayChange();
+    onDistancePerDayChange();
 }
 
 function onTrailheadsChange() {
@@ -531,6 +531,7 @@ function setUnit(unit) {
         trail.length = unit === 'km' ? Math.round(trail.length * 1.609344 * 10) / 10 : Math.round(trail.length * 0.6213711922 * 10) / 10;
         setUnitLabels(unit);
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
+        if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
         for (trailhead of trail.trailheads) {
             trailhead.distance = unit === 'km' ? Math.round(trailhead.distance * 1.609344 * 10) / 10 : Math.round(trailhead.distance * 0.6213711922 * 10) / 10;
         }
