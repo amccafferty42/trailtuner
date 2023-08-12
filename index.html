@@ -12,20 +12,24 @@
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title change-trail-title">Change Trail</h4>
+                        </div>
                         <div class="select-trail-modal modal-body">
-                            <!-- <div class="select-trail">
-                                <h4 class="modal-title" id="selectTrailLabel">Select: </h4>
-                                <select id="trail" class="form-control" onChange="">
-                                    <option value="0">Unavailable</option>
-                                </select>
-                            </div> -->
-                            <div class="modal-header">
-                                <h2 class="modal-title">Change Trail</h2>
-                            </div>
+                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in the specified JSON format. All fields are required:</p>
+                            <ul class="select-trail-desc">
+                                <li><b>"name"</b>: trail name</li> 
+                                <li><b>"length"</b>: trail length in the specified distance unit</li> 
+                                <li><b>"unit"</b>: <b>"mi"</b> or <b>"km"</b></li> 
+                                <li><b>"circuit"</b>: <b>true</b> if trail forms a loop, <b>false</b> otherwise</li> 
+                                <li><b>"trailheads"</b>: list of trailheads ordered by <b>distance</b></li>
+                                <li><b>"campsites"</b>: list of campsites ordered by <b>distance</b></li> 
+                                <li><b>"name"</b> of trailheads and campsites</li>
+                                <li><b>"distance"</b> of trailheads and campsites refers to their distance from <b>0</b></li>
+                            </ul>
                             <div class="upload">
                                 <div class="upload-trail">
                                     <h4 id="choose-file">Upload file: </h4>
-
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
                                 </div>
                                 <div class="upload-btns">
@@ -73,7 +77,7 @@
                             <br>
                             <h4 class="modal-title" id="myModalLabel">Generate Route</h4>
                             <br>
-                            Change the unit of distance to <b>mi</b> or <b>km</b> by switching the toggle in the upper right corner.
+                            Change the unit of distance to <b>mi</b> or <b>km</b> by switching the toggle in the upper right corner. Note: this does not simply switch the labels, it converts all <i>values</i> to the new unit.
                             <br>
                             <br>
                             Select the <b>Start</b> and <b>End Trailheads</b> from the dropdown lists, or let the tool select them for you by selecting <b>No Preference</b> at the top of each list.

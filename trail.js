@@ -98,8 +98,10 @@ const file = document.getElementById('trailFile');
 const uploadTrailBtn = document.getElementById('upload-trail-btn');
 const validJsonLabel = document.getElementById('validJson');
 const jsonTemplate = document.getElementById('json-template');
+//const jsonInfo = document.getElementById('json-info');
 
 jsonTemplate.innerHTML = JSON.stringify(template, null, 2);
+//jsonInfo.innerHTML = JSON.stringify(template, null, 2);
 
 function readFile(input) {
     let file = input.files[0];

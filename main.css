@@ -13,6 +13,10 @@
     margin-right: auto;
 }
 
+.change-trail-title, .select-trail-desc {
+    text-align: left;
+}
+
 #validJson {
     margin-top: auto;
     margin-bottom: auto;
@@ -25,6 +29,10 @@
 }
 
 .template {
+    text-align: left;
+}
+
+#json-info {
     text-align: left;
 }
 
@@ -51,6 +59,11 @@
     font-size: small;
     cursor: pointer;
     color: rgb(99, 99, 99);
+}
+
+.change-trail-info {
+    font-size: medium;
+    cursor: pointer;
 }
 
 #change-trail {

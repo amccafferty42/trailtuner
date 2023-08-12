@@ -494,7 +494,7 @@ function reset() {
     if (!trail.circuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trail.circuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
-    title.scrollIntoView({behavior: 'smooth'});
+    window.scrollTo(0, 0);
 }
 
 function appendPos() {
