@@ -1,3 +1,5 @@
+#map { height: 500px; }
+
 .upload {
     display: flex;
     flex-direction: column;

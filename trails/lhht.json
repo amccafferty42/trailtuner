@@ -1,0 +1,66 @@
+{
+    "name": "Laurel Highlands Hiking Trail",
+    "length": 70,
+    "unit": "mi",
+    "circuit": false,
+    "trailheads": [
+        {
+            "name": "Rt. 381 Trailhead",
+            "distance": 0.0
+        },
+        {
+            "name": "Rt. 653 Trailhead",
+            "distance": 18.9
+        },
+        {
+            "name": "Rt. 31 Trailhead",
+            "distance": 30.9
+        },
+        {
+            "name": "Rt. 30 Trailhead",
+            "distance": 45.6
+        },
+        {
+            "name": "Rt. 271 Trailhead",
+            "distance": 56.8
+        },
+        {
+            "name": "Rt. 56 Trailhead",
+            "distance": 70.0
+        }
+    ],
+    "campsites": [
+        {
+            "name": "Ohiopyle Shelter Area",
+            "distance": 6.3
+        },
+        {   
+            "name": "Rt. 653 Shelter Area",
+            "distance": 18.5
+        },
+        {
+            "name": "Grindle Ridge Shelter Area",
+            "distance": 24.0
+        },
+        {
+            "name": "Rt. 31 Shelter Area",
+            "distance": 32.5
+        },
+        {
+            "name": "Turnpike Shelter Area",
+            "distance": 38.2
+        },
+        {
+            "name": "Rt. 30 Shelter Area",
+            "distance": 46.5
+        },
+        {
+            "name": "Rt. 271 Shelter Area",
+            "distance": 56.5
+        },
+        {
+            "name": "Rt. 56 Shelter Area",
+            "distance": 64.9
+        }
+    ]
+}

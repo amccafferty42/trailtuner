@@ -11,6 +11,32 @@ let trailheadFeatures = [];
 
 setTrailDetails(trail);
 
+var campsiteIcon = L.icon({
+    iconUrl: 'resources/tent.jpg',
+    iconSize: [38, 95],
+    iconAnchor: [22, 94],
+    popupAnchor: [-3, -76],
+});
+
+let map = L.map('map').setView([40.17348, -79.11969], 10);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+for (feature of trail.features) {
+    if (feature.geometry && feature.properties.folderId != campsiteFolder.id) {
+        //if (feature.properties.folderId == campsiteFolder.id)
+        L.geoJSON(feature, {
+            onEachFeature: onEachFeature
+        }).addTo(map);
+    }
+}
+
+function onEachFeature(feature, layer) {
+    if (feature.properties && feature.properties.title) {
+        layer.bindTooltip(feature.properties.title);
+    }
+}
+
 function setTrailDetails(trail) {
     for (feature of trail.features) {
         if (feature.geometry && feature.geometry.type === "LineString") {
