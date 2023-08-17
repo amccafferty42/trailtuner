@@ -432,8 +432,12 @@ function displayRoute(route) {
     }
     table.style.visibility = 'visible';
     table.scrollIntoView({behavior: 'smooth'});
+
+    updateGeoJSON();
+
     console.log(route);
 }
+
 
 // Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
 function closerCampBtn(day, route) {

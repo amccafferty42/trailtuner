@@ -4,7 +4,7 @@ let campsiteIcon = L.icon({
     iconAnchor: [15, 15]
 });
 
-function exportGeoJSON() {
+function updateGeoJSON() {
     let exportedRoute = {
         features: [trailheadFolder, campsiteFolder],
         "type": "FeatureCollection"
@@ -69,7 +69,8 @@ function exportGeoJSON() {
             if (layer.feature.properties && layer.feature.properties.folderId == campsiteFolder.id) layer.setIcon(campsiteIcon);
         } else if (layer.feature.geometry.type == "LineString") {
             //layer.bindPopup();
-            if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 1) layer.setStyle({color :'red'});
+            if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'red'});
+            //else layer.setStyle({color :'black'});
         }
     });
 

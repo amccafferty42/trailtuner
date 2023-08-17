@@ -185,35 +185,35 @@
             <br>
             <div class="row">
                 <div class="col-md-12"> 
-                    <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
+                    <button class="btn btn-warning btn-lg btn-block" type="button" onclick="updateGeoJSON()">Export Route</button>
                 </div>
             </div>
-            <br>
-            <div id="map"></div>
             <br>
             <div class="row">
                 <div class="col-md-12"> 
-                    <button class="btn btn-warning btn-lg btn-block" type="button" onclick="exportGeoJSON()">Export to GeoJSON</button>
+                    <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
                 </div>
             </div>
+
+            <br>
+            <table class="table route-table table-striped" id="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th style="width: 3%" scope="col">#</th>
+                    <th style="width: 10%" scope="col">Date</th>
+                    <th style="width: 17%" scope="col">Origin</th>
+                    <th style="width: 17%" scope="col">Destination</th>
+                    <th class="right" style="width: 8%" scope="col">Daily</th>
+                    <th class="right" style="width: 8%" scope="col">Total</th>
+                    <th class="center" style="width: 37%" scope="col" colspan="2">Modify Destination</th>
+                </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+            <br>
+            <div id="map"></div>
         </div>
-        <br>
-        <br>
-        <table class="table route-table table-striped" id="table">
-            <thead class="thead-dark">
-              <tr>
-                <th style="width: 3%" scope="col">#</th>
-                <th style="width: 10%" scope="col">Date</th>
-                <th style="width: 17%" scope="col">Origin</th>
-                <th style="width: 17%" scope="col">Destination</th>
-                <th class="right" style="width: 8%" scope="col">Daily</th>
-                <th class="right" style="width: 8%" scope="col">Total</th>
-                <th class="center" style="width: 37%" scope="col" colspan="2">Modify Destination</th>
-              </tr>
-            </thead>
-            <tbody id="table-body">
-            </tbody>
-        </table>
         <!-- <div class="container">
             <div class="row">
                 <div class="col-md-12"> 
