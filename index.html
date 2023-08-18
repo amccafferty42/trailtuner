@@ -162,10 +162,8 @@
                     <input type="number" min="0" max="99" value="" placeholder="Use Days" onChange="onDistancePerDayChange()" name="distance" id="distance" class="form-control">
                 </div>
                 <div class="col-sm-2">
-                    <hr id="break">
-
                     <div id="loop-direction-form" class="form-check">
-                        <label class="loop-direction form-check-label" title="Select which direction to travel around loop"><h2><small><strong class="loop-direction-label">Loop Direction</strong></small></h2></label>
+                        <label class="loop-direction form-check-label" title="Select which direction to travel around loop"><h2 class="loop-direction"><small><strong class="loop-direction-label">Loop Direction</strong></small></h2></label>
                         <br>
                         <input class="form-check-input" type="radio" name="direction" id="cw" value="cw" title="Clockwise" onChange="onTrailheadsChange()" disabled>
                         <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;CW<strong>&nbsp;↻</strong></small></h2></label>
@@ -194,8 +192,6 @@
                     <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
                 </div>
             </div>
-
-            <br>
             <table class="table route-table table-striped" id="table">
                 <thead class="thead-dark">
                 <tr>
@@ -211,7 +207,6 @@
                 <tbody id="table-body">
                 </tbody>
             </table>
-            <br>
             <div id="map"></div>
         </div>
         <!-- <div class="container">

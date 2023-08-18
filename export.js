@@ -31,7 +31,7 @@ function updateGeoJSON() {
         "type": "Feature"
     }
     let j = 0;
-    for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
+    for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[0].start.geometry.coordinates[0].toFixed(3)
         &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[0].start.geometry.coordinates[1].toFixed(3)) {
             do {
@@ -68,9 +68,9 @@ function updateGeoJSON() {
             layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
             if (layer.feature.properties && layer.feature.properties.folderId == campsiteFolder.id) layer.setIcon(campsiteIcon);
         } else if (layer.feature.geometry.type == "LineString") {
-            //layer.bindPopup();
+            layer.bindPopup('Start: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].start.properties.title + '<br>End: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].end.properties.title + '<br>Length: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].length + ' ' + trailUnit);
+            layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
             if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'red'});
-            //else layer.setStyle({color :'black'});
         }
     });
 

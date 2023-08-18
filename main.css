@@ -1,4 +1,10 @@
-#map { height: 500px; }
+#map { 
+    height: 500px; 
+}
+
+.loop-direction {
+    margin: 0;
+}
 
 .upload {
     display: flex;
@@ -105,9 +111,6 @@
     margin: 0;
 }
 
-.loop-direction {
-    margin: 2%;
-}
 
 .half-day-label {
     max-height: 1.5em;
