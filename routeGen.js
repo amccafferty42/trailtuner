@@ -431,7 +431,7 @@ function displayRoute(route) {
         cell8.innerHTML = furtherCampBtn(route[i], route);
     }
     table.style.visibility = 'visible';
-    table.scrollIntoView({behavior: 'smooth'});
+    //table.scrollIntoView({behavior: 'smooth'});
 
     updateGeoJSON();
 
