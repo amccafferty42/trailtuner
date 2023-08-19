@@ -27,10 +27,6 @@ function updateGeoJSON() {
         "type": "Feature"
     }
     let j = 0;
-    if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && this.route.length > 1 && j == 0) {
-        fullRoute.geometry.coordinates = trailFeature.geometry.coordinates;
-        dayRoute.geometry.coordinates = trailFeature.geometry.coordinates;       
-    }
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[0].start.geometry.coordinates[0].toFixed(3)
         &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[0].start.geometry.coordinates[1].toFixed(3)) {
@@ -39,9 +35,10 @@ function updateGeoJSON() {
                 if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[j].end.geometry.coordinates[0].toFixed(3)
                 &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)) { 
                     dayRoute.properties.title = "Day " + (j + 1);
-                    j++;
                     exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
                     dayRoute.geometry.coordinates = [];
+                    dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
+                    j++;
                 }
                 fullRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
                 i = this.isPositiveDirection ? i + 1 : i - 1;
@@ -51,9 +48,18 @@ function updateGeoJSON() {
                    || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
                    //|| (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length <= 5));    //lazy fix for circuits not forming due to start == end       
                    || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && this.route.length > 1 && j == 0)); //solves case where full circuit will not build line because start == end
-           break;
+            if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end) {
+                dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[0]);
+                fullRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[0]);
+            }
+            //        i = this.isPositiveDirection ? i + 1 : i - 1;
+            // if (i < 0) i = trailFeature.geometry.coordinates.length - 1;
+            // if (i >= trailFeature.geometry.coordinates.length) i = 0;
+            // dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
+            // fullRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);    
+            break;
         }
-    }
+    }                    
     fullRoute.properties.title = "Full Route";
     dayRoute.properties.title = "Day " + (j + 1);
     exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
