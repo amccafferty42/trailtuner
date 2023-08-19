@@ -27,6 +27,10 @@ function updateGeoJSON() {
         "type": "Feature"
     }
     let j = 0;
+    if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && this.route.length > 1 && j == 0) {
+        fullRoute.geometry.coordinates = trailFeature.geometry.coordinates;
+        dayRoute.geometry.coordinates = trailFeature.geometry.coordinates;       
+    }
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[0].start.geometry.coordinates[0].toFixed(3)
         &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[0].start.geometry.coordinates[1].toFixed(3)) {
@@ -45,8 +49,9 @@ function updateGeoJSON() {
                 if (i >= trailFeature.geometry.coordinates.length) i = 0;
             } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
                    || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
-                   || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length <= 5));    //lazy fix for circuits not forming due to start == end       
-            break;
+                   //|| (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length <= 5));    //lazy fix for circuits not forming due to start == end       
+                   || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && this.route.length > 1 && j == 0)); //solves case where full circuit will not build line because start == end
+           break;
         }
     }
     fullRoute.properties.title = "Full Route";
