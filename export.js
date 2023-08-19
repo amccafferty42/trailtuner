@@ -19,7 +19,7 @@ function updateGeoJSON() {
 
     // Add trailheads and campsites
     for (let day of this.route) exportedRoute.features.push(day.start);
-    exportedRoute.features.push(this.route[this.route.length - 1].end);
+    if(this.route[0].start != this.route[this.route.length - 1].end) exportedRoute.features.push(this.route[this.route.length - 1].end);
 
     let fullRoute = {
         "geometry": {
@@ -55,7 +55,8 @@ function updateGeoJSON() {
                 if (i < 0) i = trailFeature.geometry.coordinates.length - 1;
                 if (i >= trailFeature.geometry.coordinates.length) i = 0;
             } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
-                   || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)));          
+                   || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
+                   || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length <= 5));    //lazy fix for circuits not forming due to start == end       
             break;
         }
     }

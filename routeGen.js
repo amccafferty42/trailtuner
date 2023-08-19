@@ -208,6 +208,7 @@ function getNextCampsite(campsite) {
 // Return list of all campsites between a start and end distance (includes wrapping around a circuit)
 function getAllCampsites(startDistance, endDistance) {
     let campsites = [];
+    if (trailCircuit && startDistance == endDistance) return campsiteFeatures;
     if (this.isPositiveDirection) {
         for (let i = 0; i < campsiteFeatures.length; i++) {
             if ((startDistance >= endDistance && (campsiteFeatures[i].properties.distance > startDistance || campsiteFeatures[i].properties.distance < endDistance)) || (startDistance < endDistance && (campsiteFeatures[i].properties.distance > startDistance && campsiteFeatures[i].properties.distance < endDistance))) campsites.push(campsiteFeatures[i]);
@@ -238,6 +239,7 @@ function getDirection(start, end) {
 // Generate a subset of all possible campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
     let allPossibleCampsites = getAllCampsites(start.properties.distance, end.properties.distance);
+    console.log(allPossibleCampsites);
     if (allPossibleCampsites.length < days) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
         return buildRoute(start, end, allPossibleCampsites, days, startDate);
@@ -497,6 +499,7 @@ function reset() {
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
+    resetMap();
     window.scrollTo(0, 0);
 }
 
@@ -561,3 +564,7 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
+
+//TODO
+//make day route work form circuit
+//fix early cam,psite cutoff on line
