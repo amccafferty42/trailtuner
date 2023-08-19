@@ -1,15 +1,4 @@
-const campsiteIcon = L.icon({
-    iconUrl: 'resources/tent.png',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
 
-const fontAwesomeIcon = L.divIcon({
-    html: '<span class="glyphicon glyphicon-tent"></span>',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    className: 'my-div-icon'
-});
 
 function updateGeoJSON() {
     let exportedRoute = {
@@ -44,7 +33,7 @@ function updateGeoJSON() {
             do {
                 dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
                 if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[j].end.geometry.coordinates[0].toFixed(3)
-                &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)) {
+                &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)) { 
                     dayRoute.properties.title = "Day " + (j + 1);
                     j++;
                     exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
@@ -78,13 +67,17 @@ function updateGeoJSON() {
             if (layer.feature.properties && layer.feature.properties.folderId == campsiteFolder.id) {
                 campsiteIndex++;
                 layer.bindPopup('Night ' + campsiteIndex);
-                layer.setIcon(campsiteIcon);
+                layer.setIcon(tentIcon);
+            } else if (layer.feature.properties && layer.feature.properties.folderId == trailheadFolder.id && layer.feature.properties.title == this.route[0].start.properties.title) {
+                layer.setIcon(startIcon);
+            } else if (layer.feature.properties && layer.feature.properties.folderId == trailheadFolder.id && layer.feature.properties.title == this.route[this.route.length - 1].end.properties.title) {
+                layer.setIcon(endIcon);
             }
         } else if (layer.feature.geometry.type == "LineString") {
             layer.setStyle({color :'red'}); 
             layer.bindPopup('Start: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].start.properties.title + '<br>End: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].end.properties.title + '<br>Length: ' + this.route[layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) - 1].length + ' ' + trailUnit);
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
-            //if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'red'});
+            if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'#ff7d7d'});
         }
     });
 

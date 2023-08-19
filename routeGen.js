@@ -205,10 +205,9 @@ function getNextCampsite(campsite) {
     return campsiteFeatures[campsite.properties.index + 1] === undefined ? undefined : campsiteFeatures[campsite.properties.index + 1];
 }
 
-// Return list of all campsites between a start and end distance (includes wrapping around a circuit)
+// Return list of all campsites between a start and end distance in order (includes wrapping around a circuit)
 function getAllCampsites(startDistance, endDistance) {
     let campsites = [];
-    if (trailCircuit && startDistance == endDistance) return campsiteFeatures;
     if (this.isPositiveDirection) {
         for (let i = 0; i < campsiteFeatures.length; i++) {
             if ((startDistance >= endDistance && (campsiteFeatures[i].properties.distance > startDistance || campsiteFeatures[i].properties.distance < endDistance)) || (startDistance < endDistance && (campsiteFeatures[i].properties.distance > startDistance && campsiteFeatures[i].properties.distance < endDistance))) campsites.push(campsiteFeatures[i]);
