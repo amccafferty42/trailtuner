@@ -61,7 +61,6 @@ function setTrailDetails(trail) {
             for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
                 if ((feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
                  && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
-                    console.log('1'+feature.properties.title);
                     newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
                     //newGeometry.coordinates = trail.features[trail.features.length - 1].geometry.coordinates.slice(0, i);         
                     feature.properties.distance = lengthGeo(newGeometry) / 1000;
@@ -74,7 +73,6 @@ function setTrailDetails(trail) {
                 // This covers the scenario when a marker is placed on trail, but too far away from a trail vertex
                 for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
                     if (inLine(trailFeature.geometry.coordinates[i], trailFeature.geometry.coordinates[i+1], feature.geometry.coordinates)) {
-                        console.log('2 '+feature.properties.title);
                         newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
                         feature.properties.distance = lengthGeo(newGeometry) / 1000;
                         if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
