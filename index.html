@@ -19,17 +19,14 @@
                             <h4 class="modal-title change-trail-title">Change Trail</h4>
                         </div>
                         <div class="select-trail-modal modal-body">
-                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in the specified JSON format. All fields are required:</p>
-                            <ul class="select-trail-desc">
-                                <li><b>"name"</b>: trail name</li> 
-                                <li><b>"length"</b>: trail length in the specified distance unit</li> 
-                                <li><b>"unit"</b>: <b>"mi"</b> or <b>"km"</b></li> 
-                                <li><b>"circuit"</b>: <b>true</b> if trail forms a loop, <b>false</b> otherwise</li> 
-                                <li><b>"trailheads"</b>: list of trailheads ordered by <b>distance</b></li>
-                                <li><b>"campsites"</b>: list of campsites ordered by <b>distance</b></li> 
-                                <li><b>"name"</b> of trailheads and campsites</li>
-                                <li><b>"distance"</b> of trailheads and campsites refers to their distance from <b>0</b></li>
-                            </ul>
+                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in a valid GeoJSON format as a "FeatureCollection" including:</p>
+                            <ol class="select-trail-desc">
+                                <li><b>One</b> "LineString" feature respresenting the entire trail from start to finish</li>
+                                <li><b>One</b> "Folder" feature with a title of "Campsites"</li>
+                                <li><b>One</b> "Folder" feature with a title of "Trailheads"</li>
+                                <li><b>One or more</b> "Marker" features for each campsite, with a "folderId" linked to the "Campsite" folder. The coordinates of each marker <b>must be on the trail</b></li>
+                                <li><b>Two or more</b> "Marker" features for each trailhead, with a "folderId" linked to the "Trailhead" folder. The coordinates of each marker <b>must be on the trail</b></li>
+                            </ol>
                             <div class="upload">
                                 <div class="upload-trail">
                                     <h4 id="choose-file">Upload file: </h4>
@@ -39,17 +36,6 @@
                                     <!-- <button type="button" class="btn btn-primary" id="upload-trail-btn" data-dismiss="modal" onclick="changeTrail()">Upload</button> -->
                                     <span id="validJson"></span>
                                 </div>                                
-                            </div>
-                            <h2><small>- OR -</small></h2>
-                            <br>
-                            <div class="template">
-                                <h4>Fill out template: </h4>
-                                <textarea id="json-template" cols=50 rows=26></textarea>
-                                <br>
-                                <div class="submit-btns">
-                                    <button id="submit-trail-btn" type="button" class="btn btn-primary" onclick="submitTrail()">Submit</button>
-                                    <button id="reset-trail-btn" type="button" class="btn btn-secondary" onclick="resetTemplate()">Reset</button>      
-                                </div>
                             </div>
                         </div>
                       </div>
