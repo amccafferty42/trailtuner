@@ -473,6 +473,7 @@ function furtherCampBtn(day, route) {
 function reset() {
     removeOptions(selectStart);
     removeOptions(selectEnd);
+    console.log(trailheadFeatures);
     for (let i = 0; i < trailheadFeatures.length; i++) {
         addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
         addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);

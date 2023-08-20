@@ -2,8 +2,6 @@ let newTrail;
 
 // Select DOM elements
 const file = document.getElementById('trailFile');
-const uploadTrailBtn = document.getElementById('upload-trail-btn');
-const validJsonLabel = document.getElementById('validJson');
 
 function readFile(input) {
     let file = input.files[0];
@@ -20,13 +18,9 @@ function readFile(input) {
 function setNewTrail(file) {
     const trail = validJson(file);
     if (trail) {
-        console.log("Successfully validated " + trail.name);
-        validJsonLabel.innerHTML = '';
         this.newTrail = trail;
         changeTrail();
     } else {
-        validJsonLabel.innerHTML = '&nbsp;invalid JSON';
-        uploadTrailBtn.disabled = true;
         this.newTrail = undefined;
     }
 }
@@ -36,8 +30,8 @@ function changeTrail() {
         console.log("Changing trail to " + this.newTrail.name);
         console.log(this.newTrail);
         trail = this.newTrail;
-        reset();
         setTrailDetails(trail);
+        reset();
         initMap();
         $('#changeTrail').modal('hide');
     }

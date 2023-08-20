@@ -100,7 +100,7 @@ function exportGeoJSON() {
         const url = URL.createObjectURL(blob);
         a.href = url;
         a.target = '_blank';
-        a.download = trailFeature.properties.title.replace(" ", "") + '.json';
+        a.download = trailFeature.properties.title + '.json';
         a.click();
     }
 }

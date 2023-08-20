@@ -39,6 +39,7 @@ setTrailDetails(trail);
 initMap();
 
 function initMap() {
+    if (this.leafletMap != undefined) this.leafletMap.remove();
     const half = Math.round(trailFeature.geometry.coordinates.length / 2);
     const lat = trailFeature.geometry.coordinates[half][1];
     const long = trailFeature.geometry.coordinates[half][0];
@@ -65,6 +66,11 @@ function resetMap() {
 }
 
 function setTrailDetails(trail) {
+    trailFeature = undefined;
+    trailheadFolder = undefined;
+    campsiteFeatures = undefined;
+    trailheadFeatures = [];
+    campsiteFeatures = [];
     for (feature of trail.features) {
         if (feature.geometry && feature.geometry.type === "LineString") {
             trailFeature = feature;
@@ -74,6 +80,7 @@ function setTrailDetails(trail) {
             campsiteFolder = feature;
         }
     }
+
     trailName = trailFeature.properties.title;
     trailLength = lengthGeo(trailFeature.geometry) / 1000;
     trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
