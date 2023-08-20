@@ -16,6 +16,7 @@ const inputMi = document.getElementById('mi');
 const inputKm = document.getElementById('km');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
+const exportRoute = document.getElementById('exportRoute');
 const tableBody = document.getElementById('table-body');
 const unitLabel1 = document.getElementById('unit1');
 const unitLabel2 = document.getElementById('unit2');
@@ -498,6 +499,9 @@ function reset() {
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
+    exportedRoute = undefined;
+    fullRoute = undefined;
+    exportRoute.disabled = true;
     resetMap();
     window.scrollTo(0, 0);
 }

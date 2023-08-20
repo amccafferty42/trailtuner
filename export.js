@@ -88,10 +88,19 @@ function updateGeoJSON() {
             if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'#ff7d7d'});
         }
     });
+    exportRoute.disabled = false;
     console.log(exportedRoute);
 }
 
 function exportGeoJSON() {
-    exportedRoute.features.push(fullRoute);
-    console.log(exportedRoute);
+    if (exportedRoute) {
+        exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
+        const a = document.createElement('a');
+        const blob = new Blob([JSON.stringify(exportedRoute)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.target = '_blank';
+        a.download = trailFeature.properties.title.replace(" ", "") + '.json';
+        a.click();
+    }
 }
