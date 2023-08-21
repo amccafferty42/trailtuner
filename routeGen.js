@@ -497,7 +497,6 @@ function reset() {
     inputCCW.disabled = trailCircuit ? false : true;
     inputCW.checked = trailCircuit ? true : false;
     inputCCW.checked = false;
-    file.value = '';
     if (trailUnit === 'km') inputKm.click();
     else inputMi.click();
     setUnitLabels(trailUnit);

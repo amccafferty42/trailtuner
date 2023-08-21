@@ -1,9 +1,10 @@
 let exportedRoute;
 let fullRoute;
 
+// Update GeoJSON with all trailheads and campsites on the generated route, as well as an individual LineString for each day
 function updateGeoJSON() {
     exportedRoute = {
-        features: [trailheadFolder, campsiteFolder],
+        features: [trailheadFolder, campsiteFolder, trailFolder],
         "type": "FeatureCollection"
     };
 
@@ -58,14 +59,18 @@ function updateGeoJSON() {
     fullRoute.properties.title = "Full Route";
     dayRoute.properties.title = "Day " + (j + 1);
     exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
-    //TODO only append this on export
-    //exportedRoute.features.push(fullRoute);
 
+    updateMap();
+    console.log(exportedRoute);
+}
+
+// Update map to display the generated route
+function updateMap() {
     this.geoJsonLayer.clearLayers();
     for (feature of exportedRoute.features) {
         if (feature.geometry) this.geoJsonLayer.addData(feature);
     }
- 
+
     let campsiteIndex = 0;
     this.geoJsonLayer.eachLayer(function (layer) {
         if (layer.feature.properties && layer.feature.geometry.type != "LineString" && layer.feature.properties.title) {
@@ -88,10 +93,9 @@ function updateGeoJSON() {
             if (layer.feature.properties.title.charAt(layer.feature.properties.title.length - 1) % 2 == 0) layer.setStyle({color :'#ff7d7d'});
         }
     });
-    exportRoute.disabled = false;
-    console.log(exportedRoute);
 }
 
+// Download GeoJSON
 function exportGeoJSON() {
     if (exportedRoute) {
         exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
