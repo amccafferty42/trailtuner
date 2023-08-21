@@ -45,9 +45,13 @@ function initMap() {
     const long = trailFeature.geometry.coordinates[half][0];
     this.leafletMap = L.map('map').setView([lat, long], 10);
     this.geoJsonLayer = L.geoJSON().addTo(this.leafletMap);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this.leafletMap);
+    // L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // }).addTo(this.leafletMap);
+    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+}).addTo(this.leafletMap);
     resetMap();
 }
 

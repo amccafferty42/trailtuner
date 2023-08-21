@@ -10,8 +10,7 @@
     <body>
         <div class="container">
             <div class="title">
-                <h1 id="title"></h1>
-                <a id="change-trail" data-toggle="modal" data-target="#changeTrail">change</a>
+                <img class="logo" src="resources/trailtuner.png" alt="">
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
@@ -50,7 +49,10 @@
                     </label>
                 </div>
             </div>
-            <h1><small>Itinerary Planning Tool</small></h1>
+            <div class="trailTitle">
+                <h1 id="title"></h1>
+                <a id="change-trail" data-toggle="modal" data-target="#changeTrail">change</a>
+            </div>
             <h2><small>Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> <span id="unit1">miles</span> / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> <span id="unit2">miles</span> / day</strong>. Set either value to <strong>0</strong> to defer to the other. </small><span class="info glyphicon glyphicon-info-sign" data-toggle="modal" data-target="#myModal"></span></h2>
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
@@ -169,12 +171,6 @@
             <br>
             <div class="row">
                 <div class="col-md-12"> 
-                    <button id="exportRoute" class="btn btn-warning btn-lg btn-block" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Export Route</button>
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-12"> 
                     <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
                 </div>
             </div>
@@ -194,6 +190,20 @@
                 </tbody>
             </table>
             <div id="map"></div>
+            <br>
+            <div class="row">
+                <div class="col-md-12"> 
+                    <button class="btn btn-primary btn-lg btn-block" type="button" onclick="" disabled>Share Route</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-md-12"> 
+                    <button id="exportRoute" class="btn btn-success btn-lg btn-block" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Export GeoJSON</button>
+                </div>
+            </div>
+            <br>
+            <p></p>
         </div>
         <!-- <div class="container">
             <div class="row">

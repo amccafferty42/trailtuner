@@ -432,6 +432,7 @@ function displayRoute(route) {
         cell7.innerHTML = closerCampBtn(route[i], route);
         cell8.innerHTML = furtherCampBtn(route[i], route);
     }
+    table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     //table.scrollIntoView({behavior: 'smooth'});
 
@@ -500,6 +501,7 @@ function reset() {
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
+    table.style.marginTop = 0;
     exportedRoute = undefined;
     fullRoute = undefined;
     exportRoute.disabled = true;
