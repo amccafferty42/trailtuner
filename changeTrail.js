@@ -26,12 +26,9 @@ function setNewTrail(file) {
 }
 
 function changeTrail() {
+    reset();
     if (this.newTrail != undefined) {
-        console.log("Changing trail to " + this.newTrail.name);
-        console.log(this.newTrail);
         trail = this.newTrail;
-        setTrailDetails(trail);
-        reset();
         initMap();
         $('#changeTrail').modal('hide');
     }
@@ -46,6 +43,23 @@ function submitTrail() {
 function validJson(file) {
     try {
         const trail = JSON.parse(file);
+        let numLineStrings = 0, numTrailheadFolders = 0, numCampsiteFolders = 0;
+        for (feature of trail.features) {
+            if (!feature.geometry) {
+                if (feature.properties.title === 'Trailheads') numTrailheadFolders++;
+                else if (feature.properties.title === 'Campsites') numCampsiteFolders++;
+                else return false;
+            } else if (feature.geometry.type === 'LineString') { 
+                numLineStrings++;
+            } else if (feature.geometry.type !== 'Point') {
+                return false;
+            }
+        }
+        if (numLineStrings != 1 || numTrailheadFolders != 1 || numCampsiteFolders != 1) return false;
+        setTrailDetails(trail); //set trail details to verify each marker is on trail and has "distance" appended to the properties
+        for (campsite of campsiteFeatures) if (campsite.properties.distance === undefined) return false;
+        for (trailhead of trailheadFeatures) if (trailhead.properties.distance === undefined) return false;
+        //initMap();
         // if (!trail || typeof trail != "object") return false;
         // if (!trail.name || typeof trail.name != "string" || trail.name == '' || trail.name.length > 50) return false;
         // if (!trail.length || typeof trail.length != "number" || trail.length < 1 || trail.length > 999) return false;

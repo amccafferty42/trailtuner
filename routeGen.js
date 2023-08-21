@@ -406,6 +406,7 @@ function onTrailheadsChange() {
         const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
         inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(length / 16.0934)) : Math.max(1, Math.round(length / 10));
     }
+
 }
 
 function displayRoute(route) {
@@ -487,7 +488,7 @@ function reset() {
     selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trailName;
-    inputDays.value = trailUnit === 'km' ? Math.round(trailLength / 16) : Math.round(trailLength / 10);
+    inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(trailLength / 16.0934)) : Math.max(1, Math.round(trailLength / 10));
     inputDistance.value = "";
     inputDistance.placeholder = "Using Days";
     inputShortHikeIn.checked = false;
