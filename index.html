@@ -15,27 +15,21 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
                         <div class="modal-header">
-                            <h4 class="modal-title change-trail-title">Change Trail</h4>
+                            <h4 class="modal-title change-trail-title">Upload Trail as GeoJSON</h4>
                         </div>
                         <div class="select-trail-modal modal-body">
-                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in a valid GeoJSON format as a "FeatureCollection" including:</p>
-                            <ol class="select-trail-desc">
-                                <li><b>One</b> "LineString" feature respresenting the entire trail from start to finish</li>
-                                <li><b>One</b> "Folder" feature with a title of "Campsites"</li>
-                                <li><b>One</b> "Folder" feature with a title of "Trailheads"</li>
-                                <li><b>One or more</b> "Marker" features for each campsite, with a "folderId" linked to the "Campsite" folder. The coordinates of each marker <b>must be on the trail</b></li>
-                                <li><b>Two or more</b> "Marker" features for each trailhead, with a "folderId" linked to the "Trailhead" folder. The coordinates of each marker <b>must be on the trail</b></li>
-                            </ol>
                             <div class="upload">
                                 <div class="upload-trail">
-                                    <h4 id="choose-file">Upload file: </h4>
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
-                                </div>
-                                <div class="upload-btns">
-                                    <!-- <button type="button" class="btn btn-primary" id="upload-trail-btn" data-dismiss="modal" onclick="changeTrail()">Upload</button> -->
-                                    <span id="validJson"></span>
-                                </div>                                
+                                </div>                              
                             </div>
+                            <br>
+                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in a valid GeoJSON format as a "FeatureCollection" including:</p>
+                            <ul class="select-trail-desc">
+                                <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
+                                <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must be on the trail</b></li>
+                                <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must be on the trail</b></li> 
+                            </ul>
                         </div>
                       </div>
                     </div>

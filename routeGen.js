@@ -124,10 +124,16 @@ function selectStartTrailhead(endTrailhead, length) {
 
 // If end trailhead is not provided, determine a reasonable end
 function selectEndTrailhead(startTrailhead, length) {
-    if (trailCircuit) return startTrailhead; //prioritize full loops for route generation
+    if (trailCircuit && ((inputDays.value == '' || inputDistance.value == '') || length >= trailLength)) return startTrailhead; //prioritize full loops for route generation
     const endCandidate1 = getNearestTrailhead(startTrailhead.properties.distance + length);
     const endCandidate2 = getNearestTrailhead(startTrailhead.properties.distance - length);
-    if ((startTrailhead.properties.distance + length) > trailLength && (startTrailhead.properties.distance - length) < 0) {
+    console.log(endCandidate1);
+    console.log(endCandidate2);
+    if (trailCircuit && inputCW.checked) {
+        return endCandidate1;
+    } else if (trailCircuit && inputCCW.checked) {
+        return endCandidate2;
+    } else if ((startTrailhead.properties.distance + length) > trailLength && (startTrailhead.properties.distance - length) < 0) {
         return Math.abs(startTrailhead.properties.distance - endCandidate1.properties.distance) > Math.abs(startTrailhead.properties.distance - endCandidate2.properties.distance) ? endCandidate1 : endCandidate2;
     } else if ((startTrailhead.properties.distance + length) > trailLength) {
         return endCandidate2;
@@ -210,7 +216,8 @@ function getNextCampsite(campsite) {
 // Return list of all campsites between a start and end distance in order (includes wrapping around a circuit)
 function getAllCampsites(startDistance, endDistance) {
     let campsites = [];
-    if (this.isPositiveDirection) {
+    if (!trailCircuit && startDistance == endDistance) return campsites;
+    else if (this.isPositiveDirection) {
         for (let i = 0; i < campsiteFeatures.length; i++) {
             if ((startDistance >= endDistance && (campsiteFeatures[i].properties.distance > startDistance || campsiteFeatures[i].properties.distance < endDistance)) || (startDistance < endDistance && (campsiteFeatures[i].properties.distance > startDistance && campsiteFeatures[i].properties.distance < endDistance))) campsites.push(campsiteFeatures[i]);
         }
@@ -325,7 +332,7 @@ function getNextCampsiteFromTrailhead(distance, isPositiveDirection) {
 // Given distance number, return the nearest trailhead in either direction
 function getNearestTrailhead(distance) {
     if (!trailCircuit && distance < 0) return trailheadFeatures[0];
-    else if (trailCircuit && distance < 0) distance = trailLength - distance;
+    else if (trailCircuit && distance < 0) distance = trailLength + distance;
     if (!trailCircuit && distance > trailLength) return trailheadFeatures[trailheadFeatures.length - 1];
     else if (trailCircuit && distance > trailLength) distance = distance - trailLength;
     for (let i = 0; i < trailheadFeatures.length; i++) {
