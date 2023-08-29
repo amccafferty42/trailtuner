@@ -172,6 +172,7 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         route.push(lastDay);
         return route;
     }
+    //calculateRoute2(start, end, days, startDate);
     return calculateRoute(start, end, days, startDate);  
 }
 
@@ -242,6 +243,37 @@ function getDistanceBetween(startDistance, endDistance) {
 // Determine positive or negative direction
 function getDirection(start, end) {
     return (trailCircuit && inputCW.checked) || (!trailCircuit && start.properties.distance < end.properties.distance) ? true : false;
+}
+
+function calculateRoute2(start, end, days, startDate) {
+    let length = getDistanceBetween(start.properties.distance, end.properties.distance);
+    if (trailCircuit && length == 0) length = trailLength;
+    let avgDistance = length / days;
+    let distance = start.properties.distance;
+    let initialCampsites = [];
+    let routeCandidates = [];
+    for (let i = 0; i < days - 1; i++) {
+        if (this.isPositiveDirection) {
+            distance += avgDistance;
+            if (trailCircuit && distance > trailLength) distance -= trailLength;
+        }
+        else {
+            distance -= avgDistance;
+            if (trailCircuit && distance < 0) distance += trailLength;
+        }
+        let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, true);
+        let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, false);
+        if (Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
+            initialCampsites.push(campsiteCandidate1);
+        } else {
+            initialCampsites.push(campsiteCandidate2);
+        }
+    }
+    routeCandidates.push(buildRoute(start, end, initialCampsites, days, startDate));
+    for (let i = 0; i < routeCandidates.length; i++) {
+
+    }
+    //console.log(buildRoute(start, end, initialCampsites, days, startDate));
 }
 
 // Generate a subset of all possible campsite combinations as routes, select the route with the lowest variance in daily mileage
