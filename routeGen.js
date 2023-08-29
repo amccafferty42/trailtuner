@@ -22,6 +22,8 @@ const tableBody = document.getElementById('table-body');
 const unitLabel1 = document.getElementById('unit1');
 const unitLabel2 = document.getElementById('unit2');
 const unitLabel3 = document.getElementById('unit3');
+const daysLabel = document.getElementById('daysLabel');
+const distanceLabel = document.getElementById('distanceLabel');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
 
 reset();
@@ -404,17 +406,23 @@ function changeCamp(dayIndex, isNext) {
 
 function onDistancePerDayChange() {
     if ((inputDays.value == "" || inputDays.value == 0) && (inputDistance.value == 0 || inputDistance.value == "")) {
-        inputDistance.placeholder = trailUnit === 'mi' ? "Using 10-20 Mile Range" : "Using 16-32 Km Range";
+        inputDistance.placeholder = trailUnit === 'mi' ? "10-20 Mile Range" : "16-32 Km Range";
         inputDistance.value = "";
+        distanceLabel.classList.remove("lightgray");
     } 
     else if (inputDistance.value == 0 || inputDistance.value == "") {
-        inputDistance.placeholder = "Using Days";
+        inputDistance.placeholder = "N/A";
         inputDistance.value = "";
+        distanceLabel.classList.add("lightgray");
+
     } else {
         inputDistance.placeholder = "";
+        distanceLabel.classList.remove("lightgray");
         if (selectStart.value != 0 && selectEnd.value != 0) {
-            inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
+            //inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
+            inputDays.placeholder = "N/A";
             inputDays.value = "";
+            daysLabel.classList.add("lightgray");
         }
     }
 }
@@ -422,13 +430,17 @@ function onDistancePerDayChange() {
 function onDaysChange() {
     this.userSetDays = true;
     if (inputDays.value == 0 || inputDays.value == "") {
-        inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
+        //inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
+        inputDays.placeholder = "N/A";
         inputDays.value = "";
+        daysLabel.classList.add("lightgray");
     } else {
         inputDays.placeholder = "";
+        daysLabel.classList.remove("lightgray");
         if (selectStart.value != 0 && selectEnd.value != 0) {
-            inputDistance.placeholder = "Using Days";
+            inputDistance.placeholder = "N/A";
             inputDistance.value = "";
+            distanceLabel.classList.add("lightgray");
         }
     }
     onDistancePerDayChange();
@@ -436,8 +448,9 @@ function onDaysChange() {
 
 function onTrailheadsChange() {
     if (selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0) && (inputDistance.value != "" || inputDistance.value != 0)) {
-        inputDistance.placeholder = "Using Days";
+        inputDistance.placeholder = "N/A";
         inputDistance.value = "";
+        distanceLabel.classList.add("lightgray");
     } 
     // If days has not been set by the user, determine a reasonable number based on distance between trailheads
     if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {
@@ -529,7 +542,7 @@ function reset() {
     title.innerHTML = trailName;
     inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(trailLength / 16.0934)) : Math.max(1, Math.round(trailLength / 10));
     inputDistance.value = "";
-    inputDistance.placeholder = "Using Days";
+    inputDistance.placeholder = "N/A";
     inputShortHikeIn.checked = false;
     inputShortHikeOut.checked = false;
     inputCW.disabled = trailCircuit ? false : true;
