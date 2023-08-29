@@ -52,11 +52,11 @@ function updateGeoJSON() {
                     if (i >= trailFeature.geometry.coordinates.length) i = 0;
                 } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
                         || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
-                        || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && ((this.isPositiveDirection && i < 10) || (!this.isPositiveDirection && i > trailFeature.geometry.coordinates.length - 10)))); //solves case where full circuit will not build line because start == end
+                        || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 10)); //solves case where full circuit will not build line because start == end
                         //|| (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && this.route.length > 1 && j == 0)); //this logic fails on single day routes
                 if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end) {
-                    dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[0]);
-                    fullRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[0]);
+                    dayRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
+                    fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
                 }
                 break;
             }
