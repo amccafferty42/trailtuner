@@ -155,7 +155,7 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         const lastDay = generateShortHikeOut(end, lastDate);
         let tomorrow = new Date(firstDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-        route = calculateRoute(firstDay.end, lastDay.start, days - 2, tomorrow);
+        route = calculateRoute2(firstDay.end, lastDay.start, days - 2, tomorrow);
         route.unshift(firstDay);
         route.push(lastDay);
         return route;
@@ -163,19 +163,19 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         const firstDay = generateShortHikeIn(start, startDate);
         let tomorrow = new Date(firstDay.date);
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-        route = calculateRoute(firstDay.end, end, days - 1, tomorrow);
+        route = calculateRoute2(firstDay.end, end, days - 1, tomorrow);
         route.unshift(firstDay);
         return route;
     } else if (shortHikeOut && days > 1) {
         let lastDate = new Date(startDate);
         lastDate.setUTCDate(lastDate.getUTCDate() + (days - 1));
         const lastDay = generateShortHikeOut(end, lastDate);
-        route = calculateRoute(start, lastDay.start, days - 1, startDate);
+        route = calculateRoute2(start, lastDay.start, days - 1, startDate);
         route.push(lastDay);
         return route;
     }
-    //calculateRoute2(start, end, days, startDate);
-    return calculateRoute(start, end, days, startDate);  
+    return calculateRoute2(start, end, days, startDate);
+    //return calculateRoute(start, end, days, startDate);  
 }
 
 function generateShortHikeIn(start, startDate) {
@@ -247,13 +247,12 @@ function getDirection(start, end) {
     return (trailCircuit && inputCW.checked) || (!trailCircuit && start.properties.distance < end.properties.distance) ? true : false;
 }
 
-function calculateRoute2(start, end, days, startDate) {
+function getOptimalCampsites(start, end, days) {
     let length = getDistanceBetween(start.properties.distance, end.properties.distance);
     if (trailCircuit && length == 0) length = trailLength;
     let avgDistance = length / days;
     let distance = start.properties.distance;
-    let initialCampsites = [];
-    let routeCandidates = [];
+    let campsites = new Set();
     for (let i = 0; i < days - 1; i++) {
         if (this.isPositiveDirection) {
             distance += avgDistance;
@@ -265,17 +264,34 @@ function calculateRoute2(start, end, days, startDate) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, true);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, false);
-        if (Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
-            initialCampsites.push(campsiteCandidate1);
-        } else {
-            initialCampsites.push(campsiteCandidate2);
+        campsites.add(campsiteCandidate1);
+        campsites.add(campsiteCandidate2);
+    }
+    return campsites;
+}
+
+function calculateRoute2(start, end, days, startDate) {
+    let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days));
+    console.log(allOptimalCampsites);
+    if (allOptimalCampsites.length < days) {
+        console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
+        return buildRoute(start, end, allOptimalCampsites, days, startDate);
+    }
+    const groupedCampsites = subset(allOptimalCampsites, days - 1);
+    let routes = [];
+    for (let campsites of groupedCampsites) {
+        routes.push(buildRoute(start, end, campsites, days, startDate));
+    }
+    let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
+    for(let i = 0; i < routes.length; i++) {
+        let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.length)));
+        if (sd < lowestSD) {
+            bestRoute = routes[i];
+            lowestSD = sd;
         }
     }
-    routeCandidates.push(buildRoute(start, end, initialCampsites, days, startDate));
-    for (let i = 0; i < routeCandidates.length; i++) {
-
-    }
-    //console.log(buildRoute(start, end, initialCampsites, days, startDate));
+    console.log("#2 Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + trailUnit);
+    return bestRoute;
 }
 
 // Generate a subset of all possible campsite combinations as routes, select the route with the lowest variance in daily mileage
@@ -408,21 +424,17 @@ function onDistancePerDayChange() {
     if ((inputDays.value == "" || inputDays.value == 0) && (inputDistance.value == 0 || inputDistance.value == "")) {
         inputDistance.placeholder = trailUnit === 'mi' ? "10-20 Mile Range" : "16-32 Km Range";
         inputDistance.value = "";
-        distanceLabel.classList.remove("lightgray");
     } 
     else if (inputDistance.value == 0 || inputDistance.value == "") {
         inputDistance.placeholder = "N/A";
         inputDistance.value = "";
-        distanceLabel.classList.add("lightgray");
 
     } else {
         inputDistance.placeholder = "";
-        distanceLabel.classList.remove("lightgray");
         if (selectStart.value != 0 && selectEnd.value != 0) {
             //inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
             inputDays.placeholder = "N/A";
             inputDays.value = "";
-            daysLabel.classList.add("lightgray");
         }
     }
 }
@@ -433,14 +445,11 @@ function onDaysChange() {
         //inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
         inputDays.placeholder = "N/A";
         inputDays.value = "";
-        daysLabel.classList.add("lightgray");
     } else {
         inputDays.placeholder = "";
-        daysLabel.classList.remove("lightgray");
         if (selectStart.value != 0 && selectEnd.value != 0) {
             inputDistance.placeholder = "N/A";
             inputDistance.value = "";
-            distanceLabel.classList.add("lightgray");
         }
     }
     onDistancePerDayChange();
@@ -450,7 +459,6 @@ function onTrailheadsChange() {
     if (selectStart.value != 0 && selectEnd.value != 0 && (inputDays.value != "" || inputDays.value != 0) && (inputDistance.value != "" || inputDistance.value != 0)) {
         inputDistance.placeholder = "N/A";
         inputDistance.value = "";
-        distanceLabel.classList.add("lightgray");
     } 
     // If days has not been set by the user, determine a reasonable number based on distance between trailheads
     if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {

@@ -38,7 +38,7 @@ function updateGeoJSON() {
                     dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
                     if (trailFeature.geometry.coordinates[i][0].toFixed(3) == this.route[j].end.geometry.coordinates[0].toFixed(3)
                     &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)
-                    && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end || i >= 10)) { 
+                    && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end || fullRoute.geometry.coordinates.length >= 10)) { 
                         dayRoute.properties.title = "Day " + (j + 1);
                         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
                         dayRoute.geometry.coordinates = [];
@@ -51,7 +51,7 @@ function updateGeoJSON() {
                     if (i >= trailFeature.geometry.coordinates.length) i = 0;
                 } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
                         || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
-                        || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 10)); //solves case where full circuit will not build line because start == end
+                        || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 20)); //solves case where full circuit will not build line because start == end
                 if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end) {
                     dayRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
                     fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
