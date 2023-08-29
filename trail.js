@@ -107,9 +107,12 @@ function setTrailDetails(trail) {
     if (trailheadFeatures.length <= 1) return;
     if (campsiteFeatures.length <= 0) return;
 
+
     trailName = trailFeature.properties.title;
     trailLength = lengthGeo(trailFeature.geometry) / 1000;
     trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
+
+    if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
 
     for (feature of campsiteFeatures) appendDistance(feature);
     for (feature of trailheadFeatures) appendDistance(feature);
@@ -252,3 +255,18 @@ function distance(λ1,φ1,λ2,φ2) {
     var d = Math.sqrt(x*x + y*y);
     return R * d;
 };
+
+function calcArea(poly) {
+    if (!poly || poly.length < 3) return null;
+    let end = poly.length - 1;
+    let sum = poly[end][0] * poly[0][1] - poly[0][0] * poly[end][1];
+    for(let i = 0; i < end; ++i) {
+        const n = i + 1;
+        sum += poly[i][0] * poly[n][1] - poly[n][0] * poly[i][1];
+    }
+    return sum;
+}
+
+function isClockwise(poly) {
+    return calcArea(poly) < 0;
+}
