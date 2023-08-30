@@ -249,7 +249,7 @@ function getDirection(start, end) {
 
 function getOptimalCampsites(start, end, days, includeBothCandidates) {
     let length = getDistanceBetween(start.properties.distance, end.properties.distance);
-    if (trailCircuit && length == 0) length = trailLength;
+    if ((trailCircuit && length == 0) || length > trailLength) length = trailLength;
     let avgDistance = length / days;
     let distance = start.properties.distance;
     let campsites = new Set();
@@ -262,8 +262,8 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
             distance -= avgDistance;
             if (trailCircuit && distance < 0) distance += trailLength;
         }
-        let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, true);
-        let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, false);
+        let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
+        let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
         if (includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
@@ -283,8 +283,10 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
 function calculateRoute(start, end, days, startDate) {
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
     if (days > campsiteFeatures.length || days > allOptimalCampsites.length) {
+        console.log("All optimal campsites:")
+        console.log(allOptimalCampsites);
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
-        return buildRoute(start, end, campsiteFeatures, days, startDate);
+        return buildRoute(start, end, allOptimalCampsites, days, startDate);
     } else if (allOptimalCampsites.length > 22) {
         console.info('Sample size is too large. Generating basic route using campsites closest to daily average');
         allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, false));
@@ -648,7 +650,3 @@ const calculateVariance = (values) => {
 const calculateSD = (variance) => {
     return Math.sqrt(variance);
 };
-
-//TODO
-//make day route work form circuit
-//fix early cam,psite cutoff on line
