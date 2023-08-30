@@ -10,7 +10,7 @@ let trailheadFeatures = [];
 
 let trailName;
 let trailLength;
-let trailUnit = 'km';
+let trailUnit = 'mi';
 let trailCircuit;
 
 let leafletMap;
@@ -110,6 +110,7 @@ function setTrailDetails(trail) {
 
     trailName = trailFeature.properties.title;
     trailLength = lengthGeo(trailFeature.geometry) / 1000;
+    if (trailUnit == 'mi') trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
     trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
 
     if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
@@ -137,6 +138,7 @@ function appendDistance(feature) {
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
             feature.properties.distance = lengthGeo(newGeometry) / 1000;
+            if (trailUnit == 'mi') feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
             if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
             break;
         }
@@ -150,6 +152,7 @@ function appendDistance(feature) {
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 feature.properties.distance = lengthGeo(newGeometry) / 1000;
+                if (trailUnit == 'mi') feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
                 if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
                 break;
             }

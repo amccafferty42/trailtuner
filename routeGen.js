@@ -583,6 +583,7 @@ function reset() {
     exportRoute.style.visibility = 'hidden';
     shareRoute.style.visibility = 'hidden';
     table.style.marginTop = 0;
+    this.route = undefined;
     exportedRoute = undefined;
     fullRoute = undefined;
     resetMap();
@@ -622,7 +623,7 @@ function setUnit(unit) {
         for (campsite of campsiteFeatures) {
             campsite.properties.distance = unit === 'km' ? Math.round(campsite.properties.distance * 1.609344 * 10) / 10 : Math.round(campsite.properties.distance * 0.6213711922 * 10) / 10;
         }
-        if (this.route != undefined) {
+        if (this.route != undefined && this.route.length > 0) {
             for (day of this.route) {
                 day.length = unit === 'km' ? Math.round(day.length * 1.609344 * 10) / 10 : Math.round(day.length * 0.6213711922 * 10) / 10;
             }
