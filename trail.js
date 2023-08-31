@@ -103,7 +103,7 @@ function setTrailDetails(trail) {
             campsiteFeatures.push(feature);
         }
     }
-    if (!trailFeature || !trailFeature.properties || !trailFeature.properties.title || trailFeature.properties.title.length > 30) return;
+    if (!trailFeature || !trailFeature.properties || !trailFeature.properties.title || trailFeature.properties.title.length > 30 || trailFeature.geometry.coordinates.length < 20) return;
     if (trailheadFeatures.length <= 1) return;
     if (campsiteFeatures.length <= 0) return;
 
@@ -122,6 +122,9 @@ function setTrailDetails(trail) {
     trailheadFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
     campsiteFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
     for (let i = 0; i < campsiteFeatures.length; i++) campsiteFeatures[i].properties.index = i;
+
+    if (trailCircuit && campsiteFeatures[0].properties.distance != 0) return;
+    else if (!trailCircuit && campsiteFeatures[0].properties.distance != 0 && campsiteFeatures[campsiteFeatures.length - 1].properties.distance != trailLength) return;
 
     console.log(trailFeature);
     console.log(trailheadFeatures);
