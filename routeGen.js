@@ -512,8 +512,8 @@ function displayRoute(route) {
     }
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
-    exportRoute.style.visibility = 'visible';
-    shareRoute.style.visibility = 'visible';
+    shareRoute.disabled = false;
+    exportRoute.disabled = false;
     shareRoute.scrollIntoView({behavior: 'smooth'});
 
     updateGeoJSON();
@@ -580,8 +580,10 @@ function reset() {
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
-    exportRoute.style.visibility = 'hidden';
-    shareRoute.style.visibility = 'hidden';
+    //exportRoute.style.visibility = 'hidden';
+    //shareRoute.style.visibility = 'hidden';
+    exportRoute.disabled = true;
+    shareRoute.disabled = true;
     table.style.marginTop = 0;
     this.route = undefined;
     exportedRoute = undefined;

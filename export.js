@@ -110,3 +110,15 @@ function exportGeoJSON() {
         a.click();
     }
 }
+
+// Share Route
+function emailRoute() {
+    if (exportedRoute) {
+        const subject = trailFeature.properties.title + " Itinerary";
+        let message = "";
+        for (let i = 0; i < this.route.length; i++) {
+            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + this.route[i].length.toFixed(1) + " " + trailUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
+        }
+        window.open("mailto:?subject=" + subject + "&body=" + message);
+    }
+}
