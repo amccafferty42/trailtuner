@@ -14,10 +14,18 @@
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title change-trail-title">Upload GeoJSON</h4>
-                        </div>
+                        <!-- <div class="modal-header">
+                            <h4 class="modal-title change-trail-title">Change Trail</h4>
+                        </div> -->
                         <div class="select-trail-modal modal-body">
+                            <h4 class="modal-title change-trail-title">Select Trail</h4>
+                            <br>
+                            <div>
+                                <select id="select-trail" class="form-control" onChange="onTrailSelect(this)"></select>
+                            </div>
+                            <hr>
+                            <h4 class="modal-title change-trail-title">Upload Trail</h4>
+                            <br>
                             <div class="upload">
                                 <div class="upload-trail">
                                     <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
@@ -204,6 +212,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="trails.js"></script>
         <script src="trail.js"></script>
         <script src="routeGen.js"></script>
         <script src="export.js"></script>

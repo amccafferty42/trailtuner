@@ -25,7 +25,9 @@ const unitLabel3 = document.getElementById('unit3');
 const daysLabel = document.getElementById('daysLabel');
 const distanceLabel = document.getElementById('distanceLabel');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
+const selectTrail = document.getElementById('select-trail');
 
+for (let i = 0; i < trails.length; i++) addOption(selectTrail, trails[i].name, i);
 reset();
 
 function plan() {
@@ -529,7 +531,6 @@ function furtherCampBtn(day, route) {
 function reset() {
     removeOptions(selectStart);
     removeOptions(selectEnd);
-    console.log(trailheadFeatures);
     for (let i = 0; i < trailheadFeatures.length; i++) {
         addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
         addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
