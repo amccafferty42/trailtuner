@@ -310,31 +310,6 @@ function calculateRoute(start, end, days, startDate) {
     }
 }
 
-// Generate a subset of all possible campsite combinations as routes, select the route with the lowest variance in daily mileage
-// function calculateRoute(start, end, days, startDate) {
-//     let allPossibleCampsites = getAllCampsites(start.properties.distance, end.properties.distance);
-//     console.log(allPossibleCampsites);
-//     if (allPossibleCampsites.length < days) {
-//         console.info('Number of days is greater than or equal to the number of available campsites between start and end points');
-//         return buildRoute(start, end, allPossibleCampsites, days, startDate);
-//     }
-//     const groupedCampsites = subset(allPossibleCampsites, days - 1);
-//     let routes = [];
-//     for (let campsites of groupedCampsites) {
-//         routes.push(buildRoute(start, end, campsites, days, startDate));
-//     }
-//     let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
-//     for(let i = 0; i < routes.length; i++) {
-//         let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.length)));
-//         if (sd < lowestSD) {
-//             bestRoute = routes[i];
-//             lowestSD = sd;
-//         }
-//     }
-//     console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + trailUnit);
-//     return bestRoute;
-// }
-
 // Generate subset of all campsite permutations that equal the number of nights
 function subset(campsites, nights) {
     let result_set = [], result;
@@ -580,8 +555,6 @@ function reset() {
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     table.style.visibility = 'hidden';
-    //exportRoute.style.visibility = 'hidden';
-    //shareRoute.style.visibility = 'hidden';
     exportRoute.disabled = true;
     shareRoute.disabled = true;
     table.style.marginTop = 0;
