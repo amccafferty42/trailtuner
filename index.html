@@ -14,13 +14,16 @@
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
-                        <!-- <div class="modal-header">
-                            <h4 class="modal-title change-trail-title">Change Trail</h4>
-                        </div> -->
                         <div class="select-trail-modal modal-body">
                             <h4 class="modal-title change-trail-title">Select Trail</h4>
                             <br>
                             <div>
+                                <!-- <datalist id="suggestions">
+                                    <option>Laurel Highlands Hiking Trail</option>
+                                    <option>Wonderland Trail</option>
+                                    <option>Tour du Mont Blanc</option>
+                                </datalist>
+                                <input autoComplete="on" list="suggestions"> -->
                                 <select id="select-trail" class="form-control" onChange="onTrailSelect(this)"></select>
                             </div>
                             <hr>
@@ -32,12 +35,12 @@
                                 </div>                              
                             </div>
                             <br>
-                            <p class="select-trail-desc">To change the activated trail, you must upload the trail in a valid GeoJSON format as a "FeatureCollection" including:</p>
+                            <p class="select-trail-desc">To upload a trail, it must be in valid GeoJSON format as a "FeatureCollection" including:</p>
                             <ul class="select-trail-desc">
                                 <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
                                 <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must</b> be on the trail</li>
                                 <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must</b> be on the trail</li> 
-                                <li>It is OK to include additional geometry features, such as side trails and off-trail markers, however they must not be included in the above folders</li> 
+                                <li>It is OK to include additional geometry features, such as side trails and points of interest, however they can not be included in the above folders</li> 
                             </ul>
                         </div>
                       </div>
