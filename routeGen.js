@@ -27,7 +27,7 @@ const distanceLabel = document.getElementById('distanceLabel');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
 const selectTrail = document.getElementById('select-trail');
 
-for (let i = 0; i < trails.length; i++) addOption(selectTrail, trails[i].name, i);
+populateSelectTrail();
 reset();
 
 function plan() {
@@ -131,8 +131,6 @@ function selectEndTrailhead(startTrailhead, length) {
     if (trailCircuit && ((inputDays.value == '' || inputDistance.value == '') || length >= trailLength)) return startTrailhead; //prioritize full loops for route generation
     const endCandidate1 = getNearestTrailhead(startTrailhead.properties.distance + length);
     const endCandidate2 = getNearestTrailhead(startTrailhead.properties.distance - length);
-    console.log(endCandidate1);
-    console.log(endCandidate2);
     if (trailCircuit && inputCW.checked) {
         return endCandidate1;
     } else if (trailCircuit && inputCCW.checked) {
@@ -177,7 +175,6 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         return route;
     }
     return calculateRoute(start, end, days, startDate);
-    //return calculateRoute(start, end, days, startDate);  
 }
 
 function generateShortHikeIn(start, startDate) {
@@ -435,7 +432,6 @@ function onDistancePerDayChange() {
 function onDaysChange() {
     this.userSetDays = true;
     if (inputDays.value == 0 || inputDays.value == "") {
-        //inputDays.placeholder = trailUnit === 'mi' ? "Using Miles / Day" : "Using Km / Day";
         inputDays.placeholder = "N/A";
         inputDays.value = "";
     } else {
@@ -571,6 +567,11 @@ function removeOptions(element) {
        element.remove(i);
     }
  }
+ 
+// Populate dropdown with premade trails
+function populateSelectTrail() {
+    for (let i = 0; i < trails.length; i++) addOption(selectTrail, trails[i].name, i);
+}
 
 function addOption(element, name, value) {
     let opt = document.createElement("option");

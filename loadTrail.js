@@ -1,4 +1,8 @@
 let trail = trails[0].geoJSON;
+let trailName;
+let trailLength;
+let trailUnit = 'mi'; //default
+let trailCircuit;
 
 // Variables for the required GeoJSON features
 let trailFolder;
@@ -8,41 +12,35 @@ let trailFeature;
 let campsiteFeatures = [];
 let trailheadFeatures = [];
 
-let trailName;
-let trailLength;
-let trailUnit = 'mi';
-let trailCircuit;
-
+// Variables for Leaflet map, layer, and icons
 let leafletMap;
 let geoJsonLayer;
-
 const startIcon = L.icon({
     iconUrl: 'resources/start.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
-
 const endIcon = L.icon({
     iconUrl: 'resources/end.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
-
 const neutralIcon = L.icon({
     iconUrl: 'resources/neutral.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
-
 const tentIcon = L.icon({
     iconUrl: 'resources/tent.png',
     iconSize: [20, 20],
     iconAnchor: [10, 10]
 });
 
+setTrailFromURL();
 setTrailDetails(trail);
 initMap();
 
+// Set coordinates and zoom of map
 function initMap() {
     if (this.leafletMap != undefined) this.leafletMap.remove();
     const half = Math.round(trailFeature.geometry.coordinates.length / 2);
@@ -70,7 +68,7 @@ function resetMap() {
     });
 }
 
-// Verify trail and set details
+// Validate trail and set details
 function setTrailDetails(trail) {
     trailFolder = undefined;
     trailheadFolder = undefined;
@@ -106,7 +104,6 @@ function setTrailDetails(trail) {
     if (!trailFeature || !trailFeature.properties || !trailFeature.properties.title || trailFeature.properties.title.length > 30 || trailFeature.geometry.coordinates.length < 20) return;
     if (trailheadFeatures.length <= 1) return;
     if (campsiteFeatures.length <= 0) return;
-
 
     trailName = trailFeature.properties.title;
     trailLength = lengthGeo(trailFeature.geometry) / 1000;
@@ -146,7 +143,7 @@ function appendDistance(feature) {
             break;
         }
     }
-    // Second attempt: find a coordinate pair in line between a two pairs of trail coordinates
+    // Second attempt: find a coordinate pair in line between two pairs of trail coordinates
     // This covers the scenario when a marker is placed on trail, but > 0.001 degrees from a trail vertex (i.e. low sampling)
     // If a marker is found on the line segment between two vertices, create a new vertex on the trail where the marker lies between those two points
     if (feature.properties.distance === undefined) {
@@ -160,6 +157,25 @@ function appendDistance(feature) {
                 break;
             }
         }
+    }
+}
+
+// Load selected trail and reset
+function onTrailSelect() {
+    trail = trails[selectTrail.value].geoJSON;
+    setTrailDetails(trail);
+    reset();
+    initMap();
+    selectTrail.value = "";
+    $('#changeTrail').modal('hide');
+}
+
+function setTrailFromURL() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.has('trail')) {
+        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
+        trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
     }
 }
 
@@ -184,14 +200,6 @@ function changeTrail(file) {
         document.getElementById('trailFile').value = '';
         $('#changeTrail').modal('hide');
     }
-}
-
-function onTrailSelect() {
-    trail = trails[selectTrail.value].geoJSON;
-    setTrailDetails(trail);
-    reset();
-    initMap();
-    $('#changeTrail').modal('hide');
 }
 
 function validJson(file) {

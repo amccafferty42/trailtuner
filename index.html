@@ -16,7 +16,7 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content">
                         <div class="select-trail-modal modal-body">
-                            <h4 class="modal-title change-trail-title">Select Trail</h4>
+                            <h4 class="modal-title change-trail-title">Select From List</h4>
                             <br>
                             <div>
                                 <!-- <datalist id="suggestions">
@@ -25,10 +25,12 @@
                                     <option>Tour du Mont Blanc</option>
                                 </datalist>
                                 <input autoComplete="on" list="suggestions"> -->
-                                <select id="select-trail" class="form-control" onChange="onTrailSelect(this)"></select>
+                                <select id="select-trail" class="form-control" onChange="onTrailSelect(this)">
+                                    <option value="" disabled selected>Select Trail</option>
+                                </select>
                             </div>
                             <hr>
-                            <h4 class="modal-title change-trail-title">Upload Trail</h4>
+                            <h4 class="modal-title change-trail-title">Upload GeoJSON</h4>
                             <br>
                             <div class="upload">
                                 <div class="upload-trail">
@@ -41,7 +43,7 @@
                                 <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
                                 <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must</b> be on the trail</li>
                                 <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must</b> be on the trail</li> 
-                                <li>It is OK to include additional geometry features, such as side trails and points of interest, however they can not be included in the above folders</li> 
+                                <li>It is OK to include additional geometry features, such as side trails and points of interest, however they must not be included in the above folders</li> 
                             </ul>
                         </div>
                       </div>
@@ -217,7 +219,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script src="trails.js"></script>
-        <script src="trail.js"></script>
+        <script src="loadTrail.js"></script>
         <script src="routeGen.js"></script>
         <script src="export.js"></script>
     </body>

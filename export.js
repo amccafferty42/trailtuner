@@ -111,7 +111,7 @@ function exportGeoJSON() {
     }
 }
 
-// Share Route
+// Share route via email
 function emailRoute() {
     if (exportedRoute) {
         const subject = trailFeature.properties.title + " Itinerary";
