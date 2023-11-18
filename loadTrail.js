@@ -114,7 +114,11 @@ function setTrailDetails(trail) {
     trailElevationGain = elevationChange.elevationGain;
     trailElevationLoss = elevationChange.elevationLoss;
 
-    if (trailUnit == 'mi') trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
+    if (trailUnit == 'mi') {
+        trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
+        trailElevationGain = Math.round(trailElevationGain * 3.28084);
+        trailElevationLoss = Math.round(trailElevationLoss * 3.28084);
+    }
     trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
 
     if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
@@ -137,6 +141,7 @@ function setTrailDetails(trail) {
 
 // Append the distance from 0 for each trailhead and campsite
 function appendDistance(feature) {
+    if (feature.properties.title.match(/[*]/)) feature.properties.title = "*Dispersed Camping*";
     let newGeometry = {};
     newGeometry.type = 'LineString';
     // First attempt: find a coordinate pair at a trail vertex within 0.001 degrees (~111 m) of marker
@@ -148,7 +153,11 @@ function appendDistance(feature) {
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
-            if (trailUnit == 'mi') feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
+            if (trailUnit == 'mi') {
+                feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
+                feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
+                feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
+            }
             if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
             break;
         }
@@ -165,7 +174,11 @@ function appendDistance(feature) {
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
                 feature.properties.elevationLoss = elevationChange.elevationLoss;
-                if (trailUnit == 'mi') feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
+                if (trailUnit == 'mi') {
+                    feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
+                    feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
+                    feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
+                }
                 if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
                 break;
             }

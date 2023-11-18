@@ -461,17 +461,19 @@ function onTrailheadsChange() {
 }
 
 function displayRoute(route) {
-    let totalMiles = 0;
+    let totalMiles = 0, totalElevationGain = 0, totalElevationLoss = 0;
     tableBody.innerHTML = '';
     for (let i = 0; i < route.length; i++) {
         totalMiles += route[i].length;
+        totalElevationGain += route[i].elevationGain;
+        totalElevationLoss += route[i].elevationLoss;
         let row = tableBody.insertRow(i);
         let cell1 = row.insertCell(0);
         let cell2 = row.insertCell(1);
         let cell3 = row.insertCell(2);
         let cell4 = row.insertCell(3);
         let cell5 = row.insertCell(4);
-        cell5.classList.add("right", "blue");
+        cell5.classList.add("right");
         let cell6 = row.insertCell(5);
         cell6.classList.add("right");
         let cell7 = row.insertCell(6);
@@ -480,8 +482,8 @@ function displayRoute(route) {
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
         cell3.innerHTML = i == 0 ? '<u>' + route[i].start.properties.title + '</u>' : route[i].start.properties.title;
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
-        cell5.innerHTML = '<strong>' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong>';
-        cell6.innerHTML = totalMiles.toFixed(1) + ' ' + trailUnit;
+        cell5.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + route[i].elevationGain + '\' </span><span class="green">-' + route[i].elevationLoss + '\'</span>';
+        cell6.innerHTML = '<strong class="blue">' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + totalElevationGain+ '\' </span><span class="green">-' + totalElevationLoss + '\'</span>';
         cell7.innerHTML = closerCampBtn(route[i], route);
         cell8.innerHTML = furtherCampBtn(route[i], route);
     }
