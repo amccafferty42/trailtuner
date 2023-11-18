@@ -41,13 +41,8 @@ function plan() {
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
-        const elevation = getElevation(this.route);
         displayRoute(route);
     }
-}
-
-function getElevation(route) {
-    console.log(route);
 }
 
 function validateForm() {
@@ -354,6 +349,8 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
         route[j].prev_site = getPrevCampsite(route[j].end);
         route[j].next_site = getNextCampsite(route[j].end);     
         route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.properties.distance, route[j].end.properties.distance);
+        route[j].elevationGain = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationGain : route[j].end.properties.elevationGain - route[j].start.properties.elevationGain;
+        route[j].elevationLoss = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationLoss : route[j].end.properties.elevationLoss - route[j].start.properties.elevationLoss;
     }
     return route;
 }
