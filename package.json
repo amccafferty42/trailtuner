@@ -1,0 +1,27 @@
+{
+  "name": "trailtuner",
+  "version": "1.0.0",
+  "description": "Tool to assist the planning of multi-day trips on trails",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amccafferty42/trailtuner.git"
+  },
+  "keywords": [
+    "gps",
+    "geojson",
+    "trail"
+  ],
+  "author": "Alex McCafferty",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/amccafferty42/trailtuner/issues"
+  },
+  "homepage": "https://github.com/amccafferty42/trailtuner#readme",
+  "dependencies": {
+    "geojson-elevation": "^1.1.2"
+  }
+}
