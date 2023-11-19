@@ -241,6 +241,29 @@ function getDistanceBetween(startDistance, endDistance) {
     return Math.round(Math.abs(startDistance - endDistance) * 10) / 10;
 }
 
+function getElevationBetween(start, end) {
+    let elevation = {
+        gain: 0, 
+        loss: 0
+    };
+    if (start.properties.distance === end.properties.distance) return elevation;
+    else if (trailCircuit && this.isPositiveDirection && start.properties.distance > end.properties.distance) {
+        elevation.gain = Math.abs(Math.round((trailElevationGain - start.properties.elevationGain + end.properties.elevationGain) * 10) / 10);
+        elevation.loss = Math.abs(Math.round((trailElevationLoss - start.properties.elevationLoss + end.properties.elevationLoss) * 10) / 10);
+    } else if (trailCircuit && !this.isPositiveDirection && start.properties.distance < end.properties.distance) {
+        elevation.gain = Math.abs(Math.round((trailElevationGain - end.properties.elevationGain + start.properties.elevationGain) * 10) / 10);
+        elevation.loss = Math.abs(Math.round((trailElevationLoss - end.properties.elevationLoss + start.properties.elevationLoss) * 10) / 10);
+    } else {
+        elevation.gain = Math.abs(end.properties.elevationGain - start.properties.elevationGain);
+        elevation.loss = Math.abs(end.properties.elevationLoss - start.properties.elevationLoss);
+    }
+
+    // Elevation gain/loss is relative to the direction of travel. If travelling non-positive direction, swap the values.
+    if (!this.isPositiveDirection) [elevation.gain, elevation.loss] = [elevation.loss, elevation.gain];
+
+    return elevation;
+}
+
 // Determine positive or negative direction
 function getDirection(start, end) {
     return (trailCircuit && inputCW.checked) || (!trailCircuit && start.properties.distance < end.properties.distance) ? true : false;
@@ -349,8 +372,9 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
         route[j].prev_site = getPrevCampsite(route[j].end);
         route[j].next_site = getNextCampsite(route[j].end);     
         route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.properties.distance, route[j].end.properties.distance);
-        route[j].elevationGain = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationGain : route[j].end.properties.elevationGain - route[j].start.properties.elevationGain;
-        route[j].elevationLoss = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationLoss : route[j].end.properties.elevationLoss - route[j].start.properties.elevationLoss;
+        const elevation = getElevationBetween(route[j].start, route[j].end);
+        route[j].elevationGain = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationGain : elevation.gain;
+        route[j].elevationLoss = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationLoss : elevation.loss;
     }
     return route;
 }
@@ -392,10 +416,16 @@ function changeCamp(dayIndex, isNext) {
 
     if (trailCircuit && this.isPositiveDirection && this.route[dayIndex].start.properties.distance > this.route[dayIndex].end.properties.distance) { //dest wraps around start of trail CW
         this.route[dayIndex].length = (trailLength - this.route[dayIndex].start.properties.distance) + this.route[dayIndex].end.properties.distance;
+        this.route[dayIndex].elevationGain = (trailElevationGain - this.route[dayIndex].start.properties.elevationGain) + this.route[dayIndex].end.properties.elevationGain;
+        this.route[dayIndex].elevationLoss = (trailElevationLoss - this.route[dayIndex].start.properties.elevationLoss) + this.route[dayIndex].end.properties.elevationLoss;
     } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex].start.properties.distance < this.route[dayIndex].end.properties.distance) { //dest wraps around start of trail CCW
         this.route[dayIndex].length = this.route[dayIndex].start.properties.distance + (trailLength - this.route[dayIndex].end.properties.distance);
+        this.route[dayIndex].elevationGain = this.route[dayIndex].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex].end.properties.elevationGain);
+        this.route[dayIndex].elevationLoss = this.route[dayIndex].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     } else {
         this.route[dayIndex].length = Math.round(Math.abs(this.route[dayIndex].start.properties.distance - this.route[dayIndex].end.properties.distance) * 10) / 10;
+        this.route[dayIndex].elevationGain = Math.round(Math.abs(this.route[dayIndex].start.properties.elevationGain - this.route[dayIndex].end.properties.elevationGain) * 10) / 10;
+        this.route[dayIndex].elevationLoss = Math.round(Math.abs(this.route[dayIndex].start.properties.elevationLoss - this.route[dayIndex].end.properties.elevationLoss) * 10) / 10;
     }
 
     this.route[dayIndex].prev_site = trailCircuit && this.route[dayIndex].end == campsiteFeatures[0] ? campsiteFeatures[campsiteFeatures.length - 1] : campsiteFeatures[this.route[dayIndex].end.properties.index - 1];
@@ -404,10 +434,16 @@ function changeCamp(dayIndex, isNext) {
 
     if (trailCircuit && this.isPositiveDirection && this.route[dayIndex + 1].start.properties.distance > this.route[dayIndex + 1].end.properties.distance) { //next day dest wraps around start of trail CW
         this.route[dayIndex + 1].length = (trailLength - this.route[dayIndex + 1].start.properties.distance) + this.route[dayIndex + 1].end.properties.distance;
+        this.route[dayIndex + 1].elevationGain = (trailElevationGain - this.route[dayIndex + 1].start.properties.elevationGain) + this.route[dayIndex + 1].end.properties.elevationGain;
+        this.route[dayIndex + 1].elevationLoss = (trailElevationLoss - this.route[dayIndex + 1].start.properties.elevationLoss) + this.route[dayIndex + 1].end.properties.elevationLoss;
     } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.properties.distance < this.route[dayIndex + 1].end.properties.distance) { //next day dest wraps around start of trail CCW
         this.route[dayIndex + 1].length = this.route[dayIndex + 1].start.properties.distance + (trailLength - this.route[dayIndex + 1].end.properties.distance);
+        this.route[dayIndex + 1].elevationGain = this.route[dayIndex + 1].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
+        this.route[dayIndex + 1].elevationLoss = this.route[dayIndex + 1].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     } else {
         this.route[dayIndex + 1].length = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.distance - this.route[dayIndex + 1].end.properties.distance) * 10) / 10;
+        this.route[dayIndex + 1].elevationGain = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.elevationGain - this.route[dayIndex + 1].end.properties.elevationGain) * 10) / 10;
+        this.route[dayIndex + 1].elevationLoss = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss) * 10) / 10;
     }
     displayRoute(this.route);
 }
@@ -473,20 +509,34 @@ function displayRoute(route) {
         let cell3 = row.insertCell(2);
         let cell4 = row.insertCell(3);
         let cell5 = row.insertCell(4);
-        cell5.classList.add("right");
         let cell6 = row.insertCell(5);
-        cell6.classList.add("right");
         let cell7 = row.insertCell(6);
+        cell7.classList.add("right");
         let cell8 = row.insertCell(7);
+        cell8.classList.add("right");
         cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
         cell3.innerHTML = i == 0 ? '<u>' + route[i].start.properties.title + '</u>' : route[i].start.properties.title;
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
-        cell5.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + route[i].elevationGain + '\' </span><span class="green">-' + route[i].elevationLoss + '\'</span>';
-        cell6.innerHTML = '<strong class="blue">' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + totalElevationGain+ '\' </span><span class="green">-' + totalElevationLoss + '\'</span>';
-        cell7.innerHTML = closerCampBtn(route[i], route);
-        cell8.innerHTML = furtherCampBtn(route[i], route);
+        cell5.innerHTML = closerCampBtn(route[i], route);
+        cell6.innerHTML = furtherCampBtn(route[i], route);
+        cell7.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong>';
+        cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + '\' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + '\'</span></strong>'
+        //cell8.innerHTML = i < route.length - 1 ? '' : '<strong>' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + totalElevationGain+ '\' </span><span class="green">-' + totalElevationLoss + '\'</span>';
     }
+    row = tableBody.insertRow(i);
+    cell1 = row.insertCell(0);
+    cell2 = row.insertCell(1);
+    cell3 = row.insertCell(2);
+    cell4 = row.insertCell(3);
+    cell5 = row.insertCell(4);
+    cell6 = row.insertCell(5);
+    cell7 = row.insertCell(6);
+    cell7.classList.add("right");
+    let cell8 = row.insertCell(7);
+    cell8.classList.add("right");
+    cell7.innerHTML = '<strong>Total:<br>' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + totalElevationGain.toLocaleString() + '\' </span><br><span class="green">-' + totalElevationLoss.toLocaleString() + '\'</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     shareRoute.disabled = false;

@@ -114,6 +114,9 @@ function setTrailDetails(trail) {
     trailElevationGain = elevationChange.elevationGain;
     trailElevationLoss = elevationChange.elevationLoss;
 
+    console.log(trailElevationGain);
+    console.log(trailElevationLoss);
+
     if (trailUnit == 'mi') {
         trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
         trailElevationGain = Math.round(trailElevationGain * 3.28084);
@@ -297,8 +300,6 @@ function calculateElevation(lineString) {
         } else {
           elevationLoss -= elevationDifference; // Using subtraction to get positive value
         }
-        // console.log(elevationGain);
-        // console.log(elevationLoss);
     }
     
     return { elevationGain, elevationLoss };
