@@ -86,7 +86,7 @@ function getDays() {
 
 function getDistancePerDay() {
     if (inputDistance.value > 0) return inputDistance.value;
-    return trailUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
+    return distanceUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
 }
 
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
@@ -328,7 +328,7 @@ function calculateRoute(start, end, days, startDate) {
                 lowestSD = sd;
             }
         }
-        console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + trailUnit);
+        console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + distanceUnit);
         return bestRoute;
     }
 }
@@ -451,7 +451,7 @@ function changeCamp(dayIndex, isNext) {
 
 function onDistancePerDayChange() {
     if ((inputDays.value == "" || inputDays.value == 0) && (inputDistance.value == 0 || inputDistance.value == "")) {
-        inputDistance.placeholder = trailUnit === 'mi' ? "10-20 Mile Range" : "16-32 Km Range";
+        inputDistance.placeholder = distanceUnit === 'mi' ? "10-20 Mile Range" : "16-32 Km Range";
         inputDistance.value = "";
     } 
     else if (inputDistance.value == 0 || inputDistance.value == "") {
@@ -492,7 +492,7 @@ function onTrailheadsChange() {
     if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {
         this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
         const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
-        inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(length / 16.0934)) : Math.max(1, Math.round(length / 10));
+        inputDays.value = distanceUnit === 'km' ? Math.max(1, Math.round(length / 16.0934)) : Math.max(1, Math.round(length / 10));
     }
 }
 
@@ -520,8 +520,8 @@ function displayRoute(route) {
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
-        cell7.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + '\' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + '\'</span></strong>'
+        cell7.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + distanceUnit + '</strong>';
+        cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + elevationUnit +' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + elevationUnit + '</span></strong>'
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
@@ -534,13 +534,12 @@ function displayRoute(route) {
     cell7.classList.add("right");
     let cell8 = row.insertCell(7);
     cell8.classList.add("right");
-    cell7.innerHTML = '<strong>Total:<br>' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong>';
-    cell8.innerHTML = '<strong><span class="red">+' + totalElevationGain.toLocaleString() + '\' </span><br><span class="green">-' + totalElevationLoss.toLocaleString() + '\'</span><strong>';
+    cell7.innerHTML = '<strong>Total:<br>' + totalMiles.toFixed(1) + ' ' + distanceUnit + '</strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + totalElevationGain.toLocaleString() + elevationUnit + ' </span><br><span class="green">-' + totalElevationLoss.toLocaleString() + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
-    //shareRoute.scrollIntoView({behavior: 'smooth'});
 
     updateGeoJSON();
 
@@ -558,8 +557,8 @@ function closerCampBtn(day, route) {
     else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
 
     if (day === route[0] && day.length - mileDif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + trailUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + trailUnit + '</button>';    
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';    
 }
 
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
@@ -573,8 +572,8 @@ function furtherCampBtn(day, route) {
     else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
     
     if ((day === route[route.length - 2] && nextDay.length - mileDif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + mileDif.toFixed(1) + ' ' + trailUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + mileDif.toFixed(1) +' ' + trailUnit + '</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + mileDif.toFixed(1) +' ' + distanceUnit + '</button>';
 }
 
 function reset() {
@@ -589,7 +588,7 @@ function reset() {
     selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trailName;
-    inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(trailLength / 16.0934)) : Math.max(1, Math.round(trailLength / 10));
+    inputDays.value = distanceUnit === 'km' ? Math.max(1, Math.round(trailLength / 16.0934)) : Math.max(1, Math.round(trailLength / 10));
     inputDistance.value = "";
     inputDistance.placeholder = "N/A";
     inputShortHikeIn.checked = false;
@@ -598,9 +597,9 @@ function reset() {
     inputCCW.disabled = trailCircuit ? false : true;
     inputCW.checked = trailCircuit ? true : false;
     inputCCW.checked = false;
-    if (trailUnit === 'km') inputKm.click();
+    if (distanceUnit === 'km') inputKm.click();
     else inputMi.click();
-    setUnitLabels(trailUnit);
+    setUnitLabels(distanceUnit);
     this.userSetDays = false;
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
@@ -640,22 +639,31 @@ function setUnitLabels(unit) {
 }
 
 function setUnit(unit) {
-    if (trailUnit != unit) {
-        console.log('Switching unit from ' + trailUnit + ' to ' + unit);
-        trailUnit = unit;
+    if (distanceUnit != unit) {
+        console.log('Switching unit from ' + distanceUnit + ' to ' + unit);
+        distanceUnit = unit;
+        elevationUnit = unit === 'km' ? ' m' : '\'';
         trailLength = unit === 'km' ? Math.round(trailLength * 1.609344 * 10) / 10 : Math.round(trailLength * 0.6213711922 * 10) / 10;
+        trailElevationGain = unit === 'km' ? Math.round(trailElevationGain * 0.3048) : Math.round(trailElevationGain * 3.28084);
+        trailElevationLoss = unit === 'km' ? Math.round(trailElevationLoss * 0.3048) : Math.round(trailElevationLoss * 3.28084);
         setUnitLabels(unit);
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
         for (trailhead of trailheadFeatures) {
             trailhead.properties.distance = unit === 'km' ? Math.round(trailhead.properties.distance * 1.609344 * 10) / 10 : Math.round(trailhead.properties.distance * 0.6213711922 * 10) / 10;
+            trailhead.properties.elevationGain = unit === 'km' ? Math.round(trailhead.properties.elevationGain * 0.3048) : Math.round(trailhead.properties.elevationGain * 3.28084);
+            trailhead.properties.elevationLoss = unit === 'km' ? Math.round(trailhead.properties.elevationLoss * 0.3048) : Math.round(trailhead.properties.elevationLoss * 3.28084);
         }
         for (campsite of campsiteFeatures) {
             campsite.properties.distance = unit === 'km' ? Math.round(campsite.properties.distance * 1.609344 * 10) / 10 : Math.round(campsite.properties.distance * 0.6213711922 * 10) / 10;
+            campsite.properties.elevationGain = unit === 'km' ? Math.round(campsite.properties.elevationGain * 0.3048) : Math.round(campsite.properties.elevationGain * 3.28084);
+            campsite.properties.elevationLoss = unit === 'km' ? Math.round(campsite.properties.elevationLoss * 0.3048) : Math.round(campsite.properties.elevationLoss * 3.28084);
         }
         if (this.route != undefined && this.route.length > 0) {
             for (day of this.route) {
                 day.length = unit === 'km' ? Math.round(day.length * 1.609344 * 10) / 10 : Math.round(day.length * 0.6213711922 * 10) / 10;
+                day.elevationGain = unit === 'km' ? Math.round(day.elevationGain * 0.3048) : Math.round(day.elevationGain * 3.28084);
+                day.elevationLoss = unit === 'km' ? Math.round(day.elevationLoss * 0.3048) : Math.round(day.elevationLoss * 3.28084);
             }
             displayRoute(this.route);
         }

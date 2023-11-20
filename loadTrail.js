@@ -3,7 +3,8 @@ let trailName;
 let trailLength;
 let trailElevationGain;
 let trailElevationLoss;
-let trailUnit = 'mi'; //default
+let distanceUnit = 'mi'; //default
+let elevationUnit = '\''; //default
 let trailCircuit;
 
 // Variables for the required GeoJSON features
@@ -114,7 +115,7 @@ function setTrailDetails(trail) {
     trailElevationGain = elevationChange.elevationGain;
     trailElevationLoss = elevationChange.elevationLoss;
 
-    if (trailUnit == 'mi') {
+    if (distanceUnit == 'mi') {
         trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
         trailElevationGain = Math.round(trailElevationGain * 3.28084);
         trailElevationLoss = Math.round(trailElevationLoss * 3.28084);
@@ -153,7 +154,7 @@ function appendDistance(feature) {
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
-            if (trailUnit == 'mi') {
+            if (distanceUnit == 'mi') {
                 feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
                 feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
                 feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
@@ -175,7 +176,7 @@ function appendDistance(feature) {
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
                 feature.properties.elevationLoss = elevationChange.elevationLoss;
-                if (trailUnit == 'mi') {
+                if (distanceUnit == 'mi') {
                     feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
                     feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
                     feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
