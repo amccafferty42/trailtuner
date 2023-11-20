@@ -42,6 +42,7 @@ function plan() {
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
         displayRoute(route);
+        shareRoute.scrollIntoView({behavior: 'smooth'});
     }
 }
 
@@ -493,7 +494,6 @@ function onTrailheadsChange() {
         const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
         inputDays.value = trailUnit === 'km' ? Math.max(1, Math.round(length / 16.0934)) : Math.max(1, Math.round(length / 10));
     }
-
 }
 
 function displayRoute(route) {
@@ -522,7 +522,6 @@ function displayRoute(route) {
         cell6.innerHTML = furtherCampBtn(route[i], route);
         cell7.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + trailUnit + '</strong>';
         cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + '\' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + '\'</span></strong>'
-        //cell8.innerHTML = i < route.length - 1 ? '' : '<strong>' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + totalElevationGain+ '\' </span><span class="green">-' + totalElevationLoss + '\'</span>';
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
