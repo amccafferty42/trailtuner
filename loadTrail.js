@@ -51,6 +51,19 @@ function initMap() {
     const long = trailFeature.geometry.coordinates[half][0];
     this.leafletMap = L.map('map').setView([lat, long], 10);
     this.geoJsonLayer = L.geoJSON().addTo(this.leafletMap);
+
+    // create legend
+    const legend = L.control({ position: "bottomleft" });
+    legend.onAdd = function () {
+        let div = L.DomUtil.create("div", "description");
+        L.DomEvent.disableClickPropagation(div);
+        const text =
+            "*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
+        div.insertAdjacentHTML("beforeend", text);
+        return div;
+    };
+    legend.addTo(this.leafletMap);
+
     L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(this.leafletMap);

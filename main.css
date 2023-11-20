@@ -178,3 +178,15 @@
 .green {
     color: green;
 }
+
+.description {
+    /* width: 350px; */
+    font-size: 16px;
+    color: #333;
+    padding: 10px 14px;
+    background-color: hsla(0, 0%, 100%, 0.8);
+    box-shadow: 0 0 15px rgb(0 0 0 / 20%);
+    border-radius: 5px;
+    line-height: 120%;
+    border: 1px solid grey;
+  }
