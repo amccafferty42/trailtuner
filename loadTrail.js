@@ -114,9 +114,6 @@ function setTrailDetails(trail) {
     trailElevationGain = elevationChange.elevationGain;
     trailElevationLoss = elevationChange.elevationLoss;
 
-    console.log(trailElevationGain);
-    console.log(trailElevationLoss);
-
     if (trailUnit == 'mi') {
         trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
         trailElevationGain = Math.round(trailElevationGain * 3.28084);
@@ -171,6 +168,7 @@ function appendDistance(feature) {
     if (feature.properties.distance === undefined) {
         for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
             if (inLine(trailFeature.geometry.coordinates[i], trailFeature.geometry.coordinates[i+1], feature.geometry.coordinates)) {
+                if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 feature.properties.distance = lengthGeo(newGeometry) / 1000;
