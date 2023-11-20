@@ -286,14 +286,14 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
-        if (includeBothCandidates) {
+        if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
         } else {
             //only add the campsite closer to the average distance
-            if (Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
+            if (campsiteCandidate1 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
                 campsites.add(campsiteCandidate1);
-            } else {
+            } else if (campsiteCandidate2) {
                 campsites.add(campsiteCandidate2);
             }
         }
@@ -524,7 +524,7 @@ function displayRoute(route) {
         cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + '\' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + '\'</span></strong>'
         //cell8.innerHTML = i < route.length - 1 ? '' : '<strong>' + totalMiles.toFixed(1) + ' ' + trailUnit + '</strong><br><span class="red">+' + totalElevationGain+ '\' </span><span class="green">-' + totalElevationLoss + '\'</span>';
     }
-    row = tableBody.insertRow(i);
+    row = tableBody.insertRow();
     cell1 = row.insertCell(0);
     cell2 = row.insertCell(1);
     cell3 = row.insertCell(2);
@@ -541,7 +541,7 @@ function displayRoute(route) {
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
-    shareRoute.scrollIntoView({behavior: 'smooth'});
+    //shareRoute.scrollIntoView({behavior: 'smooth'});
 
     updateGeoJSON();
 
