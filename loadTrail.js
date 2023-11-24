@@ -33,15 +33,106 @@ const neutralIcon = L.icon({
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
-const tentIcon = L.icon({
-    iconUrl: 'resources/tent.png',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
 
 setTrailFromURL();
 setTrailDetails(trail);
 initMap();
+
+Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Tooltip, Chart.LinearScale, Chart.PointElement, Chart.Filler, Chart.Title);
+calculateElevationProfileData(trailFeature);
+
+function calculateElevationProfileData(feature) {
+    const ctx = document.getElementById('elevationProfile').getContext("2d");
+    const labels = [];
+    const data = [];
+    for (let i = 0; i < feature.geometry.coordinates.length; i++) {
+        data.push(feature.geometry.coordinates[i][2] * 3.28084);
+        labels.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+    }
+    const chartData = {
+        labels: labels,
+        datasets: [{
+          data: data,
+          fill: true,
+          borderColor: '#66ccff',
+          backgroundColor: '#66ccff66',
+          tension: 0.1,
+          pointRadius: 0,
+          spanGaps: true
+        }]
+    };
+      
+    const config = {
+        type: 'line',
+        data: chartData,
+        plugins: [{
+            beforeInit: (chart, args, options) => {
+            const maxHeight = Math.max(...chart.data.datasets[0].data);
+            chart.options.scales.x.min = Math.min(...chart.data.labels);
+            chart.options.scales.x.max = Math.max(...chart.data.labels);
+            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
+            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
+            }
+        }],
+        options: {
+            animation: false,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            tooltip: { position: 'nearest' },
+            scales: {
+                x: { type: 'linear' },
+                y: { type: 'linear', beginAtZero: true },
+                y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }},
+            },
+            plugins: {
+                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                legend: { display: false },
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        title: (tooltipItems) => {
+                            return "Distance: " + tooltipItems[0].label + 'm'
+                        },
+                        label: (tooltipItem) => {
+                            return "Elevation: " + tooltipItem.raw + 'm'
+                        },
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    //backgroundColor: getLineColor,
+                    //hoverBackgroundColor: makeHalfAsOpaque,
+                    radius: adjustRadiusBasedOnData,
+                    pointStyle: alternatePointStyles,
+                    hoverRadius: 15,
+                }
+            }
+        }
+    };
+    // data.datasets.forEach(dataset => {
+    //     if (dataset.data.) dataset.pointStyle = 'circle';
+    // });
+    const chart = new Chart(ctx, config);
+}
+
+// function getLineColor(ctx) {
+//     return Utils.color(ctx.datasetIndex);
+// }
+  
+function alternatePointStyles(ctx) {
+    const index = ctx.dataIndex;
+    return index % 2 === 0 ? 'circle' : 'rect';
+}
+
+// function makeHalfAsOpaque(ctx) {
+//     return Utils.transparentize(getLineColor(ctx));
+// }
+
+function adjustRadiusBasedOnData(ctx) {
+    const v = ctx.parsed.y;
+    return 300;
+}
 
 // Set coordinates and zoom of map
 function initMap() {
@@ -58,7 +149,7 @@ function initMap() {
         let div = L.DomUtil.create("div", "description");
         L.DomEvent.disableClickPropagation(div);
         const text =
-            "*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
+            "<span class=\"red\"><b>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = restricted camping<br><span class=\"green\">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = unrestricted camping</b><br>*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
         div.insertAdjacentHTML("beforeend", text);
         return div;
     };
@@ -332,9 +423,11 @@ function calculateLength(lineString) {
     if (lineString.length<2)
         return 0;
     var result = 0;
-    for (var i=1; i<lineString.length; i++)
+    for (var i=1; i<lineString.length; i++) {
         result += distance(lineString[i-1][0],lineString[i-1][1],
                            lineString[i  ][0],lineString[i  ][1]);
+        lineString[i][3] = result;
+    }
     return result;
 }
 

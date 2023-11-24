@@ -78,8 +78,17 @@ function updateMap() {
             layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
             if (layer.feature.properties && layer.feature.properties.folderId == campsiteFolder.id) {
                 nightIndex++;
-                layer.bindPopup('Night ' + nightIndex);
-                layer.setIcon(tentIcon);
+                if (nightIndex > 0 && nightIndex < 20) {
+                    //numbers created with 600 font, bold, segoe UI
+                    const icon = L.icon({
+                        iconUrl: 'resources/' + nightIndex +'.png',
+                        iconSize: [20, 28],
+                        iconAnchor: [10, 27]
+                    });
+                    layer.setIcon(icon);
+                } else {
+                    layer.setIcon(neutralIcon);
+                }
             } else if (layer.feature.properties && layer.feature.properties.folderId == trailheadFolder.id && layer.feature.properties.title == this.route[0].start.properties.title) {
                 layer.bindPopup('Start');
                 layer.setIcon(startIcon);
@@ -91,7 +100,9 @@ function updateMap() {
             layer.setStyle({color :'red'}); 
             layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + this.route[dayIndex].length.toFixed(1) + ' ' + distanceUnit);
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
-            if (dayIndex % 2 == 1) layer.setStyle({color :'#ff7d7d'});
+            //            if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
+            // if (dayIndex % 2 == 0) layer.setStyle({color :'blue'});
+            // if (dayIndex % 3 == 0) layer.setStyle({color :'yellow'});
             dayIndex++;
         }
     });
