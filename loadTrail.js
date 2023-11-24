@@ -42,28 +42,52 @@ Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Too
 calculateElevationProfileData(trailFeature);
 
 function calculateElevationProfileData(feature) {
+    console.log(trailheadFeatures);
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const labels = [];
-    const data = [];
+    const distance = [];
+    const elevation = [];
+    const trailheads = [];
     for (let i = 0; i < feature.geometry.coordinates.length; i++) {
-        data.push(feature.geometry.coordinates[i][2] * 3.28084);
-        labels.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+        elevation.push(feature.geometry.coordinates[i][2] * 3.28084);
+        distance.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+    }
+    for (let i = 0; i < trailheadFeatures.length; i++) {
+        trailheads.push({
+            x: trailheadFeatures[i].properties.distance,
+            y: trailheadFeatures[i].properties.altitude * 3.28084,
+            r: 5,
+            label: trailheadFeatures[i].properties.title
+        });
+        // trailheadDistances.push(trailheadFeatures[i].properties.distance);
+        // trailheadElevations.push(trailheadFeatures[i].properties.altitude);
     }
     const chartData = {
-        labels: labels,
+        labels: distance,
         datasets: [{
-          data: data,
-          fill: true,
-          borderColor: '#66ccff',
-          backgroundColor: '#66ccff66',
-          tension: 0.1,
-          pointRadius: 0,
-          spanGaps: true
-        }]
+            type: 'bubble',
+            data: trailheads,
+            pointStyle: 'circle',
+            borderColor: '#000000',
+            backgroundColor: '#662900BA'
+        }, 
+        {
+            type: 'line',
+            data: elevation,
+            fill: true,
+            borderWidth: 2,
+            borderColor: '#00630AFF',
+            //backgroundColor: '#66ccff66',
+            //borderColor: '#005907FF',
+            backgroundColor: '#00630A80',
+            tension: 0.1,
+            pointRadius: 0,
+            spanGaps: true,
+            hitRadius: 0
+        }
+    ]
     };
       
     const config = {
-        type: 'line',
         data: chartData,
         plugins: [{
             beforeInit: (chart, args, options) => {
@@ -81,8 +105,8 @@ function calculateElevationProfileData(feature) {
             tooltip: { position: 'nearest' },
             scales: {
                 x: { type: 'linear' },
-                y: { type: 'linear', beginAtZero: true },
-                y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }},
+                y: { type: 'linear', beginAtZero: false },
+                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
             },
             plugins: {
                 title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
@@ -103,35 +127,14 @@ function calculateElevationProfileData(feature) {
                 point: {
                     //backgroundColor: getLineColor,
                     //hoverBackgroundColor: makeHalfAsOpaque,
-                    radius: adjustRadiusBasedOnData,
-                    pointStyle: alternatePointStyles,
-                    hoverRadius: 15,
+                    //radius: adjustRadiusBasedOnData,
+                    //pointStyle: alternatePointStyles,
+                    hoverRadius: 5
                 }
             }
         }
     };
-    // data.datasets.forEach(dataset => {
-    //     if (dataset.data.) dataset.pointStyle = 'circle';
-    // });
     const chart = new Chart(ctx, config);
-}
-
-// function getLineColor(ctx) {
-//     return Utils.color(ctx.datasetIndex);
-// }
-  
-function alternatePointStyles(ctx) {
-    const index = ctx.dataIndex;
-    return index % 2 === 0 ? 'circle' : 'rect';
-}
-
-// function makeHalfAsOpaque(ctx) {
-//     return Utils.transparentize(getLineColor(ctx));
-// }
-
-function adjustRadiusBasedOnData(ctx) {
-    const v = ctx.parsed.y;
-    return 300;
 }
 
 // Set coordinates and zoom of map
@@ -255,6 +258,7 @@ function appendDistance(feature) {
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
             feature.properties.distance = lengthGeo(newGeometry) / 1000;
+            feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
@@ -277,6 +281,7 @@ function appendDistance(feature) {
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 feature.properties.distance = lengthGeo(newGeometry) / 1000;
+                feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
                 feature.properties.elevationLoss = elevationChange.elevationLoss;
