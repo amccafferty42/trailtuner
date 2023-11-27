@@ -34,23 +34,22 @@ const neutralIcon = L.icon({
     iconAnchor: [10, 27]
 });
 
+// Variables for chart.js
+let trailElevationChart;
+//Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Tooltip, Chart.LinearScale, Chart.PointElement, Chart.Filler, Chart.Title);
+
 setTrailFromURL();
 setTrailDetails(trail);
 initMap();
+initChart();
 
-Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Tooltip, Chart.LinearScale, Chart.PointElement, Chart.Filler, Chart.Title);
-calculateElevationProfileData(trailFeature);
-
-function calculateElevationProfileData(feature) {
-    console.log('test');
-    console.log(trailheadFeatures);
+function initChart() {
+    if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const distance = [];
-    const elevation = [];
-    const trailheads = [];
-    for (let i = 0; i < feature.geometry.coordinates.length; i++) {
-        elevation.push(feature.geometry.coordinates[i][2] * 3.28084);
-        distance.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+    const distance = [], elevation = [], trailheads = [];
+    for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
+        elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
+        distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
     }
     for (let i = 0; i < trailheadFeatures.length; i++) {
         trailheads.push({
@@ -59,8 +58,6 @@ function calculateElevationProfileData(feature) {
             r: 5,
             label: trailheadFeatures[i].properties.title
         });
-        // trailheadDistances.push(trailheadFeatures[i].properties.distance);
-        // trailheadElevations.push(trailheadFeatures[i].properties.altitude);
     }
     const chartData = {
         labels: distance,
@@ -68,18 +65,16 @@ function calculateElevationProfileData(feature) {
             type: 'bubble',
             data: trailheads,
             pointStyle: 'circle',
-            borderColor: '#000000',
-            backgroundColor: '#662900BA'
+            borderColor: '#001A9E',
+            backgroundColor: '#001A9E80'
         }, 
         {
             type: 'line',
             data: elevation,
             fill: true,
             borderWidth: 2,
-            borderColor: '#00630AFF',
-            //backgroundColor: '#66ccff66',
-            //borderColor: '#005907FF',
-            backgroundColor: '#00630A80',
+            backgroundColor: '#ff000020',
+            borderColor: '#ff0000',
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
@@ -126,18 +121,13 @@ function calculateElevationProfileData(feature) {
             },
             elements: {
                 point: {
-                    //backgroundColor: getLineColor,
-                    //hoverBackgroundColor: makeHalfAsOpaque,
-                    //radius: adjustRadiusBasedOnData,
-                    //pointStyle: alternatePointStyles,
                     hoverRadius: 5
                 }
             }
         }
     };
-    const chart = new Chart(ctx, config);
+    this.trailElevationChart = new Chart(ctx, config);
 }
-
 // Set coordinates and zoom of map
 function initMap() {
     if (this.leafletMap != undefined) this.leafletMap.remove();
@@ -177,7 +167,6 @@ function resetMap() {
             layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
         }
     });
-    myLineChart.destroy();
 }
 
 // Validate trail and set details
@@ -305,7 +294,7 @@ function onTrailSelect() {
     setTrailDetails(trail);
     reset();
     initMap();
-    calculateElevationProfileData(trailFeature);
+    initChart();
     selectTrail.value = "";
     $('#changeTrail').modal('hide');
 }
