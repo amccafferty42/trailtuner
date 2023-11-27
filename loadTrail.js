@@ -36,7 +36,6 @@ const neutralIcon = L.icon({
 
 // Variables for chart.js
 let trailElevationChart;
-//Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Tooltip, Chart.LinearScale, Chart.PointElement, Chart.Filler, Chart.Title);
 
 setTrailFromURL();
 setTrailDetails(trail);
@@ -111,10 +110,10 @@ function initChart() {
                     displayColors: false,
                     callbacks: {
                         title: (tooltipItems) => {
-                            return "Distance: " + tooltipItems[0].label + 'm'
+                            return "Distance: " + Math.round(tooltipItems[0].label* 10) / 10 + 'mi'
                         },
                         label: (tooltipItem) => {
-                            return "Elevation: " + tooltipItem.raw + 'm'
+                            return "Elevation: " + Math.round(tooltipItem.raw) + '\''
                         },
                     }
                 }
