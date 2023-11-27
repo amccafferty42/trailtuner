@@ -1,5 +1,6 @@
 let exportedRoute;
 let fullRoute;
+let days = [];
 
 // Update GeoJSON with all trailheads and campsites on the generated route, as well as an individual LineString for each day
 function updateGeoJSON() {
@@ -59,10 +60,10 @@ function updateGeoJSON() {
                 break;
             }
         }                    
-        dayRoute.properties.title = "Day " + (j + 1);
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
     updateMap();
+    //updateElevationChart(days);
     console.log(exportedRoute);
 }
 
@@ -106,6 +107,107 @@ function updateMap() {
             dayIndex++;
         }
     });
+}
+
+function updateElevationChart(days) {
+    console.log(days);
+    for (let i = 0; i < days.length; i++) {
+        console.log(days[i]);
+    }
+
+    const ctx = document.getElementById('daily-elevation').getContext("2d");
+
+    const distance = [];
+    const elevation = [];
+    const trailheads = [];
+    for (let i = 0; i < feature.geometry.coordinates.length; i++) {
+        elevation.push(feature.geometry.coordinates[i][2] * 3.28084);
+        distance.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+    }
+    for (let i = 0; i < trailheadFeatures.length; i++) {
+        trailheads.push({
+            x: trailheadFeatures[i].properties.distance,
+            y: trailheadFeatures[i].properties.altitude * 3.28084,
+            r: 5,
+            label: trailheadFeatures[i].properties.title
+        });
+        // trailheadDistances.push(trailheadFeatures[i].properties.distance);
+        // trailheadElevations.push(trailheadFeatures[i].properties.altitude);
+    }
+    const chartData = {
+        labels: distance,
+        datasets: [{
+            type: 'bubble',
+            data: trailheads,
+            pointStyle: 'circle',
+            borderColor: '#000000',
+            backgroundColor: '#662900BA'
+        }, 
+        {
+            type: 'line',
+            data: elevation,
+            fill: true,
+            borderWidth: 2,
+            borderColor: '#00630AFF',
+            //backgroundColor: '#66ccff66',
+            //borderColor: '#005907FF',
+            backgroundColor: '#00630A80',
+            tension: 0.1,
+            pointRadius: 0,
+            spanGaps: true,
+            hitRadius: 0
+        }
+    ]
+    };
+      
+    const config = {
+        data: chartData,
+        plugins: [{
+            beforeInit: (chart, args, options) => {
+            const maxHeight = Math.max(...chart.data.datasets[0].data);
+            chart.options.scales.x.min = Math.min(...chart.data.labels);
+            chart.options.scales.x.max = Math.max(...chart.data.labels);
+            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
+            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
+            }
+        }],
+        options: {
+            animation: false,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            tooltip: { position: 'nearest' },
+            scales: {
+                x: { type: 'linear' },
+                y: { type: 'linear', beginAtZero: false },
+                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
+            },
+            plugins: {
+                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                legend: { display: false },
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        title: (tooltipItems) => {
+                            return "Distance: " + tooltipItems[0].label + 'm'
+                        },
+                        label: (tooltipItem) => {
+                            return "Elevation: " + tooltipItem.raw + 'm'
+                        },
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    //backgroundColor: getLineColor,
+                    //hoverBackgroundColor: makeHalfAsOpaque,
+                    //radius: adjustRadiusBasedOnData,
+                    //pointStyle: alternatePointStyles,
+                    hoverRadius: 5
+                }
+            }
+        }
+    };
+    const chart = new Chart(ctx, config);
 }
 
 // Download GeoJSON

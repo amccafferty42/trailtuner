@@ -42,6 +42,7 @@ Chart.register( Chart.LineElement, Chart.LineController, Chart.Legend, Chart.Too
 calculateElevationProfileData(trailFeature);
 
 function calculateElevationProfileData(feature) {
+    console.log('test');
     console.log(trailheadFeatures);
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     const distance = [];
@@ -176,6 +177,7 @@ function resetMap() {
             layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
         }
     });
+    myLineChart.destroy();
 }
 
 // Validate trail and set details
@@ -303,6 +305,7 @@ function onTrailSelect() {
     setTrailDetails(trail);
     reset();
     initMap();
+    calculateElevationProfileData(trailFeature);
     selectTrail.value = "";
     $('#changeTrail').modal('hide');
 }

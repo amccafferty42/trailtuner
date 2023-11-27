@@ -611,6 +611,7 @@ function reset() {
     exportedRoute = undefined;
     fullRoute = undefined;
     resetMap();
+    //myLineChart.destroy();
     window.scrollTo(0, 0);
 }
 
