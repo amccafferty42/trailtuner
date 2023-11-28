@@ -47,14 +47,17 @@ function initChart() {
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     const distance = [], elevation = [], trailheads = [];
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
-        elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
-        distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+        //prevent adding multiple points at the same distance (x value)
+        if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
+            elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
+            distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+        }
     }
     for (let i = 0; i < trailheadFeatures.length; i++) {
         trailheads.push({
             x: trailheadFeatures[i].properties.distance,
             y: trailheadFeatures[i].properties.altitude * 3.28084,
-            r: 5,
+            r: 6,
             label: trailheadFeatures[i].properties.title
         });
     }
@@ -63,9 +66,19 @@ function initChart() {
         datasets: [{
             type: 'bubble',
             data: trailheads,
-            pointStyle: 'circle',
+            label: 'test',
+            borderWidth: 2,
+            pointStyle: 'rectRot',
             borderColor: '#001A9E',
-            backgroundColor: '#001A9E80'
+            backgroundColor: '#001A9E80',
+            hitRadius: 30,
+            hoverBorderWidth: 3,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
         }, 
         {
             type: 'line',
@@ -77,7 +90,13 @@ function initChart() {
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
-            hitRadius: 0
+            //hitRadius: 2,
+            options: {
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
         }
     ]
     };
@@ -96,8 +115,15 @@ function initChart() {
         options: {
             animation: false,
             maintainAspectRatio: false,
-            interaction: { intersect: false, mode: 'index' },
-            tooltip: { position: 'nearest' },
+            //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
+            tooltip: { 
+                position: 'point',
+                tooltips: {
+                    filter: function (tooltipItem) {
+                        return tooltipItem.datasetIndex === 0;
+                    }
+                    }
+            },
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
@@ -110,17 +136,27 @@ function initChart() {
                     displayColors: false,
                     callbacks: {
                         title: (tooltipItems) => {
-                            return "Distance: " + Math.round(tooltipItems[0].label* 10) / 10 + 'mi'
+                            //console.log(tooltipItems);
+                            if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
+                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' mi'
+                            //return undefined;
                         },
                         label: (tooltipItem) => {
-                            return "Elevation: " + Math.round(tooltipItem.raw) + '\''
+                            const stats = [];
+                            if (tooltipItem.dataset.type == 'bubble') {
+                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' mi');
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'');
+                                stats.length = 2;
+                                return stats;
+                            } else {
+                                //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
+                                return "Elevation: " + Math.round(tooltipItem.raw) + '\''; 
+                            }
+                            //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
+                            //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
+                            //return stats
                         },
                     }
-                }
-            },
-            elements: {
-                point: {
-                    hoverRadius: 5
                 }
             }
         }
