@@ -242,9 +242,7 @@ function setTrailDetails(trail) {
     if (campsiteFeatures.length <= 0) return;
 
     trailName = trailFeature.properties.title;
-    trailLength = lengthGeo(trailFeature.geometry) / 1000;
-    // TODO: fix this hack
-    trailFeature.geometry.coordinates[0][3] = 0;
+    trailLength = calculateLength(trailFeature.geometry.coordinates) / 1000;
 
     const elevationChange = calculateElevation(trailFeature.geometry);
     trailElevationGain = elevationChange.elevationGain;
@@ -285,7 +283,8 @@ function appendDistance(feature) {
         if ((feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
-            feature.properties.distance = lengthGeo(newGeometry) / 1000;
+            //feature.properties.distance = lengthGeo(newGeometry) / 1000;
+            feature.properties.distance = trailFeature.geometry.coordinates[i][3];
             feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
@@ -308,7 +307,8 @@ function appendDistance(feature) {
                 if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
-                feature.properties.distance = lengthGeo(newGeometry) / 1000;
+                //feature.properties.distance = lengthGeo(newGeometry) / 1000;
+                feature.properties.distance = trailFeature.geometry.coordinates[i][3];
                 feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
@@ -442,28 +442,52 @@ function calculateElevation(lineString) {
     return { elevationGain, elevationLoss };
 }
 
-function lengthGeo(geometry) {
-    if (geometry.type === 'LineString')
-        return calculateLength(geometry.coordinates);
-    else if (geometry.type === 'MultiLineString')
-        return geometry.coordinates.reduce(function(memo, coordinates) {
-            return memo + calculateLength(coordinates);
-        }, 0);
-    else
-        return null;
-}
+// function lengthGeo(geometry) {
+//     if (geometry.type === 'LineString')
+//         return calculateLength(geometry.coordinates);
+//     else if (geometry.type === 'MultiLineString')
+//         return geometry.coordinates.reduce(function(memo, coordinates) {
+//             return memo + calculateLength(coordinates);
+//         }, 0);
+//     else
+//         return null;
+// }
 
 function calculateLength(lineString) {
-    if (lineString.length<2)
+    if (lineString.length < 2)
         return 0;
-    var result = 0;
-    for (var i=1; i<lineString.length; i++) {
+    let result = 0;
+    lineString[0][3] = 0;
+    for (let i = 1; i < lineString.length; i++) {
         result += distance(lineString[i-1][0],lineString[i-1][1],
                            lineString[i  ][0],lineString[i  ][1]);
         lineString[i][3] = result;
     }
     return result;
 }
+
+// function haversineDistance(lat1, lon1, lat2, lon2) {
+//     const earthRadius = 6371; // Radius of the Earth in kilometers
+
+//     // Convert degrees to radians
+//     const toRadians = (angle) => angle * (Math.PI / 180);
+
+//     // Calculate differences in coordinates
+//     const dLat = toRadians(lat2 - lat1);
+//     const dLon = toRadians(lon2 - lon1);
+
+//     // Haversine formula for distance
+//     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//               Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+//               Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+//     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+//     // Distance in kilometers (along the surface of the sphere)
+//     const distance = earthRadius * c;
+
+//     return distance;
+// }
 
 /**
  * Calculate the approximate distance between two coordinates (lat/lon)
