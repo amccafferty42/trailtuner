@@ -243,6 +243,8 @@ function setTrailDetails(trail) {
 
     trailName = trailFeature.properties.title;
     trailLength = lengthGeo(trailFeature.geometry) / 1000;
+    // TODO: fix this hack
+    trailFeature.geometry.coordinates[0][3] = 0;
 
     const elevationChange = calculateElevation(trailFeature.geometry);
     trailElevationGain = elevationChange.elevationGain;

@@ -542,10 +542,8 @@ function displayRoute(route) {
     exportRoute.disabled = false;
 
     updateGeoJSON();
-
     console.log(route);
 }
-
 
 // Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
 function closerCampBtn(day, route) {

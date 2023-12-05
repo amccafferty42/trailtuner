@@ -63,8 +63,141 @@ function updateGeoJSON() {
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
     updateMap();
-    //updateElevationChart(days);
+    updateChart();
     console.log(exportedRoute);
+}
+
+function updateChart() {
+    if (this.trailElevationChart) this.trailElevationChart.destroy();
+    const ctx = document.getElementById('elevationProfile').getContext("2d");
+    const distance = [], elevation = [], trailheads = [];
+    //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
+    const startDistance = Math.min(this.route[0].start.properties.distance, this.route[this.route.length - 1].end.properties.distance);
+    console.log(startDistance);
+    for (let i = 0; i < exportedRoute.features.length; i++) {
+        if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === 'LineString') {
+            //console.log(exportedRoute.features[i].geometry);
+            for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
+                elevation.push(exportedRoute.features[i].geometry.coordinates[j][2] * 3.28084);
+                distance.push((exportedRoute.features[i].geometry.coordinates[j][3] - startDistance) * 0.6213711922 / 1000);
+            }
+        }
+        //prevent adding multiple points at the same distance (x value)
+        // if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
+        //     elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
+        //     distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+        // }
+    }
+    console.log(distance);
+    // console.log(elevation);
+    for (let i = 0; i < trailheadFeatures.length; i++) {
+        trailheads.push({
+            x: trailheadFeatures[i].properties.distance,
+            y: trailheadFeatures[i].properties.altitude * 3.28084,
+            r: 6,
+            label: trailheadFeatures[i].properties.title
+        });
+    }
+    const chartData = {
+        labels: distance,
+        datasets: [{
+            type: 'bubble',
+            data: trailheads,
+            label: 'test',
+            borderWidth: 2,
+            pointStyle: 'rectRot',
+            borderColor: '#001A9E',
+            backgroundColor: '#001A9E80',
+            hitRadius: 30,
+            hoverBorderWidth: 3,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
+        }, 
+        {
+            type: 'line',
+            data: elevation,
+            fill: true,
+            borderWidth: 2,
+            backgroundColor: '#ff000020',
+            borderColor: '#ff0000',
+            tension: 0.1,
+            pointRadius: 0,
+            spanGaps: true,
+            //hitRadius: 2,
+            options: {
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        }]
+    };
+      
+    const config = {
+        data: chartData,
+        plugins: [{
+            beforeInit: (chart, args, options) => {
+            const maxHeight = Math.max(...chart.data.datasets[0].data);
+            chart.options.scales.x.min = Math.min(...chart.data.labels);
+            chart.options.scales.x.max = Math.max(...chart.data.labels);
+            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
+            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
+            }
+        }],
+        options: {
+            animation: false,
+            maintainAspectRatio: false,
+            //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
+            tooltip: { 
+                position: 'point',
+                tooltips: {
+                    filter: function (tooltipItem) {
+                        return tooltipItem.datasetIndex === 0;
+                    }
+                    }
+            },
+            scales: {
+                x: { type: 'linear' },
+                y: { type: 'linear', beginAtZero: false },
+                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
+            },
+            plugins: {
+                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                legend: { display: false },
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        title: (tooltipItems) => {
+                            //console.log(tooltipItems);
+                            if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
+                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' mi'
+                            //return undefined;
+                        },
+                        label: (tooltipItem) => {
+                            const stats = [];
+                            if (tooltipItem.dataset.type == 'bubble') {
+                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' mi');
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'');
+                                stats.length = 2;
+                                return stats;
+                            } else {
+                                //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
+                                return "Elevation: " + Math.round(tooltipItem.raw) + '\''; 
+                            }
+                            //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
+                            //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
+                            //return stats
+                        },
+                    }
+                }
+            }
+        }
+    };
+    this.trailElevationChart = new Chart(ctx, config);
 }
 
 // Update map to display the generated route
@@ -107,107 +240,6 @@ function updateMap() {
             dayIndex++;
         }
     });
-}
-
-function updateElevationChart(days) {
-    console.log(days);
-    for (let i = 0; i < days.length; i++) {
-        console.log(days[i]);
-    }
-
-    const ctx = document.getElementById('daily-elevation').getContext("2d");
-
-    const distance = [];
-    const elevation = [];
-    const trailheads = [];
-    for (let i = 0; i < feature.geometry.coordinates.length; i++) {
-        elevation.push(feature.geometry.coordinates[i][2] * 3.28084);
-        distance.push(feature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
-    }
-    for (let i = 0; i < trailheadFeatures.length; i++) {
-        trailheads.push({
-            x: trailheadFeatures[i].properties.distance,
-            y: trailheadFeatures[i].properties.altitude * 3.28084,
-            r: 5,
-            label: trailheadFeatures[i].properties.title
-        });
-        // trailheadDistances.push(trailheadFeatures[i].properties.distance);
-        // trailheadElevations.push(trailheadFeatures[i].properties.altitude);
-    }
-    const chartData = {
-        labels: distance,
-        datasets: [{
-            type: 'bubble',
-            data: trailheads,
-            pointStyle: 'circle',
-            borderColor: '#000000',
-            backgroundColor: '#662900BA'
-        }, 
-        {
-            type: 'line',
-            data: elevation,
-            fill: true,
-            borderWidth: 2,
-            borderColor: '#00630AFF',
-            //backgroundColor: '#66ccff66',
-            //borderColor: '#005907FF',
-            backgroundColor: '#00630A80',
-            tension: 0.1,
-            pointRadius: 0,
-            spanGaps: true,
-            hitRadius: 0
-        }
-    ]
-    };
-      
-    const config = {
-        data: chartData,
-        plugins: [{
-            beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(...chart.data.datasets[0].data);
-            chart.options.scales.x.min = Math.min(...chart.data.labels);
-            chart.options.scales.x.max = Math.max(...chart.data.labels);
-            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
-            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
-            }
-        }],
-        options: {
-            animation: false,
-            maintainAspectRatio: false,
-            interaction: { intersect: false, mode: 'index' },
-            tooltip: { position: 'nearest' },
-            scales: {
-                x: { type: 'linear' },
-                y: { type: 'linear', beginAtZero: false },
-                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
-            },
-            plugins: {
-                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
-                legend: { display: false },
-                tooltip: {
-                    displayColors: false,
-                    callbacks: {
-                        title: (tooltipItems) => {
-                            return "Distance: " + tooltipItems[0].label + 'm'
-                        },
-                        label: (tooltipItem) => {
-                            return "Elevation: " + tooltipItem.raw + 'm'
-                        },
-                    }
-                }
-            },
-            elements: {
-                point: {
-                    //backgroundColor: getLineColor,
-                    //hoverBackgroundColor: makeHalfAsOpaque,
-                    //radius: adjustRadiusBasedOnData,
-                    //pointStyle: alternatePointStyles,
-                    hoverRadius: 5
-                }
-            }
-        }
-    };
-    const chart = new Chart(ctx, config);
 }
 
 // Download GeoJSON
