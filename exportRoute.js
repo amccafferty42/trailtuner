@@ -64,35 +64,41 @@ function updateGeoJSON() {
     }
     updateMap();
     updateChart();
-    console.log(exportedRoute);
+    //console.info(exportedRoute);
 }
 
 function updateChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const distance = [], elevation = [], trailheads = [];
+    const distance = [], elevation = [], trailheads = [], campsites = [];
     //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
-    const startDistance = Math.min(this.route[0].start.properties.distance, this.route[this.route.length - 1].end.properties.distance);
-    for (let i = 0; i < exportedRoute.features.length; i++) {
-        if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === 'LineString') {
-            //console.log(exportedRoute.features[i].geometry);
-            for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
-                elevation.push(exportedRoute.features[i].geometry.coordinates[j][2] * 3.28084);
-                distance.push((exportedRoute.features[i].geometry.coordinates[j][3] - startDistance) * 0.6213711922);
-            }
+    //const startDistance = Math.min(this.route[0].start.properties.distance, this.route[this.route.length - 1].end.properties.distance);
+    const startDistance = 0;
+    for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
+        // fix this hack: avoids addin final coord to chart with distance as 0 causing a long line accross the chart
+        if ((!trailCircuit || j != fullRoute.geometry.coordinates.length - 1) && (j == 0 || fullRoute.geometry.coordinates[j][2] != fullRoute.geometry.coordinates[j-1][2])) {
+            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
+            distance.push((fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922);
         }
-        //prevent adding multiple points at the same distance (x value)
-        // if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
-        //     elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
-        //     distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922);
-        // }
     }
-    for (let i = 0; i < trailheadFeatures.length; i++) {
-        trailheads.push({
-            x: trailheadFeatures[i].properties.distance,
-            y: trailheadFeatures[i].properties.altitude * 3.28084,
+    trailheads.push({
+        x: this.route[0].start.properties.distance - startDistance,
+        y: this.route[0].start.properties.altitude * 3.28084,
+        r: 6,
+        label: this.route[0].start.properties.title
+    });
+    trailheads.push({
+        x: this.route[this.route.length - 1].end.properties.distance - startDistance,
+        y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
+        r: 6,
+        label: this.route[this.route.length - 1].end.properties.title
+    });
+    for (let i = 0; i < this.route.length - 1; i++) {
+        campsites.push({
+            x: this.route[i].end.properties.distance - startDistance,
+            y: this.route[i].end.properties.altitude * 3.28084,
             r: 6,
-            label: trailheadFeatures[i].properties.title
+            label: this.route[i].end.properties.title
         });
     }
     const chartData = {
@@ -103,6 +109,23 @@ function updateChart() {
             label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
+            borderColor: '#001A9E',
+            backgroundColor: '#001A9E80',
+            hitRadius: 30,
+            hoverBorderWidth: 3,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
+        },
+        {
+            type: 'bubble',
+            data: campsites,
+            label: 'test',
+            borderWidth: 2,
+            pointStyle: 'rect',
             borderColor: '#001A9E',
             backgroundColor: '#001A9E80',
             hitRadius: 30,

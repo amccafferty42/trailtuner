@@ -274,9 +274,9 @@ function setTrailDetails(trail) {
     if (trailCircuit && campsiteFeatures[0].properties.distance != 0) return;
     // else if (!trailCircuit && campsiteFeatures[0].properties.distance != 0 && campsiteFeatures[campsiteFeatures.length - 1].properties.distance != trailLength) return;
 
-    console.log(trailFeature);
-    console.log(trailheadFeatures);
-    console.log(campsiteFeatures);
+    console.info(trailFeature);
+    console.info(trailheadFeatures);
+    console.info(campsiteFeatures);
 }
 
 // Append the distance from 0 for each trailhead and campsite
@@ -311,6 +311,7 @@ function appendDistance(feature) {
         for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
             if (inLine(trailFeature.geometry.coordinates[i], trailFeature.geometry.coordinates[i+1], feature.geometry.coordinates)) {
                 if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
+                if (feature.geometry.coordinates[3] == 0) feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 //feature.properties.distance = lengthGeo(newGeometry) / 1000;
@@ -412,30 +413,13 @@ function inLine(a, b, c) {
     }
  }
 
-function elevationGeo(geometry) {
-    if (geometry.type === 'LineString')
-        return calculateElevation(geometry.coordinates);
-    else if (geometry.type === 'MultiLineString')
-        return geometry.coordinates.reduce(function(memo, coordinates) {
-            return memo + calculateElevation(coordinates);
-        }, 0);
-    else
-        return null;
-}
-
-function calculateElevation(lineString) {
-    // if (!lineString || !lineString.coordinates || lineString.coordinates.length < 2) {
-    //     console.error("Invalid LineString GeoJSON");
-    //     return null;
-    // }
-    
+function calculateElevation(lineString) {   
     let elevationGain = 0;
     let elevationLoss = 0;
     
     for (let i = 1; i < lineString.coordinates.length; i++) {
         const currentElevation = lineString.coordinates[i][2] || 0; // If elevation is not present, assume 0
         const previousElevation = lineString.coordinates[i - 1][2] || 0;
-    
         const elevationDifference = currentElevation - previousElevation;
     
         if (elevationDifference > 0) {
@@ -447,17 +431,6 @@ function calculateElevation(lineString) {
     
     return { elevationGain, elevationLoss };
 }
-
-// function lengthGeo(geometry) {
-//     if (geometry.type === 'LineString')
-//         return calculateLength(geometry.coordinates);
-//     else if (geometry.type === 'MultiLineString')
-//         return geometry.coordinates.reduce(function(memo, coordinates) {
-//             return memo + calculateLength(coordinates);
-//         }, 0);
-//     else
-//         return null;
-// }
 
 function calculateLength(lineString) {
     if (lineString.length < 2)

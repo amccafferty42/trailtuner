@@ -148,7 +148,7 @@ function selectEndTrailhead(startTrailhead, length) {
 }
 
 function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
-    console.log('Generating ' + days + ' day trip from ' + start.properties.title + ' to ' + end.properties.title);
+    console.info('Generating ' + days + ' day trip from ' + start.properties.title + ' to ' + end.properties.title);
     if (shortHikeIn && shortHikeOut && days > 2) {
         const firstDay = generateShortHikeIn(start, startDate);
         let lastDate = new Date(startDate);
@@ -306,8 +306,8 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
 function calculateRoute(start, end, days, startDate) {
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
     if (days > campsiteFeatures.length || days > allOptimalCampsites.length) {
-        console.log("All optimal campsites:")
-        console.log(allOptimalCampsites);
+        // console.info("All optimal campsites:")
+        // console.info(allOptimalCampsites);
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
         return buildRoute(start, end, allOptimalCampsites, days, startDate);
     } else if (allOptimalCampsites.length > 22) {
@@ -328,7 +328,7 @@ function calculateRoute(start, end, days, startDate) {
                 lowestSD = sd;
             }
         }
-        console.log("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + distanceUnit);
+        console.info("Analyzed " + routes.length + " different candidates to find the optimal route with a daily mileage standard deviation of " + lowestSD + " " + distanceUnit);
         return bestRoute;
     }
 }
@@ -542,7 +542,7 @@ function displayRoute(route) {
     exportRoute.disabled = false;
 
     updateGeoJSON();
-    console.log(route);
+    console.table(route);
 }
 
 // Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
@@ -639,7 +639,7 @@ function setUnitLabels(unit) {
 
 function setUnit(unit) {
     if (distanceUnit != unit) {
-        console.log('Switching unit from ' + distanceUnit + ' to ' + unit);
+        console.info('Switching unit from ' + distanceUnit + ' to ' + unit);
         distanceUnit = unit;
         elevationUnit = unit === 'km' ? ' m' : '\'';
         trailLength = unit === 'km' ? Math.round(trailLength * 1.609344 * 10) / 10 : Math.round(trailLength * 0.6213711922 * 10) / 10;
