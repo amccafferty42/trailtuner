@@ -50,7 +50,7 @@ function initChart() {
         //prevent adding multiple points at the same distance (x value)
         if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
             elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
-            distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922 / 1000);
+            distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922);
         }
     }
     for (let i = 0; i < trailheadFeatures.length; i++) {
@@ -61,7 +61,6 @@ function initChart() {
             label: trailheadFeatures[i].properties.title
         });
     }
-    console.log(trailheads);
     const chartData = {
         labels: distance,
         datasets: [{
@@ -243,7 +242,7 @@ function setTrailDetails(trail) {
     if (campsiteFeatures.length <= 0) return;
 
     trailName = trailFeature.properties.title;
-    trailLength = calculateLength(trailFeature.geometry.coordinates) / 1000;
+    trailLength = calculateLength(trailFeature.geometry.coordinates);
 
     const elevationChange = calculateElevation(trailFeature.geometry);
     trailElevationGain = elevationChange.elevationGain;
@@ -291,7 +290,7 @@ function appendDistance(feature) {
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
             //feature.properties.distance = lengthGeo(newGeometry) / 1000;
-            feature.properties.distance = trailFeature.geometry.coordinates[i][3] / 1000;
+            feature.properties.distance = trailFeature.geometry.coordinates[i][3];
             feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
@@ -315,7 +314,7 @@ function appendDistance(feature) {
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 //feature.properties.distance = lengthGeo(newGeometry) / 1000;
-                feature.properties.distance = trailFeature.geometry.coordinates[i][3] / 1000;
+                feature.properties.distance = trailFeature.geometry.coordinates[i][3];
                 feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
@@ -503,7 +502,7 @@ function calculateLength(lineString) {
  * http://www.movable-type.co.uk/scripts/latlong.html#equirectangular
  */
 function distance(λ1,φ1,λ2,φ2) {
-    var R = 6371000;
+    var R = 6371;
     Δλ = (λ2 - λ1) * Math.PI / 180;
     φ1 = φ1 * Math.PI / 180;
     φ2 = φ2 * Math.PI / 180;
