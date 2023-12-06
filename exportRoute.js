@@ -53,10 +53,15 @@ function updateGeoJSON() {
                 } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
                         || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
                         || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 20)); //solves case where full circuit will not build line because start == end
-                if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end) {
-                    dayRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
-                    fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates[0]);
-                }
+                // TODO: this logic breaks the chart because the distance is incorrect. Omitting it leaves a tiny gap in map for full circuits
+                // if (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end) {
+                //     let connectingCoordinate = structuredClone(fullRoute.geometry.coordinates[0]);
+                //     connectingCoordinate[3] = trailLength * 1.60934;
+                //     dayRoute.geometry.coordinates.push(connectingCoordinate);
+                //     fullRoute.geometry.coordinates.push(connectingCoordinate);
+                // }
+                // The first coordinate of a full loop is simultaneously distance 0 and max trailLength. For CCW loops, the distance of the first coordinate must be set to trailLength or it breaks the chart 
+                if (trailCircuit && !this.isPositiveDirection && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates[0][3] == 0) fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates.splice(0, 1)[0]);
                 break;
             }
         }                    
@@ -71,38 +76,80 @@ function updateChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     const distance = [], elevation = [], trailheads = [], campsites = [];
-    //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
-    const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
 
-    // If route is not positive direction, subtract total trail length from each distance to get "inverse" distance
-    const reverseTrailDistance = this.isPositiveDirection ? 0 : fullRoute.geometry.coordinates[0][3] - startDistance;
+    if (trailCircuit) {
+        const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+        const overflowDistance = trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - startDistance;
+        const reverseTrailDistance = this.isPositiveDirection ? 0 : routeLength;
+
+        console.log(startDistance)
+        console.log(overflowDistance);
+        console.log(reverseTrailDistance);
+        console.log(fullRoute);
         for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
-            // fix this hack: avoids addin final coord to chart with distance as 0 causing a long line accross the chart
-            if ((!trailCircuit || j != fullRoute.geometry.coordinates.length - 1) && (j == 0 || fullRoute.geometry.coordinates[j][2] != fullRoute.geometry.coordinates[j-1][2])) {
-                elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
-                distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[j][3] - startDistance)) * 0.6213711922);
+            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
+            let d;
+            if (this.isPositiveDirection) {
+                d = fullRoute.geometry.coordinates[j][3] < fullRoute.geometry.coordinates[0][3] ? Math.abs((fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922) : Math.abs((fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922);
+                console.log(d);
+            } else {
+                //longmire -> mowich ccw is broken
+                if (fullRoute.geometry.coordinates[j][3] < startDistance) {
+                    //section of route before wrap around
+                    d = startDistance - fullRoute.geometry.coordinates[j][3];
+                    console.log('BEFORE WRAP: ' + d);
+                } else {
+                    //section of route after wrap around
+                    d = Math.abs(fullRoute.geometry.coordinates[j][3] - reverseTrailDistance - startDistance);
+                    console.log('AFTER WRAP: ' + d);
+                }
             }
+            distance.push(d);
         }   
-    trailheads.push({
-        x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[0].start.properties.distance - startDistance * 0.6213711922)),
-        y: this.route[0].start.properties.altitude * 3.28084,
-        r: 5,
-        label: this.route[0].start.properties.title
-    });
-    trailheads.push({
-        x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[this.route.length - 1].end.properties.distance - startDistance * 0.6213711922)),
-        y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
-        r: 5,
-        label: this.route[this.route.length - 1].end.properties.title
-    });
-    for (let i = 0; i < this.route.length - 1; i++) {
-        campsites.push({
-            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[i].end.properties.distance - startDistance * 0.6213711922)),
-            y: this.route[i].end.properties.altitude * 3.28084,
-            r: 6,
-            label: this.route[i].end.properties.title
+        trailheads.push({
+            x: 10,
+            y: 5000,
+            r: 5,
+            label: 'y'
         });
-    }
+        campsites.push({
+            x: 10,
+            y: 5000,
+            r: 5,
+            label: 'y'
+        });
+    } else {
+        //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
+        const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+
+        // If route is not positive direction, subtract total trail length from each distance to get "inverse" distance
+        const reverseTrailDistance = this.isPositiveDirection ? 0 : fullRoute.geometry.coordinates[0][3] - startDistance;
+        for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
+            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
+            distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[j][3] - startDistance)) * 0.6213711922);
+        }   
+        trailheads.push({
+            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[0].start.properties.distance - startDistance * 0.6213711922)),
+            y: this.route[0].start.properties.altitude * 3.28084,
+            r: 5,
+            label: this.route[0].start.properties.title
+        });
+        trailheads.push({
+            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[this.route.length - 1].end.properties.distance - startDistance * 0.6213711922)),
+            y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
+            r: 5,
+            label: this.route[this.route.length - 1].end.properties.title
+        });
+        for (let i = 0; i < this.route.length - 1; i++) {
+            campsites.push({
+                x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[i].end.properties.distance - startDistance * 0.6213711922)),
+                y: this.route[i].end.properties.altitude * 3.28084,
+                r: 6,
+                label: this.route[i].end.properties.title
+            });
+        }
+    }    
+    
     const chartData = {
         labels: distance,
         datasets: [{

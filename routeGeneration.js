@@ -1,4 +1,5 @@
 let route;
+let routeLength;
 let isPositiveDirection;
 let userSetDays = false;
 
@@ -541,6 +542,7 @@ function displayRoute(route) {
     shareRoute.disabled = false;
     exportRoute.disabled = false;
 
+    routeLength = totalMiles * 1.60934;
     updateGeoJSON();
     console.table(route);
 }

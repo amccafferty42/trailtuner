@@ -61,6 +61,14 @@ function initChart() {
             label: trailheadFeatures[i].properties.title
         });
     }
+    if (trailCircuit) {
+        trailheads.push({
+            x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * 0.6213711922,
+            y: trailheadFeatures[0].properties.altitude * 3.28084,
+            r: 5,
+            label: trailheadFeatures[0].properties.title
+        });
+    }
     const chartData = {
         labels: distance,
         datasets: [{
