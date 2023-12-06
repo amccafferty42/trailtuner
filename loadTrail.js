@@ -57,7 +57,7 @@ function initChart() {
         trailheads.push({
             x: trailheadFeatures[i].properties.distance,
             y: trailheadFeatures[i].properties.altitude * 3.28084,
-            r: 6,
+            r: 5,
             label: trailheadFeatures[i].properties.title
         });
     }
@@ -69,8 +69,10 @@ function initChart() {
             label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
-            borderColor: '#001A9E',
-            backgroundColor: '#001A9E80',
+            // borderColor: '#001A9E',
+            // backgroundColor: '#001A9E80',
+            borderColor: 'black',
+            backgroundColor: '#2140db',
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
@@ -115,6 +117,7 @@ function initChart() {
         options: {
             animation: false,
             maintainAspectRatio: false,
+            clip: false,
             //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
             tooltip: { 
                 position: 'point',
@@ -122,12 +125,15 @@ function initChart() {
                     filter: function (tooltipItem) {
                         return tooltipItem.datasetIndex === 0;
                     }
-                    }
+                }
             },
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
                 y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
+                // xAxes: [{
+                //     offset: true
+                //  }]
             },
             plugins: {
                 title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },

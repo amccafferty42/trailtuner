@@ -72,30 +72,32 @@ function updateChart() {
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     const distance = [], elevation = [], trailheads = [], campsites = [];
     //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
-    //const startDistance = Math.min(this.route[0].start.properties.distance, this.route[this.route.length - 1].end.properties.distance);
-    const startDistance = 0;
-    for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
-        // fix this hack: avoids addin final coord to chart with distance as 0 causing a long line accross the chart
-        if ((!trailCircuit || j != fullRoute.geometry.coordinates.length - 1) && (j == 0 || fullRoute.geometry.coordinates[j][2] != fullRoute.geometry.coordinates[j-1][2])) {
-            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
-            distance.push((fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922);
-        }
-    }
+    const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+
+    // If route is not positive direction, subtract total trail length from each distance to get "inverse" distance
+    const reverseTrailDistance = this.isPositiveDirection ? 0 : fullRoute.geometry.coordinates[0][3] - startDistance;
+        for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
+            // fix this hack: avoids addin final coord to chart with distance as 0 causing a long line accross the chart
+            if ((!trailCircuit || j != fullRoute.geometry.coordinates.length - 1) && (j == 0 || fullRoute.geometry.coordinates[j][2] != fullRoute.geometry.coordinates[j-1][2])) {
+                elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
+                distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[j][3] - startDistance)) * 0.6213711922);
+            }
+        }   
     trailheads.push({
-        x: this.route[0].start.properties.distance - startDistance,
+        x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[0].start.properties.distance - startDistance * 0.6213711922)),
         y: this.route[0].start.properties.altitude * 3.28084,
-        r: 6,
+        r: 5,
         label: this.route[0].start.properties.title
     });
     trailheads.push({
-        x: this.route[this.route.length - 1].end.properties.distance - startDistance,
+        x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[this.route.length - 1].end.properties.distance - startDistance * 0.6213711922)),
         y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
-        r: 6,
+        r: 5,
         label: this.route[this.route.length - 1].end.properties.title
     });
     for (let i = 0; i < this.route.length - 1; i++) {
         campsites.push({
-            x: this.route[i].end.properties.distance - startDistance,
+            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[i].end.properties.distance - startDistance * 0.6213711922)),
             y: this.route[i].end.properties.altitude * 3.28084,
             r: 6,
             label: this.route[i].end.properties.title
@@ -106,11 +108,16 @@ function updateChart() {
         datasets: [{
             type: 'bubble',
             data: trailheads,
-            label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
-            borderColor: '#001A9E',
-            backgroundColor: '#001A9E80',
+            // borderColor: function(context) {
+            //     return context.dataIndex % 2 ? '#ff0000' : '#147a14';
+            // },
+            borderColor: 'black',
+            backgroundColor: function(context) {
+                return context.dataIndex % 2 ? '#ff0000' : '#147a14';
+            },
+            //backgroundColor: '#001A9E80',
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
@@ -123,13 +130,14 @@ function updateChart() {
         {
             type: 'bubble',
             data: campsites,
-            label: 'test',
-            borderWidth: 2,
-            pointStyle: 'rect',
-            borderColor: '#001A9E',
-            backgroundColor: '#001A9E80',
+            borderWidth: 1,
+            pointStyle: 'triangle',
+            //borderColor: '#001A9E',
+            //backgroundColor: '#001A9E80',
+            borderColor: 'black',
+            backgroundColor: '#123bc4',
             hitRadius: 30,
-            hoverBorderWidth: 3,
+            hoverBorderWidth: 2,
             options: {
                 interaction: {
                     intersect: false, 
@@ -171,6 +179,7 @@ function updateChart() {
         options: {
             animation: false,
             maintainAspectRatio: false,
+            clip: false,
             //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
             tooltip: { 
                 position: 'point',
