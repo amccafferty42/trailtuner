@@ -72,7 +72,6 @@ function updateGeoJSON() {
     }
     updateMap();
     updateChart();
-    //console.info(exportedRoute);
 }
 
 function updateChart() {
@@ -85,40 +84,42 @@ function updateChart() {
         let endDistance = fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
         const overflowDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - startDistance : endDistance;
         const reverseTrailDistance = this.isPositiveDirection ? 0 : routeLength;
-        for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
-            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
+        for (let i = 0; i < fullRoute.geometry.coordinates.length; i++) {
             let d;
-            if (j == 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
+            if (i == 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
                 d = 0;
             } else if (this.isPositiveDirection) {
-                d = fullRoute.geometry.coordinates[j][3] < startDistance ? (fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922 : (fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922;
+                d = fullRoute.geometry.coordinates[i][3] < startDistance ? (fullRoute.geometry.coordinates[i][3] + overflowDistance) : (fullRoute.geometry.coordinates[i][3] - startDistance);
             } else {
-                d = fullRoute.geometry.coordinates[j][3] > startDistance ? Math.abs(reverseTrailDistance - fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922 : (startDistance - fullRoute.geometry.coordinates[j][3]) * 0.6213711922;
+                d = fullRoute.geometry.coordinates[i][3] > startDistance ? Math.abs(reverseTrailDistance - fullRoute.geometry.coordinates[i][3] + overflowDistance) : (startDistance - fullRoute.geometry.coordinates[i][3]);
             }
-            distance.push(d);
+            if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
+                distance.push(d * distanceConstant);
+                elevation.push(fullRoute.geometry.coordinates[i][2] * elevationConstant);
+            }
         }   
         trailheads.push({
             x: 0,
-            y: this.route[0].start.properties.elevation * 3.28084,
+            y: this.route[0].start.properties.elevation * elevationConstant,
             r: 5,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: distance[distance.length - 1],
-            y: this.route[this.route.length - 1].end.properties.elevation * 3.28084,
+            y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
             r: 5,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
             let x;
             if (this.isPositiveDirection) {
-                x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) * 0.6213711922 : (this.route[i].end.properties.distance - startDistance) * 0.6213711922;
+                x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
             } else {
-                x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) * 0.6213711922 : (startDistance - this.route[i].end.properties.distance) * 0.6213711922;
+                x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) : (startDistance - this.route[i].end.properties.distance);
             }
             campsites.push({
-                x: x,
-                y: this.route[i].end.properties.elevation * 3.28084,
+                x: x * distanceConstant,
+                y: this.route[i].end.properties.elevation * elevationConstant,
                 r: 6,
                 label: this.route[i].end.properties.title
             });
@@ -129,26 +130,28 @@ function updateChart() {
 
         // If route is not positive direction, subtract total trail length from each distance to get "inverse" distance
         const reverseTrailDistance = this.isPositiveDirection ? 0 : fullRoute.geometry.coordinates[0][3] - startDistance;
-        for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
-            elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
-            distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[j][3] - startDistance)) * 0.6213711922);
+        for (let i = 0; i < fullRoute.geometry.coordinates.length; i++) {
+            if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
+                elevation.push(fullRoute.geometry.coordinates[i][2] * elevationConstant);
+                distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[i][3] - startDistance)) * distanceConstant);
+            }
         }   
         trailheads.push({
-            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[0].start.properties.distance - startDistance * 0.6213711922)),
-            y: this.route[0].start.properties.elevation * 3.28084,
+            x: Math.abs(reverseTrailDistance - (this.route[0].start.properties.distance - startDistance)) * distanceConstant,
+            y: this.route[0].start.properties.elevation * elevationConstant,
             r: 5,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
-            x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[this.route.length - 1].end.properties.distance - startDistance * 0.6213711922)),
-            y: this.route[this.route.length - 1].end.properties.elevation * 3.28084,
+            x: Math.abs(reverseTrailDistance - (this.route[this.route.length - 1].end.properties.distance - startDistance)) * distanceConstant,
+            y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
             r: 5,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
             campsites.push({
-                x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[i].end.properties.distance - startDistance * 0.6213711922)),
-                y: this.route[i].end.properties.elevation * 3.28084,
+                x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
+                y: this.route[i].end.properties.elevation * elevationConstant,
                 r: 6,
                 label: this.route[i].end.properties.title
             });

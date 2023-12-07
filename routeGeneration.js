@@ -654,7 +654,7 @@ function setUnit(unit) {
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
         if (this.route != undefined && this.route.length > 0) displayRoute(this.route);
-        initChart();
+        updateChart();
     }
 }
 
