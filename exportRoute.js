@@ -98,17 +98,31 @@ function updateChart() {
             distance.push(d);
         }   
         trailheads.push({
-            x: 10,
-            y: 5000,
+            x: 0,
+            y: this.route[0].start.properties.altitude * 3.28084,
             r: 5,
-            label: 'y'
+            label: this.route[0].start.properties.title
         });
-        campsites.push({
-            x: 10,
-            y: 5000,
+        trailheads.push({
+            x: distance[distance.length - 1],
+            y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
             r: 5,
-            label: 'y'
+            label: this.route[this.route.length - 1].end.properties.title
         });
+        for (let i = 0; i < this.route.length - 1; i++) {
+            let x;
+            if (this.isPositiveDirection) {
+                x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) * 0.6213711922 : (this.route[i].end.properties.distance - startDistance) * 0.6213711922;
+            } else {
+                x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) * 0.6213711922 : (startDistance - this.route[i].end.properties.distance) * 0.6213711922;
+            }
+            campsites.push({
+                x: x,
+                y: this.route[i].end.properties.altitude * 3.28084,
+                r: 6,
+                label: this.route[i].end.properties.title
+            });
+        }
     } else {
         //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
         startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
