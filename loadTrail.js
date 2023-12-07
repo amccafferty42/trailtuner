@@ -261,15 +261,19 @@ function setTrailDetails(trail) {
     const elevationChange = calculateElevation(trailFeature.geometry);
     trailElevationGain = elevationChange.elevationGain;
     trailElevationLoss = elevationChange.elevationLoss;
-
+  
+    trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
+    if (trailCircuit) {
+        trailFeature.geometry.coordinates.push(structuredClone(trailFeature.geometry.coordinates[0]));
+        trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] = trailLength;
+    }
+    if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
+    
     if (distanceUnit == 'mi') {
         trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
         trailElevationGain = Math.round(trailElevationGain * 3.28084);
         trailElevationLoss = Math.round(trailElevationLoss * 3.28084);
     }
-    trailCircuit = (trailFeature.geometry.coordinates[0][0].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][0].toFixed(3) && trailFeature.geometry.coordinates[0][1].toFixed(3) == trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][1].toFixed(3)) ? true : false;
-
-    if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
 
     for (feature of campsiteFeatures) appendDistance(feature);
     for (feature of trailheadFeatures) appendDistance(feature);
@@ -328,7 +332,6 @@ function appendDistance(feature) {
                 if (feature.geometry.coordinates[3] == 0) feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
-                //feature.properties.distance = lengthGeo(newGeometry) / 1000;
                 feature.properties.distance = trailFeature.geometry.coordinates[i][3];
                 feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);

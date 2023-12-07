@@ -50,7 +50,8 @@ function updateGeoJSON() {
                     i = this.isPositiveDirection ? i + 1 : i - 1;
                     if (i < 0) i = trailFeature.geometry.coordinates.length - 1;
                     if (i >= trailFeature.geometry.coordinates.length) i = 0;
-                } while ((trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
+                    // TODO finding breakpoints of linestrings would be better if every marker was guarenteed to have an exact coordinate on trail (create new ones that match)
+                } while (  (trailFeature.geometry.coordinates[i][0].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[0].toFixed(3))
                         || (trailFeature.geometry.coordinates[i][1].toFixed(3) != this.route[this.route.length - 1].end.geometry.coordinates[1].toFixed(3)) 
                         || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 20)); //solves case where full circuit will not build line because start == end
                 // TODO: this logic breaks the chart because the distance is incorrect. Omitting it leaves a tiny gap in map for full circuits
@@ -61,10 +62,12 @@ function updateGeoJSON() {
                 //     fullRoute.geometry.coordinates.push(connectingCoordinate);
                 // }
                 // The first coordinate of a full loop is simultaneously distance 0 and max trailLength. For CCW loops, the distance of the first coordinate must be set to trailLength or it breaks the chart 
-                if (trailCircuit && !this.isPositiveDirection && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates[0][3] == 0) fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates.splice(0, 1)[0]);
+                //if (trailCircuit && !this.isPositiveDirection && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates[0][3] == 0) fullRoute.geometry.coordinates.push(fullRoute.geometry.coordinates.splice(0, 1)[0]);
                 break;
             }
-        }                    
+        }        
+        console.log(trailFeature);
+        console.log(fullRoute);            
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
     updateMap();
@@ -78,31 +81,19 @@ function updateChart() {
     const distance = [], elevation = [], trailheads = [], campsites = [];
 
     if (trailCircuit) {
-        const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
-        const overflowDistance = trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - startDistance;
+        let startDistance = fullRoute.geometry.coordinates[0][3];
+        let endDistance = fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+        const overflowDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - startDistance : endDistance;
         const reverseTrailDistance = this.isPositiveDirection ? 0 : routeLength;
-
-        console.log(startDistance)
-        console.log(overflowDistance);
-        console.log(reverseTrailDistance);
-        console.log(fullRoute);
         for (let j = 0; j < fullRoute.geometry.coordinates.length; j++) {
             elevation.push(fullRoute.geometry.coordinates[j][2] * 3.28084);
             let d;
-            if (this.isPositiveDirection) {
-                d = fullRoute.geometry.coordinates[j][3] < fullRoute.geometry.coordinates[0][3] ? Math.abs((fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922) : Math.abs((fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922);
-                console.log(d);
+            if (j == 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
+                d = 0;
+            } else if (this.isPositiveDirection) {
+                d = fullRoute.geometry.coordinates[j][3] < startDistance ? (fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922 : (fullRoute.geometry.coordinates[j][3] - startDistance) * 0.6213711922;
             } else {
-                //longmire -> mowich ccw is broken
-                if (fullRoute.geometry.coordinates[j][3] < startDistance) {
-                    //section of route before wrap around
-                    d = startDistance - fullRoute.geometry.coordinates[j][3];
-                    console.log('BEFORE WRAP: ' + d);
-                } else {
-                    //section of route after wrap around
-                    d = Math.abs(fullRoute.geometry.coordinates[j][3] - reverseTrailDistance - startDistance);
-                    console.log('AFTER WRAP: ' + d);
-                }
+                d = fullRoute.geometry.coordinates[j][3] > startDistance ? Math.abs(reverseTrailDistance - fullRoute.geometry.coordinates[j][3] + overflowDistance) * 0.6213711922 : (startDistance - fullRoute.geometry.coordinates[j][3]) * 0.6213711922;
             }
             distance.push(d);
         }   
@@ -120,7 +111,7 @@ function updateChart() {
         });
     } else {
         //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
-        const startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+        startDistance = this.isPositiveDirection ? fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
 
         // If route is not positive direction, subtract total trail length from each distance to get "inverse" distance
         const reverseTrailDistance = this.isPositiveDirection ? 0 : fullRoute.geometry.coordinates[0][3] - startDistance;
