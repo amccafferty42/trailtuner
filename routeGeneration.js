@@ -1,5 +1,7 @@
 let route;
 let routeLength;
+let routeElevationGain;
+let routeElevationLoss;
 let isPositiveDirection;
 let userSetDays = false;
 
@@ -87,7 +89,8 @@ function getDays() {
 
 function getDistancePerDay() {
     if (inputDistance.value > 0) return inputDistance.value;
-    return distanceUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
+    return Math.floor(Math.random() * (32 - 16 + 1) ) + 16; // min = 10, max = 20 for miles / min = 16, max = 32 for km
+    //return distanceUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
 }
 
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
@@ -493,17 +496,19 @@ function onTrailheadsChange() {
     if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {
         this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
         const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
-        inputDays.value = distanceUnit === 'km' ? Math.max(1, Math.round(length / 16.0934)) : Math.max(1, Math.round(length / 10));
+        inputDays.value = Math.max(1, Math.round(length / 16.0934)); // 10 miles/day
     }
 }
 
 function displayRoute(route) {
-    let totalMiles = 0, totalElevationGain = 0, totalElevationLoss = 0;
+    routeLength = 0;
+    routeElevationGain = 0;
+    routeElevationLoss = 0;
     tableBody.innerHTML = '';
     for (let i = 0; i < route.length; i++) {
-        totalMiles += route[i].length;
-        totalElevationGain += route[i].elevationGain;
-        totalElevationLoss += route[i].elevationLoss;
+        routeLength += route[i].length;
+        routeElevationGain += route[i].elevationGain;
+        routeElevationLoss += route[i].elevationLoss;
         let row = tableBody.insertRow(i);
         let cell1 = row.insertCell(0);
         let cell2 = row.insertCell(1);
@@ -521,8 +526,8 @@ function displayRoute(route) {
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
-        cell7.innerHTML = '<strong class="blue">' + route[i].length.toFixed(1) + ' ' + distanceUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + route[i].elevationGain.toLocaleString() + elevationUnit +' </span><br><span class="green">-' + route[i].elevationLoss.toLocaleString() + elevationUnit + '</span></strong>'
+        cell7.innerHTML = '<strong class="blue">' + (route[i].length * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
+        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span></strong>'
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
@@ -535,14 +540,13 @@ function displayRoute(route) {
     cell7.classList.add("right");
     let cell8 = row.insertCell(7);
     cell8.classList.add("right");
-    cell7.innerHTML = '<strong>Total:<br>' + totalMiles.toFixed(1) + ' ' + distanceUnit + '</strong>';
-    cell8.innerHTML = '<strong><span class="red">+' + totalElevationGain.toLocaleString() + elevationUnit + ' </span><br><span class="green">-' + totalElevationLoss.toLocaleString() + elevationUnit + '</span><strong>';
+    cell7.innerHTML = '<strong>Total:<br>' + (routeLength * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
 
-    routeLength = totalMiles * 1.60934;
     updateGeoJSON();
     console.table(route);
 }
@@ -551,14 +555,14 @@ function displayRoute(route) {
 function closerCampBtn(day, route) {
     if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
-    let mileDif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) mileDif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
-    else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) mileDif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
+    let dif = 0;
+    if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
+    else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
 
-    if (day === route[0] && day.length - mileDif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';    
+    if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';    
 }
 
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
@@ -566,14 +570,14 @@ function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
     if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
-    let mileDif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) mileDif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) mileDif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
-    else mileDif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
+    let dif = 0;
+    if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
+    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
     
-    if ((day === route[route.length - 2] && nextDay.length - mileDif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + mileDif.toFixed(1) + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + mileDif.toFixed(1) +' ' + distanceUnit + '</button>';
+    if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
 }
 
 function reset() {
@@ -588,7 +592,7 @@ function reset() {
     selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
     inputDate.valueAsDate = new Date();
     title.innerHTML = trailName;
-    inputDays.value = distanceUnit === 'km' ? Math.max(1, Math.round(trailLength / 16.0934)) : Math.max(1, Math.round(trailLength / 10));
+    inputDays.value = Math.max(1, Math.round(trailLength / 16.0934));
     inputDistance.value = "";
     inputDistance.placeholder = "N/A";
     inputShortHikeIn.checked = false;
@@ -644,30 +648,13 @@ function setUnit(unit) {
         console.info('Switching unit from ' + distanceUnit + ' to ' + unit);
         distanceUnit = unit;
         elevationUnit = unit === 'km' ? ' m' : '\'';
-        trailLength = unit === 'km' ? Math.round(trailLength * 1.609344 * 10) / 10 : Math.round(trailLength * 0.6213711922 * 10) / 10;
-        trailElevationGain = unit === 'km' ? Math.round(trailElevationGain * 0.3048) : Math.round(trailElevationGain * 3.28084);
-        trailElevationLoss = unit === 'km' ? Math.round(trailElevationLoss * 0.3048) : Math.round(trailElevationLoss * 3.28084);
+        distanceConstant = unit === 'km' ? 1 : 0.621371;
+        elevationConstant = unit === 'km' ? 1 : 3.28084;
         setUnitLabels(unit);
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
-        for (trailhead of trailheadFeatures) {
-            trailhead.properties.distance = unit === 'km' ? Math.round(trailhead.properties.distance * 1.609344 * 10) / 10 : Math.round(trailhead.properties.distance * 0.6213711922 * 10) / 10;
-            trailhead.properties.elevationGain = unit === 'km' ? Math.round(trailhead.properties.elevationGain * 0.3048) : Math.round(trailhead.properties.elevationGain * 3.28084);
-            trailhead.properties.elevationLoss = unit === 'km' ? Math.round(trailhead.properties.elevationLoss * 0.3048) : Math.round(trailhead.properties.elevationLoss * 3.28084);
-        }
-        for (campsite of campsiteFeatures) {
-            campsite.properties.distance = unit === 'km' ? Math.round(campsite.properties.distance * 1.609344 * 10) / 10 : Math.round(campsite.properties.distance * 0.6213711922 * 10) / 10;
-            campsite.properties.elevationGain = unit === 'km' ? Math.round(campsite.properties.elevationGain * 0.3048) : Math.round(campsite.properties.elevationGain * 3.28084);
-            campsite.properties.elevationLoss = unit === 'km' ? Math.round(campsite.properties.elevationLoss * 0.3048) : Math.round(campsite.properties.elevationLoss * 3.28084);
-        }
-        if (this.route != undefined && this.route.length > 0) {
-            for (day of this.route) {
-                day.length = unit === 'km' ? Math.round(day.length * 1.609344 * 10) / 10 : Math.round(day.length * 0.6213711922 * 10) / 10;
-                day.elevationGain = unit === 'km' ? Math.round(day.elevationGain * 0.3048) : Math.round(day.elevationGain * 3.28084);
-                day.elevationLoss = unit === 'km' ? Math.round(day.elevationLoss * 0.3048) : Math.round(day.elevationLoss * 3.28084);
-            }
-            displayRoute(this.route);
-        }
+        if (this.route != undefined && this.route.length > 0) displayRoute(this.route);
+        initChart();
     }
 }
 

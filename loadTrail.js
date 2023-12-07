@@ -1,11 +1,13 @@
 let trail = trails[0].geoJSON;
 let trailName;
-let trailLength;
-let trailElevationGain;
-let trailElevationLoss;
-let distanceUnit = 'mi'; //default
-let elevationUnit = '\''; //default
 let trailCircuit;
+let trailLength; // in km
+let trailElevationGain; // in m
+let trailElevationLoss; // in m
+let distanceUnit = 'mi'; // default
+let distanceConstant = 0.621371; // default 1 km = 0.621371 mi
+let elevationUnit = '\''; // default
+let elevationConstant = 3.28084; // default 1 m = 3.28084 ft
 
 // Variables for the required GeoJSON features
 let trailFolder;
@@ -49,22 +51,22 @@ function initChart() {
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         //prevent adding multiple points at the same distance (x value)
         if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
-            elevation.push(trailFeature.geometry.coordinates[i][2] * 3.28084);
-            distance.push(trailFeature.geometry.coordinates[i][3] * 0.6213711922);
+            elevation.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
+            distance.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
         }
     }
     for (let i = 0; i < trailheadFeatures.length; i++) {
         trailheads.push({
-            x: trailheadFeatures[i].properties.distance,
-            y: trailheadFeatures[i].properties.altitude * 3.28084,
+            x: trailheadFeatures[i].properties.distance * distanceConstant,
+            y: trailheadFeatures[i].properties.elevation * elevationConstant,
             r: 5,
             label: trailheadFeatures[i].properties.title
         });
     }
     if (trailCircuit) {
         trailheads.push({
-            x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * 0.6213711922,
-            y: trailheadFeatures[0].properties.altitude * 3.28084,
+            x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
+            y: trailheadFeatures[0].properties.elevation * elevationConstant,
             r: 5,
             label: trailheadFeatures[0].properties.title
         });
@@ -77,8 +79,6 @@ function initChart() {
             label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
-            // borderColor: '#001A9E',
-            // backgroundColor: '#001A9E80',
             borderColor: 'black',
             backgroundColor: '#2140db',
             hitRadius: 30,
@@ -100,7 +100,6 @@ function initChart() {
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
-            //hitRadius: 2,
             options: {
                 interaction: {
                     intersect: false,
@@ -139,32 +138,27 @@ function initChart() {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
                 y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
-                // xAxes: [{
-                //     offset: true
-                //  }]
             },
             plugins: {
-                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
                 legend: { display: false },
                 tooltip: {
                     displayColors: false,
                     callbacks: {
                         title: (tooltipItems) => {
-                            //console.log(tooltipItems);
                             if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' mi'
-                            //return undefined;
+                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit;
                         },
                         label: (tooltipItem) => {
                             const stats = [];
                             if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' mi');
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'');
+                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + elevationUnit);
                                 stats.length = 2;
                                 return stats;
                             } else {
                                 //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
-                                return "Elevation: " + Math.round(tooltipItem.raw) + '\''; 
+                                return "Elevation: " + Math.round(tooltipItem.raw) + elevationUnit; 
                             }
                             //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
                             //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
@@ -268,21 +262,9 @@ function setTrailDetails(trail) {
         trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] = trailLength;
     }
     if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
-    
-    if (distanceUnit == 'mi') {
-        trailLength = Math.round(trailLength * 0.6213711922 * 10) / 10;
-        trailElevationGain = Math.round(trailElevationGain * 3.28084);
-        trailElevationLoss = Math.round(trailElevationLoss * 3.28084);
-    }
 
     for (feature of campsiteFeatures) appendDistance(feature);
     for (feature of trailheadFeatures) appendDistance(feature);
-
-    for (feature of campsiteFeatures) {
-        if (!feature.properties.distance) {
-            console.log(feature);
-        }
-    }
 
     //sort result set by distance and append an index for quick reference during route generation
     trailheadFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
@@ -307,17 +289,11 @@ function appendDistance(feature) {
         if ((feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
-            //feature.properties.distance = lengthGeo(newGeometry) / 1000;
             feature.properties.distance = trailFeature.geometry.coordinates[i][3];
-            feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
+            feature.properties.elevation = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
-            if (distanceUnit == 'mi') {
-                feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
-                feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
-                feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
-            }
             if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
             break;
         }
@@ -333,15 +309,10 @@ function appendDistance(feature) {
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
                 feature.properties.distance = trailFeature.geometry.coordinates[i][3];
-                feature.properties.altitude = trailFeature.geometry.coordinates[i][2];
+                feature.properties.elevation = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
                 feature.properties.elevationLoss = elevationChange.elevationLoss;
-                if (distanceUnit == 'mi') {
-                    feature.properties.distance = Math.round(feature.properties.distance * 0.6213711922 * 10) / 10;
-                    feature.properties.elevationGain = Math.round(feature.properties.elevationGain * 3.28084);
-                    feature.properties.elevationLoss = Math.round(feature.properties.elevationLoss * 3.28084);
-                }
                 if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
                 break;
             }

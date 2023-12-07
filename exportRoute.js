@@ -99,13 +99,13 @@ function updateChart() {
         }   
         trailheads.push({
             x: 0,
-            y: this.route[0].start.properties.altitude * 3.28084,
+            y: this.route[0].start.properties.elevation * 3.28084,
             r: 5,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: distance[distance.length - 1],
-            y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
+            y: this.route[this.route.length - 1].end.properties.elevation * 3.28084,
             r: 5,
             label: this.route[this.route.length - 1].end.properties.title
         });
@@ -118,7 +118,7 @@ function updateChart() {
             }
             campsites.push({
                 x: x,
-                y: this.route[i].end.properties.altitude * 3.28084,
+                y: this.route[i].end.properties.elevation * 3.28084,
                 r: 6,
                 label: this.route[i].end.properties.title
             });
@@ -135,20 +135,20 @@ function updateChart() {
         }   
         trailheads.push({
             x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[0].start.properties.distance - startDistance * 0.6213711922)),
-            y: this.route[0].start.properties.altitude * 3.28084,
+            y: this.route[0].start.properties.elevation * 3.28084,
             r: 5,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[this.route.length - 1].end.properties.distance - startDistance * 0.6213711922)),
-            y: this.route[this.route.length - 1].end.properties.altitude * 3.28084,
+            y: this.route[this.route.length - 1].end.properties.elevation * 3.28084,
             r: 5,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
             campsites.push({
                 x: Math.abs(reverseTrailDistance * 0.6213711922 - (this.route[i].end.properties.distance - startDistance * 0.6213711922)),
-                y: this.route[i].end.properties.altitude * 3.28084,
+                y: this.route[i].end.properties.elevation * 3.28084,
                 r: 6,
                 label: this.route[i].end.properties.title
             });
@@ -313,7 +313,7 @@ function updateMap() {
             }
         } else if (layer.feature.geometry.type == "LineString") {
             layer.setStyle({color :'red'}); 
-            layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + this.route[dayIndex].length.toFixed(1) + ' ' + distanceUnit);
+            layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + (this.route[dayIndex].length * distanceConstant).toFixed(1) + ' ' + distanceUnit);
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
             //            if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
             // if (dayIndex % 2 == 0) layer.setStyle({color :'blue'});
@@ -343,7 +343,7 @@ function emailRoute() {
         const subject = trailFeature.properties.title + " Itinerary";
         let message = "";
         for (let i = 0; i < this.route.length; i++) {
-            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + this.route[i].length.toFixed(1) + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
+            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + (this.route[i].length * distanceConstant).toFixed(1) + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
         }
         window.open("mailto:?subject=" + subject + "&body=" + message);
     }
