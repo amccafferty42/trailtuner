@@ -527,7 +527,7 @@ function displayRoute(route) {
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
         cell7.innerHTML = '<strong class="blue">' + (route[i].length * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span></strong>'
+        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>'
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
@@ -541,7 +541,7 @@ function displayRoute(route) {
     let cell8 = row.insertCell(7);
     cell8.classList.add("right");
     cell7.innerHTML = '<strong>Total:<br>' + (routeLength * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
-    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span><strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
@@ -647,7 +647,7 @@ function setUnit(unit) {
     if (distanceUnit != unit) {
         console.info('Switching unit from ' + distanceUnit + ' to ' + unit);
         distanceUnit = unit;
-        elevationUnit = unit === 'km' ? ' m' : '\'';
+        elevationUnit = unit === 'km' ? 'm' : 'ft';
         distanceConstant = unit === 'km' ? 1 : 0.621371;
         elevationConstant = unit === 'km' ? 1 : 3.28084;
         setUnitLabels(unit);

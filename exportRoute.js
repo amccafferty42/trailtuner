@@ -165,14 +165,10 @@ function updateChart() {
             data: trailheads,
             borderWidth: 2,
             pointStyle: 'rectRot',
-            // borderColor: function(context) {
-            //     return context.dataIndex % 2 ? '#ff0000' : '#147a14';
-            // },
             borderColor: 'black',
             backgroundColor: function(context) {
                 return context.dataIndex % 2 ? '#ff0000' : '#147a14';
             },
-            //backgroundColor: '#001A9E80',
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
@@ -187,8 +183,6 @@ function updateChart() {
             data: campsites,
             borderWidth: 1,
             pointStyle: 'triangle',
-            //borderColor: '#001A9E',
-            //backgroundColor: '#001A9E80',
             borderColor: 'black',
             backgroundColor: '#123bc4',
             hitRadius: 30,
@@ -210,7 +204,6 @@ function updateChart() {
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
-            //hitRadius: 2,
             options: {
                 interaction: {
                     intersect: false,
@@ -228,14 +221,12 @@ function updateChart() {
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
-            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
             }
         }],
         options: {
             animation: false,
             maintainAspectRatio: false,
             clip: false,
-            //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
             tooltip: { 
                 position: 'point',
                 tooltips: {
@@ -247,34 +238,27 @@ function updateChart() {
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
-                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
             },
             plugins: {
-                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
                 legend: { display: false },
                 tooltip: {
                     displayColors: false,
                     callbacks: {
                         title: (tooltipItems) => {
-                            //console.log(tooltipItems);
                             if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' mi'
-                            //return undefined;
+                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit
                         },
                         label: (tooltipItem) => {
                             const stats = [];
                             if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' mi');
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'');
+                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
                                 stats.length = 2;
                                 return stats;
                             } else {
-                                //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
-                                return "Elevation: " + Math.round(tooltipItem.raw) + '\''; 
+                                return "Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit; 
                             }
-                            //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
-                            //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
-                            //return stats
                         },
                     }
                 }

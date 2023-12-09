@@ -6,7 +6,7 @@ let trailElevationGain; // in m
 let trailElevationLoss; // in m
 let distanceUnit = 'mi'; // default
 let distanceConstant = 0.621371; // default 1 km = 0.621371 mi
-let elevationUnit = '\''; // default
+let elevationUnit = 'ft'; // default
 let elevationConstant = 3.28084; // default 1 m = 3.28084 ft
 
 // Variables for the required GeoJSON features
@@ -95,8 +95,11 @@ function initChart() {
             data: elevation,
             fill: true,
             borderWidth: 2,
-            backgroundColor: '#ff000020',
-            borderColor: '#ff0000',
+            backgroundColor: '#4d4d4d20',
+            borderColor: '#4d4d4d',
+            // backgroundColor: '#ff000020',
+            // borderColor: '#ff0000',
+
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
@@ -118,14 +121,12 @@ function initChart() {
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
-            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
             }
         }],
         options: {
             animation: false,
             maintainAspectRatio: false,
             clip: false,
-            //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
             tooltip: { 
                 position: 'point',
                 tooltips: {
@@ -137,7 +138,6 @@ function initChart() {
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
-                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
             },
             plugins: {
                 title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
@@ -153,16 +153,12 @@ function initChart() {
                             const stats = [];
                             if (tooltipItem.dataset.type == 'bubble') {
                                 stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + elevationUnit);
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
                                 stats.length = 2;
                                 return stats;
                             } else {
-                                //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
-                                return "Elevation: " + Math.round(tooltipItem.raw) + elevationUnit; 
+                                return "Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit; 
                             }
-                            //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
-                            //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
-                            //return stats
                         },
                     }
                 }
