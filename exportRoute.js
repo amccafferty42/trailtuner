@@ -41,7 +41,6 @@ function updateGeoJSON() {
                     &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)
                     && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end || fullRoute.geometry.coordinates.length >= 10)) { 
                         dayRoute.properties.title = "Day " + (j + 1);
-                        console.log(j);
                         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
                         dayRoute.geometry.coordinates = [];
                         dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
@@ -70,9 +69,6 @@ function updateGeoJSON() {
         dayRoute.properties.title = "Day " + this.route.length;
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
-    console.log(dayRoute);
-    console.log(fullRoute);
-    console.log(exportedRoute);
     updateMap();
     updateChart();
 }
@@ -114,18 +110,20 @@ function updateChart() {
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
-            let x;
-            if (this.isPositiveDirection) {
-                x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
-            } else {
-                x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) : (startDistance - this.route[i].end.properties.distance);
+            if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
+                let x;
+                if (this.isPositiveDirection) {
+                    x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
+                } else {
+                    x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) : (startDistance - this.route[i].end.properties.distance);
+                }
+                campsites.push({
+                    x: x * distanceConstant,
+                    y: this.route[i].end.properties.elevation * elevationConstant,
+                    r: 6,
+                    label: this.route[i].end.properties.title
+                });
             }
-            campsites.push({
-                x: x * distanceConstant,
-                y: this.route[i].end.properties.elevation * elevationConstant,
-                r: 6,
-                label: this.route[i].end.properties.title
-            });
         }
     } else {
         //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
@@ -152,12 +150,14 @@ function updateChart() {
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
-            campsites.push({
-                x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
-                y: this.route[i].end.properties.elevation * elevationConstant,
-                r: 6,
-                label: this.route[i].end.properties.title
-            });
+            if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
+                campsites.push({
+                    x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
+                    y: this.route[i].end.properties.elevation * elevationConstant,
+                    r: 6,
+                    label: this.route[i].end.properties.title
+                });
+            }
         }
     }    
     
