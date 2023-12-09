@@ -41,6 +41,7 @@ function updateGeoJSON() {
                     &&  trailFeature.geometry.coordinates[i][1].toFixed(3) == this.route[j].end.geometry.coordinates[1].toFixed(3)
                     && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end || fullRoute.geometry.coordinates.length >= 10)) { 
                         dayRoute.properties.title = "Day " + (j + 1);
+                        console.log(j);
                         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
                         dayRoute.geometry.coordinates = [];
                         dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
@@ -66,10 +67,12 @@ function updateGeoJSON() {
                 break;
             }
         }        
-        console.log(trailFeature);
-        console.log(fullRoute);            
+        dayRoute.properties.title = "Day " + this.route.length;
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
+    console.log(dayRoute);
+    console.log(fullRoute);
+    console.log(exportedRoute);
     updateMap();
     updateChart();
 }
