@@ -184,25 +184,31 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
 
 function generateShortHikeIn(start, startDate) {
     const end = getNextCampsiteFromTrailhead(start.properties.distance, this.isPositiveDirection);
+    const elevationChange = getElevationBetween(start, end);
     return {
         start: start,
         date: startDate,
         end: end,
         length: getDistanceBetween(start.properties.distance, end.properties.distance),
         prev_site: getPrevCampsite(end),
-        next_site: getNextCampsite(end)
+        next_site: getNextCampsite(end),
+        elevationGain: elevationChange.gain,
+        elevationLoss: elevationChange.loss
     }
 }
 
 function generateShortHikeOut(end, startDate) {
     const start = getNextCampsiteFromTrailhead(end.properties.distance, !this.isPositiveDirection);
+    const elevationChange = getElevationBetween(start, end);
     return {
         start: start,
         date: startDate,
         end: end,
         length: getDistanceBetween(start.properties.distance, end.properties.distance),
         prev_site: undefined,
-        next_site: undefined
+        next_site: undefined,
+        elevationGain: elevationChange.gain,
+        elevationLoss: elevationChange.loss
     }
 }
 
