@@ -297,9 +297,6 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
-        console.log(campsiteCandidate1);
-        console.log(campsiteCandidate2);
-        console.log(includeBothCandidates);
         if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
@@ -319,8 +316,6 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
 function calculateRoute(start, end, days, startDate) {
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
     if (days > campsiteFeatures.length || days > allOptimalCampsites.length) {
-        // console.info("All optimal campsites:")
-        // console.info(allOptimalCampsites);
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
         return buildRoute(start, end, allOptimalCampsites, days, startDate);
     } else if (allOptimalCampsites.length > 22) {

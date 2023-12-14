@@ -101,13 +101,13 @@ function updateChart() {
             x: 0,
             y: this.route[0].start.properties.elevation * elevationConstant,
             r: 6,
-            label: this.route[0].start.properties.title
+            label: 'Start: ' + this.route[0].start.properties.title
         });
         trailheads.push({
             x: distance[distance.length - 1],
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
             r: 6,
-            label: this.route[this.route.length - 1].end.properties.title
+            label: 'End ' + this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
             if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
@@ -121,7 +121,7 @@ function updateChart() {
                     x: x * distanceConstant,
                     y: this.route[i].end.properties.elevation * elevationConstant,
                     r: 6,
-                    label: this.route[i].end.properties.title
+                    label: 'Night ' + (i + 1) + ': ' + this.route[i].end.properties.title
                 });
             }
         }
@@ -141,13 +141,13 @@ function updateChart() {
             x: Math.abs(reverseTrailDistance - (this.route[0].start.properties.distance - startDistance)) * distanceConstant,
             y: this.route[0].start.properties.elevation * elevationConstant,
             r: 6,
-            label: this.route[0].start.properties.title
+            label: 'Start: ' + this.route[0].start.properties.title
         });
         trailheads.push({
             x: Math.abs(reverseTrailDistance - (this.route[this.route.length - 1].end.properties.distance - startDistance)) * distanceConstant,
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
             r: 6,
-            label: this.route[this.route.length - 1].end.properties.title
+            label: 'End: ' + this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
             if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
@@ -155,7 +155,7 @@ function updateChart() {
                     x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
                     y: this.route[i].end.properties.elevation * elevationConstant,
                     r: 6,
-                    label: this.route[i].end.properties.title
+                    label: 'Night ' + (i + 1) + ': ' + this.route[i].end.properties.title
                 });
             }
         }
