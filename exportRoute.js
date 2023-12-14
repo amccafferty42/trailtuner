@@ -66,8 +66,7 @@ function updateGeoJSON() {
                 break;
             }
         }        
-        console.log(trailFeature);
-        console.log(fullRoute);            
+        dayRoute.properties.title = "Day " + this.route.length;
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
     updateMap();
@@ -101,28 +100,30 @@ function updateChart() {
         trailheads.push({
             x: 0,
             y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: distance[distance.length - 1],
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
-            let x;
-            if (this.isPositiveDirection) {
-                x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
-            } else {
-                x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) : (startDistance - this.route[i].end.properties.distance);
+            if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
+                let x;
+                if (this.isPositiveDirection) {
+                    x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
+                } else {
+                    x = this.route[i].end.properties.distance > startDistance ? Math.abs(reverseTrailDistance - this.route[i].end.properties.distance + overflowDistance) : (startDistance - this.route[i].end.properties.distance);
+                }
+                campsites.push({
+                    x: x * distanceConstant,
+                    y: this.route[i].end.properties.elevation * elevationConstant,
+                    r: 6,
+                    label: this.route[i].end.properties.title
+                });
             }
-            campsites.push({
-                x: x * distanceConstant,
-                y: this.route[i].end.properties.elevation * elevationConstant,
-                r: 6,
-                label: this.route[i].end.properties.title
-            });
         }
     } else {
         //Find the min distance from zero for a trailhead on route, subtract it from all distances in the exported route so the elevation profile is 0-based
@@ -139,22 +140,24 @@ function updateChart() {
         trailheads.push({
             x: Math.abs(reverseTrailDistance - (this.route[0].start.properties.distance - startDistance)) * distanceConstant,
             y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: Math.abs(reverseTrailDistance - (this.route[this.route.length - 1].end.properties.distance - startDistance)) * distanceConstant,
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
-            campsites.push({
-                x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
-                y: this.route[i].end.properties.elevation * elevationConstant,
-                r: 6,
-                label: this.route[i].end.properties.title
-            });
+            if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
+                campsites.push({
+                    x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
+                    y: this.route[i].end.properties.elevation * elevationConstant,
+                    r: 6,
+                    label: this.route[i].end.properties.title
+                });
+            }
         }
     }    
     
@@ -165,14 +168,13 @@ function updateChart() {
             data: trailheads,
             borderWidth: 2,
             pointStyle: 'rectRot',
-            // borderColor: function(context) {
-            //     return context.dataIndex % 2 ? '#ff0000' : '#147a14';
-            // },
             borderColor: 'black',
-            backgroundColor: function(context) {
-                return context.dataIndex % 2 ? '#ff0000' : '#147a14';
+            borderColor: function(context) {
+                return context.dataIndex % 2 ? '#000000' : '#147a14';
             },
-            //backgroundColor: '#001A9E80',
+            backgroundColor: function(context) {
+                return context.dataIndex % 2 ? '#ff0000' : '#23db23';
+            },
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
@@ -185,12 +187,10 @@ function updateChart() {
         {
             type: 'bubble',
             data: campsites,
-            borderWidth: 1,
-            pointStyle: 'triangle',
-            //borderColor: '#001A9E',
-            //backgroundColor: '#001A9E80',
-            borderColor: 'black',
-            backgroundColor: '#123bc4',
+            borderWidth: 2,
+            pointStyle: 'rectRounded',
+            borderColor: '#123bc4',
+            backgroundColor: '#5c81ff',
             hitRadius: 30,
             hoverBorderWidth: 2,
             options: {
@@ -210,7 +210,6 @@ function updateChart() {
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
-            //hitRadius: 2,
             options: {
                 interaction: {
                     intersect: false,
@@ -228,14 +227,12 @@ function updateChart() {
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
-            chart.options.scales.y1.max = maxHeight + Math.round(maxHeight * 0.2);
             }
         }],
         options: {
             animation: false,
             maintainAspectRatio: false,
             clip: false,
-            //interaction: { intersect: fals, mode: 'nearest', axis: 'x' },
             tooltip: { 
                 position: 'point',
                 tooltips: {
@@ -247,34 +244,27 @@ function updateChart() {
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
-                y1: { type: 'linear', display: true, position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }},
             },
             plugins: {
-                title: { align: "end", display: true, text: "Distance, mi / Elevation, ft" },
+                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
                 legend: { display: false },
                 tooltip: {
                     displayColors: false,
                     callbacks: {
                         title: (tooltipItems) => {
-                            //console.log(tooltipItems);
                             if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' mi'
-                            //return undefined;
+                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit
                         },
                         label: (tooltipItem) => {
                             const stats = [];
                             if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' mi');
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'');
+                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
+                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
                                 stats.length = 2;
                                 return stats;
                             } else {
-                                //stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + 'mi');
-                                return "Elevation: " + Math.round(tooltipItem.raw) + '\''; 
+                                return "Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit; 
                             }
-                            //return "Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + '\'';
-                            //return "Elevation: " + Math.round(tooltipItem.raw) + '\''
-                            //return stats
                         },
                     }
                 }

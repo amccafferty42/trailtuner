@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <title>Itinerary Planning Tool</title>
-        <link rel = "icon" href="resources/trailtuner-icon.png" type = "image/x-icon">
+        <link rel = "icon" href="resources/trailtuner-icon.png" type = "image/x-icon" onclick="refresh()">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
         <link rel="stylesheet" href="main.css">
@@ -114,7 +114,7 @@
                 </div>
             <div class="row">
                 <div class="col-md-5">
-                    <div class="trailhead-col">
+                    <div class="label-checkbox">
                         <label for="start"><h2>Start Trailhead</h2></label>
                         <div class="hike-in-label">
                             <input class="half-day-input form-check-input" type="checkbox" id="hike-in" title="Hike-in to the first campsite from the start">
@@ -126,7 +126,7 @@
                     </select>
                 </div>
                 <div class="col-md-5">
-                    <div class="trailhead-col">
+                    <div class="label-checkbox">
                         <label for="end"><h2>End Trailhead</h2></label>
                         <div class="hike-out-label">
                             <input class="half-day-input form-check-input" type="checkbox" id="hike-out" title="Hike-out from the last campsite before the end">
@@ -144,8 +144,14 @@
                 </div>
             </div>
             <div class="row align-items-center">
-                <div class="col-md-5">                
-                    <label for="days"><h2 id="daysLabel">Days</h2></label>
+                <div class="col-md-5">         
+                    <!-- <div class="label-checkbox"> -->
+                        <label for="days"><h2 id="daysLabel">Days</h2></label>
+                        <!-- <div class="hike-in-label">
+                            <input class="half-day-input form-check-input" type="checkbox" id="elevation" title="Toggle Elevation">
+                            <label class="half-day-label form-check-label" for="elevation" title="Toggle Elevation"><h2 class="half-day-label"><small>&nbsp;Toggle Elevation</small></h2></label>
+                        </div>
+                    </div>      -->
                     <input type="number" min="0" max="99" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
                 </div>
                 <div class="col-md-5">                
@@ -164,12 +170,23 @@
                         </div>
                 </div>
             </div>
-            <br>
-            <br>
+            <!-- <br>
+            <br> -->
             <div class="row">
                 <div class="col-md-12"> 
-                    <button class="btn btn-primary btn-lg btn-block" type="button" onclick="plan()">Generate Route</button>
+                    <button class="btn btn-primary btn-lg btn-block generate-route" type="button" onclick="plan()">Generate Route</button>
                 </div>
+                <!-- <div class="col-md-2">
+                    <div id="calculation-type" class="form-check">
+                        <label class="loop-direction form-check-label" title="Choose whether to "><h2 class="loop-direction"><small><strong class="loop-direction-label">Factors</strong></small></h2></label>
+                        <br>
+                        <input class="form-check-input" type="checkbox" name="direction" id="cw" value="cw" title="Clockwise" onChange="onTrailheadsChange()" disabled>
+                        <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;Distance</small></h2></label>
+                        <br>
+                        <input class="form-check-input" type="checkbox" name="direction" id="ccw" value="ccw" title="Counter-clockwise" onChange="onTrailheadsChange()" disabled>
+                        <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;Elevation</small></h2></label>
+                    </div>
+                </div> -->
             </div>
             <br>
             <div class="row">

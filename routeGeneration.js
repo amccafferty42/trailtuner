@@ -297,12 +297,15 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
+        console.log(campsiteCandidate1);
+        console.log(campsiteCandidate2);
+        console.log(includeBothCandidates);
         if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
         } else {
             //only add the campsite closer to the average distance
-            if (campsiteCandidate1 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
+            if (campsiteCandidate1 && campsiteCandidate2 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
                 campsites.add(campsiteCandidate1);
             } else if (campsiteCandidate2) {
                 campsites.add(campsiteCandidate2);
@@ -533,7 +536,7 @@ function displayRoute(route) {
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
         cell7.innerHTML = '<strong class="blue">' + (route[i].length * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span></strong>'
+        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>'
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
@@ -547,7 +550,7 @@ function displayRoute(route) {
     let cell8 = row.insertCell(7);
     cell8.classList.add("right");
     cell7.innerHTML = '<strong>Total:<br>' + (routeLength * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
-    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + elevationUnit + '</span><strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
@@ -653,14 +656,17 @@ function setUnit(unit) {
     if (distanceUnit != unit) {
         console.info('Switching unit from ' + distanceUnit + ' to ' + unit);
         distanceUnit = unit;
-        elevationUnit = unit === 'km' ? ' m' : '\'';
+        elevationUnit = unit === 'km' ? 'm' : 'ft';
         distanceConstant = unit === 'km' ? 1 : 0.621371;
         elevationConstant = unit === 'km' ? 1 : 3.28084;
         setUnitLabels(unit);
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
-        if (this.route != undefined && this.route.length > 0) displayRoute(this.route);
-        updateChart();
+        if (this.route != undefined && this.route.length > 0) {
+            displayRoute(this.route);
+        } else {
+            initChart(); //re-initialize chart to show updated units
+        }
     }
 }
 
