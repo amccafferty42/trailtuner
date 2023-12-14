@@ -100,13 +100,13 @@ function updateChart() {
         trailheads.push({
             x: 0,
             y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: distance[distance.length - 1],
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
@@ -140,13 +140,13 @@ function updateChart() {
         trailheads.push({
             x: Math.abs(reverseTrailDistance - (this.route[0].start.properties.distance - startDistance)) * distanceConstant,
             y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[0].start.properties.title
         });
         trailheads.push({
             x: Math.abs(reverseTrailDistance - (this.route[this.route.length - 1].end.properties.distance - startDistance)) * distanceConstant,
             y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
         for (let i = 0; i < this.route.length - 1; i++) {
@@ -169,8 +169,11 @@ function updateChart() {
             borderWidth: 2,
             pointStyle: 'rectRot',
             borderColor: 'black',
+            borderColor: function(context) {
+                return context.dataIndex % 2 ? '#000000' : '#147a14';
+            },
             backgroundColor: function(context) {
-                return context.dataIndex % 2 ? '#ff0000' : '#147a14';
+                return context.dataIndex % 2 ? '#ff0000' : '#23db23';
             },
             hitRadius: 30,
             hoverBorderWidth: 3,
@@ -184,10 +187,10 @@ function updateChart() {
         {
             type: 'bubble',
             data: campsites,
-            borderWidth: 1,
-            pointStyle: 'triangle',
-            borderColor: 'black',
-            backgroundColor: '#123bc4',
+            borderWidth: 2,
+            pointStyle: 'rectRounded',
+            borderColor: '#123bc4',
+            backgroundColor: '#5c81ff',
             hitRadius: 30,
             hoverBorderWidth: 2,
             options: {

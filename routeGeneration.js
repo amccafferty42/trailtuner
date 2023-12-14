@@ -291,12 +291,15 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
+        console.log(campsiteCandidate1);
+        console.log(campsiteCandidate2);
+        console.log(includeBothCandidates);
         if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
         } else {
             //only add the campsite closer to the average distance
-            if (campsiteCandidate1 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
+            if (campsiteCandidate1 && campsiteCandidate2 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
                 campsites.add(campsiteCandidate1);
             } else if (campsiteCandidate2) {
                 campsites.add(campsiteCandidate2);

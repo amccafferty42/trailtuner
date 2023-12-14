@@ -2,6 +2,10 @@
     height: 500px; 
 }
 
+#calculation-type {
+
+}
+
 .trailTitle {
     display: flex;
     margin: 0;
@@ -9,6 +13,10 @@
 
 .logo {
     width: 25%;
+}
+
+.generate-route {
+    margin-top: 50px;
 }
 
 .asterisk {
@@ -118,7 +126,7 @@
     margin-left: 1%;
 }
 
-.trailhead-col {
+.label-checkbox {
     display: flex;
     justify-content: space-between;
 }

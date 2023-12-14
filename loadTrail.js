@@ -44,6 +44,11 @@ setTrailDetails(trail);
 initMap();
 initChart();
 
+function refresh() {
+    console.log('test');
+    location.reload(); 
+}
+
 function initChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
@@ -59,7 +64,7 @@ function initChart() {
         trailheads.push({
             x: trailheadFeatures[i].properties.distance * distanceConstant,
             y: trailheadFeatures[i].properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: trailheadFeatures[i].properties.title
         });
     }
@@ -67,7 +72,7 @@ function initChart() {
         trailheads.push({
             x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
             y: trailheadFeatures[0].properties.elevation * elevationConstant,
-            r: 5,
+            r: 6,
             label: trailheadFeatures[0].properties.title
         });
     }
@@ -79,8 +84,8 @@ function initChart() {
             label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
-            borderColor: 'black',
-            backgroundColor: '#2140db',
+            borderColor: '#2140db',
+            backgroundColor: '#627cfc',
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
