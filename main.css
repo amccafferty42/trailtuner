@@ -2,6 +2,10 @@
     height: 500px; 
 }
 
+#logo {
+    cursor: pointer;
+}
+
 .trailTitle {
     display: flex;
     margin: 0;

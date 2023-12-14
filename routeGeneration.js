@@ -29,6 +29,7 @@ const daysLabel = document.getElementById('daysLabel');
 const distanceLabel = document.getElementById('distanceLabel');
 const loopDirectionLabel = document.getElementsByClassName('loop-direction-label');
 const selectTrail = document.getElementById('select-trail');
+const logo = document.getElementById('logo').addEventListener("click", refresh);
 
 populateSelectTrail();
 reset();
@@ -621,6 +622,10 @@ function reset() {
     resetMap();
     initChart();
     window.scrollTo(0, 0);
+}
+
+function refresh() {
+    location.reload(); 
 }
 
 function removeOptions(element) {

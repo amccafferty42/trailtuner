@@ -427,52 +427,45 @@ function calculateLength(lineString) {
     let result = 0;
     lineString[0][3] = 0;
     for (let i = 1; i < lineString.length; i++) {
-        result += distance(lineString[i-1][0],lineString[i-1][1],
-                           lineString[i  ][0],lineString[i  ][1]);
+        result += haversineDistance(lineString[i-1][1],lineString[i-1][0],lineString[i-1][2],
+                                     lineString[i  ][1],lineString[i  ][0],lineString[i  ][2]);
         lineString[i][3] = result;
     }
     return result;
 }
 
-// function haversineDistance(lat1, lon1, lat2, lon2) {
-//     const earthRadius = 6371; // Radius of the Earth in kilometers
+function haversineDistance(lat1, lon1, alt1, lat2, lon2, alt2) {
+    if (!alt1 || !alt2) alt1 = alt2 = 0; // If no elevation is provided, set values to 0
 
-//     // Convert degrees to radians
-//     const toRadians = (angle) => angle * (Math.PI / 180);
+    const earthRadius = 6371; // Radius of the Earth in kilometers
 
-//     // Calculate differences in coordinates
-//     const dLat = toRadians(lat2 - lat1);
-//     const dLon = toRadians(lon2 - lon1);
+    // Convert degrees to radians
+    const toRadians = (angle) => angle * (Math.PI / 180);
 
-//     // Haversine formula for distance
-//     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//               Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-//               Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    // Convert altitude to kilometers
+    const alt1Km = alt1 / 1000;
+    const alt2Km = alt2 / 1000;
 
-//     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    // Calculate differences in coordinates
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    const dAlt = alt2Km - alt1Km;
 
-//     // Distance in kilometers (along the surface of the sphere)
-//     const distance = earthRadius * c;
+    // Haversine formula for distance
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
-//     return distance;
-// }
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-/**
- * Calculate the approximate distance between two coordinates (lat/lon)
- *
- * © Chris Veness, MIT-licensed,
- * http://www.movable-type.co.uk/scripts/latlong.html#equirectangular
- */
-function distance(λ1,φ1,λ2,φ2) {
-    var R = 6371;
-    Δλ = (λ2 - λ1) * Math.PI / 180;
-    φ1 = φ1 * Math.PI / 180;
-    φ2 = φ2 * Math.PI / 180;
-    var x = Δλ * Math.cos((φ1+φ2)/2);
-    var y = (φ2-φ1);
-    var d = Math.sqrt(x*x + y*y);
-    return R * d;
-};
+    // Distance in kilometers (along the surface of the sphere)
+    const distance = earthRadius * c;
+
+    // Adding altitude difference to the distance
+    const totalDistance = Math.sqrt(distance * distance + dAlt * dAlt);
+
+    return totalDistance;
+}
 
 function calcArea(poly) {
     if (!poly || poly.length < 3) return null;
