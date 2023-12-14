@@ -129,8 +129,10 @@ function updateChart() {
             r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
+        let nights = [];
         for (let i = 0; i < this.route.length - 1; i++) {
-            if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
+            nights.push(i+1);
+            if (this.route[i].end != this.route[i + 1].end) {
                 let x;
                 if (this.isPositiveDirection) {
                     x = this.route[i].end.properties.distance < startDistance ? (this.route[i].end.properties.distance + overflowDistance) : (this.route[i].end.properties.distance - startDistance);
@@ -141,8 +143,9 @@ function updateChart() {
                     x: x * distanceConstant,
                     y: this.route[i].end.properties.elevation * elevationConstant,
                     r: 6,
-                    label: 'Night ' + (i + 1) + ': ' + this.route[i].end.properties.title
+                    label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
                 });
+                nights = [];
             }
         }
     } else {
@@ -180,14 +183,17 @@ function updateChart() {
             r: 6,
             label: this.route[this.route.length - 1].end.properties.title
         });
+        let nights = [];
         for (let i = 0; i < this.route.length - 1; i++) {
+            nights.push(i+1);
             if (this.route[i].end != this.route[i + 1].end) { //avoid multiple markers for same location
                 campsites.push({
                     x: Math.abs(reverseTrailDistance - (this.route[i].end.properties.distance - startDistance)) * distanceConstant,
                     y: this.route[i].end.properties.elevation * elevationConstant,
                     r: 6,
-                    label: 'Night ' + (i + 1) + ': ' + this.route[i].end.properties.title
+                    label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
                 });
+                nights = [];
             }
         }
     }    
