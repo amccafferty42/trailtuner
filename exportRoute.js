@@ -102,33 +102,6 @@ function updateChart() {
                 }
             }
         }
-        // for (let i = 0; i < fullRoute.geometry.coordinates.length; i++) {
-        //     let d;
-        //     if (i == 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
-        //         d = 0;
-        //     } else if (this.isPositiveDirection) {
-        //         d = fullRoute.geometry.coordinates[i][3] < startDistance ? (fullRoute.geometry.coordinates[i][3] + overflowDistance) : (fullRoute.geometry.coordinates[i][3] - startDistance);
-        //     } else {
-        //         d = fullRoute.geometry.coordinates[i][3] > startDistance ? Math.abs(reverseTrailDistance - fullRoute.geometry.coordinates[i][3] + overflowDistance) : (startDistance - fullRoute.geometry.coordinates[i][3]);
-        //     }
-        //     if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
-        //         distance.push(d * distanceConstant);
-        //         elevation.push(fullRoute.geometry.coordinates[i][2] * elevationConstant);
-        //         day.push()
-        //     }
-        // }   
-        trailheads.push({
-            x: 0,
-            y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 6,
-            label: this.route[0].start.properties.title
-        });
-        trailheads.push({
-            x: distance[distance.length - 1],
-            y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 6,
-            label: this.route[this.route.length - 1].end.properties.title
-        });
         let nights = [];
         for (let i = 0; i < this.route.length - 1; i++) {
             nights.push(i+1);
@@ -165,24 +138,6 @@ function updateChart() {
                 }
             }
         }
-        // for (let i = 0; i < fullRoute.geometry.coordinates.length; i++) {
-        //     if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
-        //         elevation.push(fullRoute.geometry.coordinates[i][2] * elevationConstant);
-        //         distance.push(Math.abs(reverseTrailDistance - (fullRoute.geometry.coordinates[i][3] - startDistance)) * distanceConstant);
-        //     }
-        // }   
-        trailheads.push({
-            x: Math.abs(reverseTrailDistance - (this.route[0].start.properties.distance - startDistance)) * distanceConstant,
-            y: this.route[0].start.properties.elevation * elevationConstant,
-            r: 6,
-            label: this.route[0].start.properties.title
-        });
-        trailheads.push({
-            x: Math.abs(reverseTrailDistance - (this.route[this.route.length - 1].end.properties.distance - startDistance)) * distanceConstant,
-            y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-            r: 6,
-            label: this.route[this.route.length - 1].end.properties.title
-        });
         let nights = [];
         for (let i = 0; i < this.route.length - 1; i++) {
             nights.push(i+1);
@@ -196,7 +151,19 @@ function updateChart() {
                 nights = [];
             }
         }
-    }    
+    }  
+    trailheads.push({
+        x: 0,
+        y: this.route[0].start.properties.elevation * elevationConstant,
+        r: 6,
+        label: this.route[0].start.properties.title
+    });
+    trailheads.push({
+        x: distance[distance.length - 1],
+        y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
+        r: 6,
+        label: this.route[this.route.length - 1].end.properties.title
+    });
     
     const chartData = {
         labels: distance,
