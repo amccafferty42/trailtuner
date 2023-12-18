@@ -285,7 +285,7 @@ function updateMap() {
             }
         } else if (layer.feature.geometry.type == "LineString") {
             layer.setStyle({color :'red'}); 
-            layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + (this.route[dayIndex].length * distanceConstant).toFixed(1) + ' ' + distanceUnit);
+            layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + Math.round(this.route[dayIndex].length * distanceConstant * 10) / 10 + ' ' + distanceUnit);
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
             //            if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
             // if (dayIndex % 2 == 0) layer.setStyle({color :'blue'});
@@ -315,7 +315,7 @@ function emailRoute() {
         const subject = trailFeature.properties.title + " Itinerary";
         let message = "";
         for (let i = 0; i < this.route.length; i++) {
-            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + (this.route[i].length * distanceConstant).toFixed(1) + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
+            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + Math.round(this.route[i].length * distanceConstant * 10) / 10 + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
         }
         window.open("mailto:?subject=" + subject + "&body=" + message);
     }

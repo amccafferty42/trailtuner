@@ -248,9 +248,9 @@ function getAllCampsites(startDistance, endDistance) {
 // Calculate distance between start and end (includes wrapping around a circuit)
 function getDistanceBetween(startDistance, endDistance) {
     if (startDistance === endDistance) return 0;
-    if (trailCircuit && this.isPositiveDirection && startDistance > endDistance) return Math.round((trailLength - startDistance + endDistance) * 10) / 10;
-    if (trailCircuit && !this.isPositiveDirection && startDistance < endDistance) return Math.round((trailLength - endDistance + startDistance) * 10) / 10;
-    return Math.round(Math.abs(startDistance - endDistance) * 10) / 10;
+    if (trailCircuit && this.isPositiveDirection && startDistance > endDistance) return (trailLength - startDistance + endDistance);
+    if (trailCircuit && !this.isPositiveDirection && startDistance < endDistance) return (trailLength - endDistance + startDistance);
+    return Math.abs(startDistance - endDistance);
 }
 
 function getElevationBetween(start, end) {
@@ -260,11 +260,11 @@ function getElevationBetween(start, end) {
     };
     if (start.properties.distance === end.properties.distance) return elevation;
     else if (trailCircuit && this.isPositiveDirection && start.properties.distance > end.properties.distance) {
-        elevation.gain = Math.abs(Math.round((trailElevationGain - start.properties.elevationGain + end.properties.elevationGain) * 10) / 10);
-        elevation.loss = Math.abs(Math.round((trailElevationLoss - start.properties.elevationLoss + end.properties.elevationLoss) * 10) / 10);
+        elevation.gain = Math.abs(trailElevationGain - start.properties.elevationGain + end.properties.elevationGain);
+        elevation.loss = Math.abs(trailElevationLoss - start.properties.elevationLoss + end.properties.elevationLoss);
     } else if (trailCircuit && !this.isPositiveDirection && start.properties.distance < end.properties.distance) {
-        elevation.gain = Math.abs(Math.round((trailElevationGain - end.properties.elevationGain + start.properties.elevationGain) * 10) / 10);
-        elevation.loss = Math.abs(Math.round((trailElevationLoss - end.properties.elevationLoss + start.properties.elevationLoss) * 10) / 10);
+        elevation.gain = Math.abs(trailElevationGain - end.properties.elevationGain + start.properties.elevationGain);
+        elevation.loss = Math.abs(trailElevationLoss - end.properties.elevationLoss + start.properties.elevationLoss);
     } else {
         elevation.gain = Math.abs(end.properties.elevationGain - start.properties.elevationGain);
         elevation.loss = Math.abs(end.properties.elevationLoss - start.properties.elevationLoss);
@@ -433,9 +433,9 @@ function changeCamp(dayIndex, isNext) {
         this.route[dayIndex].elevationGain = this.route[dayIndex].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex].end.properties.elevationGain);
         this.route[dayIndex].elevationLoss = this.route[dayIndex].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     } else {
-        this.route[dayIndex].length = Math.round(Math.abs(this.route[dayIndex].start.properties.distance - this.route[dayIndex].end.properties.distance) * 10) / 10;
-        this.route[dayIndex].elevationGain = Math.round(Math.abs(this.route[dayIndex].start.properties.elevationGain - this.route[dayIndex].end.properties.elevationGain) * 10) / 10;
-        this.route[dayIndex].elevationLoss = Math.round(Math.abs(this.route[dayIndex].start.properties.elevationLoss - this.route[dayIndex].end.properties.elevationLoss) * 10) / 10;
+        this.route[dayIndex].length = Math.abs(this.route[dayIndex].start.properties.distance - this.route[dayIndex].end.properties.distance);
+        this.route[dayIndex].elevationGain = Math.abs(this.route[dayIndex].start.properties.elevationGain - this.route[dayIndex].end.properties.elevationGain);
+        this.route[dayIndex].elevationLoss = Math.abs(this.route[dayIndex].start.properties.elevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     }
 
     this.route[dayIndex].prev_site = trailCircuit && this.route[dayIndex].end == campsiteFeatures[0] ? campsiteFeatures[campsiteFeatures.length - 1] : campsiteFeatures[this.route[dayIndex].end.properties.index - 1];
@@ -451,9 +451,9 @@ function changeCamp(dayIndex, isNext) {
         this.route[dayIndex + 1].elevationGain = this.route[dayIndex + 1].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
         this.route[dayIndex + 1].elevationLoss = this.route[dayIndex + 1].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     } else {
-        this.route[dayIndex + 1].length = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.distance - this.route[dayIndex + 1].end.properties.distance) * 10) / 10;
-        this.route[dayIndex + 1].elevationGain = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.elevationGain - this.route[dayIndex + 1].end.properties.elevationGain) * 10) / 10;
-        this.route[dayIndex + 1].elevationLoss = Math.round(Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss) * 10) / 10;
+        this.route[dayIndex + 1].length = Math.abs(this.route[dayIndex + 1].start.properties.distance - this.route[dayIndex + 1].end.properties.distance);
+        this.route[dayIndex + 1].elevationGain = Math.abs(this.route[dayIndex + 1].start.properties.elevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
+        this.route[dayIndex + 1].elevationLoss = Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     }
     displayRoute(this.route);
 }
@@ -531,7 +531,7 @@ function displayRoute(route) {
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
-        cell7.innerHTML = '<strong class="blue">' + (route[i].length * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
+        cell7.innerHTML = '<strong class="blue">' + Math.round(route[i].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
         cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>'
     }
     row = tableBody.insertRow();
@@ -545,7 +545,7 @@ function displayRoute(route) {
     cell7.classList.add("right");
     let cell8 = row.insertCell(7);
     cell8.classList.add("right");
-    cell7.innerHTML = '<strong>Total:<br>' + (routeLength * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</strong>';
+    cell7.innerHTML = '<strong>Total:<br>' + Math.round(routeLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
     cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
     table.style.visibility = 'visible';
@@ -566,8 +566,8 @@ function closerCampBtn(day, route) {
     else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
 
     if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';    
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';    
 }
 
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
@@ -581,8 +581,8 @@ function furtherCampBtn(day, route) {
     else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
     
     if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + (dif * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
 }
 
 function reset() {
