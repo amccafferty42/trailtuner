@@ -93,7 +93,6 @@ function getDistancePerDay() {
     if (inputDistance.value > 0 && distanceUnit === 'km') return inputDistance.value;
     if (inputDistance.value > 0 && distanceUnit === 'mi') return inputDistance.value * 1.60934;
     return Math.floor(Math.random() * (32 - 16 + 1) ) + 16; // min = 10, max = 20 for miles / min = 16, max = 32 for km
-    //return distanceUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
 }
 
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set

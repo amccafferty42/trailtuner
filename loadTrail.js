@@ -264,6 +264,10 @@ function setTrailDetails(trail) {
     }
     if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
 
+    //iterate through campsites and trailheads to find any that are on the route multiple times
+    //if they are, create NEW featrues for those with the same info
+    //when appending distance, check first to see if duplicate feature with equal distance already exists, if so, then the marker must be meant for a future distance
+
     for (feature of campsiteFeatures) appendDistance(feature);
     for (feature of trailheadFeatures) appendDistance(feature);
 
