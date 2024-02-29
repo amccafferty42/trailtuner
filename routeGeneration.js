@@ -69,7 +69,7 @@ function getDays() {
             this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
             const totalDistance = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
             const distancePerDay = getDistancePerDay();
-            days = totalDistance / distancePerDay < campsiteFeatures.length ? Math.round(totalDistance / distancePerDay) : campsiteFeatures.length;
+            days = (totalDistance / distancePerDay) < campsiteFeatures.length ? Math.round(totalDistance / distancePerDay) : campsiteFeatures.length;
         } else if (inputDistance.value > 0) {
             if (trailCircuit) {
                 days = Math.round(trailLength / inputDistance.value); // if start or end are not set, route length will always be full length so days must always be trail length / miles/days
@@ -88,8 +88,10 @@ function getDays() {
     return Math.floor(Math.random() * (Math.ceil(campsiteFeatures.length / 2)) + 2); // min = 2, max = (# campsites / 2) + 2
 }
 
+// All distances are stored in metric, regardless of the unit selected. Therefore we return distancePerDay in metric so it works with all calulcations
 function getDistancePerDay() {
-    if (inputDistance.value > 0) return inputDistance.value;
+    if (inputDistance.value > 0 && distanceUnit === 'km') return inputDistance.value;
+    if (inputDistance.value > 0 && distanceUnit === 'mi') return inputDistance.value * 1.60934;
     return Math.floor(Math.random() * (32 - 16 + 1) ) + 16; // min = 10, max = 20 for miles / min = 16, max = 32 for km
     //return distanceUnit === 'km' ? Math.floor(Math.random() * (32 - 16 + 1) ) + 16 : Math.floor(Math.random() * (20 - 10 + 1) ) + 10; // min = 10, max = 20 for miles and min = 16, max = 32 for km
 }
