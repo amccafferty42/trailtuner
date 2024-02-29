@@ -22,4 +22,4 @@ Depending on the supplied input, a variety of algorithms are used to generate th
 
 When fields are missing, the app does its best to fill in the gaps. Typically, this is done by finding all of the reasonable options, then selecting one at random. If you generate multiple routes with <b>No Preference</b> on the trailheads, you will likely see different outputs each time.
 
-Essential to the application's function is a list of trails in GeoJSON format with a few specificed folders of feature objetcs denoting the full <b>Trail</b>, all <b>Trailheads</b>, and all <b>Campsites</b>. Right now, this input is simply stored in the trails.js file.
+Essential to the application's function is a list of trails in GeoJSON format with a few specificed folders of feature objects denoting the full <b>Trail</b>, all <b>Trailheads</b>, and all <b>Campsites</b>. Right now, this input is simply stored in the trails.js file.
