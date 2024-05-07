@@ -620,6 +620,8 @@ function reset() {
     this.route = undefined;
     exportedRoute = undefined;
     fullRoute = undefined;
+    toggleTrailheads.checked = true;
+    toggleCampsites.checked = false;
     resetMap();
     initChart();
     window.scrollTo(0, 0);

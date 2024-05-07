@@ -39,13 +39,15 @@ const neutralIcon = L.icon({
 // Variables for chart.js
 let trailElevationChart;
 
+const toggleTrailheads = document.getElementById('toggle-trailheads');
+const toggleCampsites = document.getElementById('toggle-campsites');
+
 setTrailFromURL();
 setTrailDetails(trail);
 initMap();
 initChart();
 
 function refresh() {
-    console.log('test');
     location.reload(); 
 }
 
@@ -203,12 +205,18 @@ function initMap() {
 function resetMap() {
     this.geoJsonLayer.clearLayers();
     this.geoJsonLayer.addData(trailFeature);
-    for (feature of trailheadFeatures) this.geoJsonLayer.addData(feature);
+    if (toggleTrailheads && toggleTrailheads.checked) for (feature of trailheadFeatures) this.geoJsonLayer.addData(feature);
+    if (toggleCampsites && toggleCampsites.checked) for (feature of campsiteFeatures) this.geoJsonLayer.addData(feature);
     this.geoJsonLayer.eachLayer(function (layer) {
         if (layer.feature.geometry.type == "LineString") layer.setStyle({color :'#fc0000'}); 
         if (layer.feature.geometry.type != "LineString" && layer.feature.properties && layer.feature.properties.title) {
-            layer.setIcon(neutralIcon);
-            layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            if (layer.feature.properties.folderId == trailheadFolder.id) {
+                layer.setIcon(startIcon);
+                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            } else if (layer.feature.properties.folderId == campsiteFolder.id) {
+                layer.setIcon(neutralIcon);
+                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            }
         }
     });
 }
