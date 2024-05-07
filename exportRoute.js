@@ -102,40 +102,44 @@ function updateChart() {
             }
         }
     }
-    let nights = [];
-    for (let i = 0; i < this.route.length - 1; i++) {
-        nights.push(i+1);
-        if (this.route[i].end != this.route[i + 1].end) {
-            const currDistance = this.route[i].end.properties.distance;
-            let adjustedDistance;
-            if (this.isPositiveDirection && currDistance < startDistance) {
-                adjustedDistance = currDistance + wrapAroundDistance;
-            } else if (!this.isPositiveDirection && currDistance > startDistance) {
-                adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
-            } else {
-                adjustedDistance = Math.abs(currDistance - startDistance);
+    if (toggleCampsites && toggleCampsites.checked) {
+        let nights = [];
+        for (let i = 0; i < this.route.length - 1; i++) {
+            nights.push(i+1);
+            if (this.route[i].end != this.route[i + 1].end) {
+                const currDistance = this.route[i].end.properties.distance;
+                let adjustedDistance;
+                if (this.isPositiveDirection && currDistance < startDistance) {
+                    adjustedDistance = currDistance + wrapAroundDistance;
+                } else if (!this.isPositiveDirection && currDistance > startDistance) {
+                    adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+                } else {
+                    adjustedDistance = Math.abs(currDistance - startDistance);
+                }
+                campsites.push({
+                    x: adjustedDistance * distanceConstant,
+                    y: this.route[i].end.properties.elevation * elevationConstant,
+                    r: 6,
+                    label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
+                });
+                nights = [];
             }
-            campsites.push({
-                x: adjustedDistance * distanceConstant,
-                y: this.route[i].end.properties.elevation * elevationConstant,
-                r: 6,
-                label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
-            });
-            nights = [];
         }
     }
-    trailheads.push({
-        x: 0,
-        y: this.route[0].start.properties.elevation * elevationConstant,
-        r: 6,
-        label: this.route[0].start.properties.title
-    });
-    trailheads.push({
-        x: distances[distances.length - 1],
-        y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-        r: 6,
-        label: this.route[this.route.length - 1].end.properties.title
-    });
+    if (toggleTrailheads && toggleTrailheads.checked) {
+        trailheads.push({
+            x: 0,
+            y: this.route[0].start.properties.elevation * elevationConstant,
+            r: 6,
+            label: this.route[0].start.properties.title
+        });
+        trailheads.push({
+            x: distances[distances.length - 1],
+            y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
+            r: 6,
+            label: this.route[this.route.length - 1].end.properties.title
+        });
+    }
     const chartData = {
         labels: distances,
         datasets: [{
@@ -198,7 +202,7 @@ function updateChart() {
         data: chartData,
         plugins: [{
             beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(...chart.data.datasets[0].data);
+            const maxHeight = Math.max(elevations);
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
@@ -257,7 +261,11 @@ function updateChart() {
 function updateMap() {
     this.geoJsonLayer.clearLayers();
     for (feature of exportedRoute.features) {
-        if (feature.geometry) this.geoJsonLayer.addData(feature);
+        if (feature.geometry && (feature.geometry.type == "LineString" || 
+            feature.properties && feature.properties.folderId == trailheadFolder.id && toggleTrailheads.checked ||
+            feature.properties && feature.properties.folderId == campsiteFolder.id && toggleCampsites.checked)) {
+                this.geoJsonLayer.addData(feature);
+            }
     }
     let nightIndex = 0, dayIndex = 0;
     this.geoJsonLayer.eachLayer(function (layer) {
@@ -287,7 +295,7 @@ function updateMap() {
             layer.setStyle({color :'red'}); 
             layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + Math.round(this.route[dayIndex].length * distanceConstant * 10) / 10 + ' ' + distanceUnit);
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
-            //            if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
+            // if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
             // if (dayIndex % 2 == 0) layer.setStyle({color :'blue'});
             // if (dayIndex % 3 == 0) layer.setStyle({color :'yellow'});
             dayIndex++;
