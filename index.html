@@ -201,13 +201,14 @@
                 <canvas id="elevationProfile"></canvas>
             </div>
             <div class="toggleVisibility">
-                <label class="toggle-visibility-input form-check-label" title="View"><h2 class="half-day-label"><small>&nbsp;View:&nbsp;</small></h2></label>
-                <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
-                <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="half-day-label"><small>&nbsp;Trailheads&nbsp;</small></h2></label>
-                <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
-                <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="half-day-label"><small>&nbsp;Campsites&nbsp;</small></h2></label>
-                <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-zones" title="Zones">
-                <label class="toggle-visibility-input form-check-label" for="toggle-zones" title="Zones"><h2 class="half-day-label"><small>&nbsp;Zones&nbsp;</small></h2></label>
+                <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="toggle-label"><small><strong>&nbsp;Trailheads&nbsp;</strong></small></h2></label>
+                </div>
+                <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="toggle-label"><small><strong>&nbsp;Campsites&nbsp;</strong></small></h2></label>
+                </div>
             </div>
             <table class="table route-table table-striped" id="table">
                 <thead class="thead-dark">
