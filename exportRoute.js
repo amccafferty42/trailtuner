@@ -145,7 +145,6 @@ function updateChart() {
         datasets: [{
             type: 'bubble',
             data: trailheads,
-            pointBackgroundColor,
             borderWidth: 2,
             pointStyle: 'rectRot',
             borderColor: 'black',
@@ -185,19 +184,7 @@ function updateChart() {
             data: elevations,
             fill: true,
             borderWidth: 2,
-            //https://stackoverflow.com/questions/28159595/chartjs-different-color-per-data-point
-            backgroundColor: function(context) {
-                console.log(context);
-                // console.log(elevations[context.dataIndex]);
-                // if (context.dataIndex && context.dataIndex > 0) console.log(elevations[context.dataIndex - 1]);
-                if (context.dataIndex && context.dataIndex > 0) {
-                    console.log(Math.abs(elevations[context.dataIndex] - elevations[context.dataIndex - 1]) > 5);
-                    //if (Math.abs(elevations[context.dataIndex] - elevations[context.dataIndex - 1]) > 5) console.log();
-                    return (Math.abs(elevations[context.dataIndex] - elevations[context.dataIndex - 1])) > 5 ? '#ff0000' : '#000000';
-                }
-                return '#ff0000';
-            },
-            // backgroundColor: '#ff000020',
+            backgroundColor: '#ff000020',
             borderColor: '#ff0000',
             tension: 0.1,
             pointRadius: 0,
