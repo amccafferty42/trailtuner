@@ -292,13 +292,20 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         if (this.isPositiveDirection) {
             distance += avgDistance;
             if (trailCircuit && distance > trailLength) distance -= trailLength;
-        }
-        else {
+        } else {
             distance -= avgDistance;
             if (trailCircuit && distance < 0) distance += trailLength;
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
+        //complex validation necessary to ensure both campsite candidates are valid for all possible directions
+        if (this.isPositiveDirection) { 
+            if (campsiteCandidate1 && !((start.properties.distance >= end.properties.distance && (campsiteCandidate1.properties.distance > start.properties.distance || campsiteCandidate1.properties.distance < end.properties.distance)) || (start.properties.distance < end.properties.distance && (campsiteCandidate1.properties.distance > start.properties.distance && campsiteCandidate1.properties.distance < end.properties.distance)))) campsiteCandidate1 = undefined;
+            if (campsiteCandidate2 && !((start.properties.distance >= end.properties.distance && (campsiteCandidate2.properties.distance > start.properties.distance || campsiteCandidate2.properties.distance < end.properties.distance)) || (start.properties.distance < end.properties.distance && (campsiteCandidate2.properties.distance > start.properties.distance && campsiteCandidate2.properties.distance < end.properties.distance)))) campsiteCandidate2 = undefined;
+        } else {
+            if (campsiteCandidate1 && !((start.properties.distance <= end.properties.distance && (campsiteCandidate1.properties.distance < start.properties.distance || campsiteCandidate1.properties.distance > end.properties.distance)) || (start.properties.distance > end.properties.distance && (campsiteCandidate1.properties.distance < start.properties.distance && campsiteCandidate1.properties.distance > end.properties.distance)))) campsiteCandidate1 = undefined;
+            if (campsiteCandidate2 && !((start.properties.distance <= end.properties.distance && (campsiteCandidate2.properties.distance < start.properties.distance || campsiteCandidate2.properties.distance > end.properties.distance)) || (start.properties.distance > end.properties.distance && (campsiteCandidate2.properties.distance < start.properties.distance && campsiteCandidate2.properties.distance > end.properties.distance)))) campsiteCandidate2 = undefined;
+        }
         if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
@@ -552,6 +559,8 @@ function displayRoute(route) {
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
+    toggleTrailheads.checked = true;
+    toggleCampsites.checked = true;
 
     updateGeoJSON();
     console.table(route);
@@ -620,6 +629,8 @@ function reset() {
     this.route = undefined;
     exportedRoute = undefined;
     fullRoute = undefined;
+    toggleTrailheads.checked = true;
+    toggleCampsites.checked = false;
     resetMap();
     initChart();
     window.scrollTo(0, 0);

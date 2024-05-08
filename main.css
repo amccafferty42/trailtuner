@@ -211,3 +211,22 @@
 	width: 25px;
 	text-align: center;
 }
+
+.toggleVisibility {
+    display: flex;
+    justify-content: center;
+}
+
+.toggle-label {
+    margin: 0;
+}
+
+.toggle-visibility-input {
+    user-select: none;
+    padding-right: 10px;
+    margin: 0;
+}
+
+#toggle-trailheads {
+    accent-color: green;
+}

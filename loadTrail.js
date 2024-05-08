@@ -39,20 +39,22 @@ const neutralIcon = L.icon({
 // Variables for chart.js
 let trailElevationChart;
 
+const toggleTrailheads = document.getElementById('toggle-trailheads');
+const toggleCampsites = document.getElementById('toggle-campsites');
+
 setTrailFromURL();
 setTrailDetails(trail);
 initMap();
 initChart();
 
 function refresh() {
-    console.log('test');
     location.reload(); 
 }
 
 function initChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const distance = [], elevation = [], trailheads = [];
+    const distance = [], elevation = [], trailheads = [], campsites = [];
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         //prevent adding multiple points at the same distance (x value)
         if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
@@ -60,32 +62,61 @@ function initChart() {
             distance.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
         }
     }
-    for (let i = 0; i < trailheadFeatures.length; i++) {
-        trailheads.push({
-            x: trailheadFeatures[i].properties.distance * distanceConstant,
-            y: trailheadFeatures[i].properties.elevation * elevationConstant,
-            r: 6,
-            label: trailheadFeatures[i].properties.title
-        });
+    if (toggleTrailheads && toggleTrailheads.checked) {
+        for (let i = 0; i < trailheadFeatures.length; i++) {
+            trailheads.push({
+                x: trailheadFeatures[i].properties.distance * distanceConstant,
+                y: trailheadFeatures[i].properties.elevation * elevationConstant,
+                r: 6,
+                label: trailheadFeatures[i].properties.title
+            });
+        }
+        if (trailCircuit) {
+            trailheads.push({
+                x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
+                y: trailheadFeatures[0].properties.elevation * elevationConstant,
+                r: 6,
+                label: trailheadFeatures[0].properties.title
+            });
+        }
     }
-    if (trailCircuit) {
-        trailheads.push({
-            x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
-            y: trailheadFeatures[0].properties.elevation * elevationConstant,
-            r: 6,
-            label: trailheadFeatures[0].properties.title
-        });
+    if (toggleCampsites && toggleCampsites.checked) {
+        for (let i = 0; i < campsiteFeatures.length; i++) {
+            console.log(campsiteFeatures[i]);
+            campsites.push({
+                x: campsiteFeatures[i].properties.distance * distanceConstant,
+                y: campsiteFeatures[i].properties.elevation * elevationConstant,
+                r: 6,
+                label: campsiteFeatures[i].properties.title
+            });
+        }
     }
+    //const markers = trailheads.concat(campsites);
     const chartData = {
         labels: distance,
         datasets: [{
             type: 'bubble',
             data: trailheads,
-            label: 'test',
             borderWidth: 2,
             pointStyle: 'rectRot',
-            borderColor: '#2140db',
-            backgroundColor: '#627cfc',
+            borderColor: '#147a14',
+            backgroundColor: '#23db23',
+            hitRadius: 30,
+            hoverBorderWidth: 3,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
+        }, 
+        {
+            type: 'bubble',
+            data: campsites,
+            borderWidth: 2,
+            pointStyle: 'rectRounded',
+            borderColor: '#123bc4',
+            backgroundColor: '#5c81ff',
             hitRadius: 30,
             hoverBorderWidth: 3,
             options: {
@@ -100,11 +131,8 @@ function initChart() {
             data: elevation,
             fill: true,
             borderWidth: 2,
-            // backgroundColor: '#4d4d4d20',
-            // borderColor: '#4d4d4d',
             backgroundColor: '#ff000020',
             borderColor: '#ff0000',
-
             tension: 0.1,
             pointRadius: 0,
             spanGaps: true,
@@ -114,15 +142,14 @@ function initChart() {
                     mode: 'index'
                 }
             }
-        }
-    ]
+        }]
     };
       
     const config = {
         data: chartData,
         plugins: [{
             beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(...chart.data.datasets[0].data);
+            const maxHeight = Math.max(elevation);
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
@@ -182,33 +209,54 @@ function initMap() {
     this.geoJsonLayer = L.geoJSON().addTo(this.leafletMap);
 
     // create legend
-    const legend = L.control({ position: "bottomleft" });
-    legend.onAdd = function () {
-        let div = L.DomUtil.create("div", "description");
-        L.DomEvent.disableClickPropagation(div);
-        const text =
-            "<span class=\"red\"><b>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = restricted camping<br><span class=\"green\">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = unrestricted camping</b><br>*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
-        div.insertAdjacentHTML("beforeend", text);
-        return div;
-    };
-    legend.addTo(this.leafletMap);
-
-    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    // const legend = L.control({ position: "bottomleft" });
+    // legend.onAdd = function () {
+    //     let div = L.DomUtil.create("div", "description");
+    //     L.DomEvent.disableClickPropagation(div);
+    //     //const text = "*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
+    //     //const text = '<div class="toggleVisibility"><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="half-day-label"><small>&nbsp;Trailheads&nbsp;</small></h2></label><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="half-day-label"><small>&nbsp;Campsites&nbsp;</small></h2></label></div>';
+    //     //<span class=\"red\"><b>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = restricted camping<br><span class=\"green\">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = unrestricted camping</b><br>
+    //     //div.insertAdjacentHTML("beforeend", text);
+    //     return div;
+    // };
+    // legend.addTo(this.leafletMap);
+    L.tileLayer('https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=9a6df92c1ad74b39dc40c8690eeac1af ', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(this.leafletMap);
+    // L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // }).addTo(this.leafletMap);
     resetMap();
+}
+
+function toggleIconVisibility() {
+    if (this.route) {
+        updateMap();
+        updateChart();
+    } else {
+        resetMap();
+        initChart();
+    }
 }
 
 // Reset map to display only trail and trailheads (no campsites)
 function resetMap() {
     this.geoJsonLayer.clearLayers();
     this.geoJsonLayer.addData(trailFeature);
-    for (feature of trailheadFeatures) this.geoJsonLayer.addData(feature);
+    if (toggleTrailheads && toggleTrailheads.checked) for (feature of trailheadFeatures) this.geoJsonLayer.addData(feature);
+    if (toggleCampsites && toggleCampsites.checked) for (feature of campsiteFeatures) {
+        if (feature.properties && feature.properties.title !== "*Dispersed Camping*") this.geoJsonLayer.addData(feature);
+    }
     this.geoJsonLayer.eachLayer(function (layer) {
         if (layer.feature.geometry.type == "LineString") layer.setStyle({color :'#fc0000'}); 
         if (layer.feature.geometry.type != "LineString" && layer.feature.properties && layer.feature.properties.title) {
-            layer.setIcon(neutralIcon);
-            layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            if (layer.feature.properties.folderId == trailheadFolder.id) {
+                layer.setIcon(startIcon);
+                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            } else if (layer.feature.properties.folderId == campsiteFolder.id) {
+                layer.setIcon(neutralIcon);
+                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+            }
         }
     });
 }
