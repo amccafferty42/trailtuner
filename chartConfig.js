@@ -32,7 +32,6 @@ function initChart() {
     }
     if (toggleCampsites && toggleCampsites.checked) {
         for (let i = 0; i < campsiteFeatures.length; i++) {
-            console.log(campsiteFeatures[i]);
             campsites.push({
                 x: campsiteFeatures[i].properties.distance * distanceConstant,
                 y: campsiteFeatures[i].properties.elevation * elevationConstant,
@@ -187,6 +186,7 @@ function updateChart() {
     if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
         distances = [];
         elevations = [];
+        days = [];
         for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
                 elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
                 distances.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
