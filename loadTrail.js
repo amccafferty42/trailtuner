@@ -1,4 +1,5 @@
 let trail = trails[0].geoJSON;
+
 let trailName;
 let trailCircuit;
 let trailLength; // in km
@@ -17,28 +18,7 @@ let trailFeature;
 let campsiteFeatures = [];
 let trailheadFeatures = [];
 
-// Variables for Leaflet map, layer, and icons
-let leafletMap;
-let geoJsonLayer;
-const startIcon = L.icon({
-    iconUrl: 'resources/start.png',
-    iconSize: [20, 28],
-    iconAnchor: [10, 27]
-});
-const endIcon = L.icon({
-    iconUrl: 'resources/end.png',
-    iconSize: [20, 28],
-    iconAnchor: [10, 27]
-});
-const neutralIcon = L.icon({
-    iconUrl: 'resources/neutral.png',
-    iconSize: [20, 28],
-    iconAnchor: [10, 27]
-});
-
-// Variables for chart.js
-let trailElevationChart;
-
+const toggleTrail = document.getElementById('toggle-trail');
 const toggleTrailheads = document.getElementById('toggle-trailheads');
 const toggleCampsites = document.getElementById('toggle-campsites');
 
@@ -51,184 +31,6 @@ function refresh() {
     location.reload(); 
 }
 
-function initChart() {
-    if (this.trailElevationChart) this.trailElevationChart.destroy();
-    const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const distance = [], elevation = [], trailheads = [], campsites = [];
-    for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
-        //prevent adding multiple points at the same distance (x value)
-        if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
-            elevation.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
-            distance.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
-        }
-    }
-    if (toggleTrailheads && toggleTrailheads.checked) {
-        for (let i = 0; i < trailheadFeatures.length; i++) {
-            trailheads.push({
-                x: trailheadFeatures[i].properties.distance * distanceConstant,
-                y: trailheadFeatures[i].properties.elevation * elevationConstant,
-                r: 6,
-                label: trailheadFeatures[i].properties.title
-            });
-        }
-        if (trailCircuit) {
-            trailheads.push({
-                x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
-                y: trailheadFeatures[0].properties.elevation * elevationConstant,
-                r: 6,
-                label: trailheadFeatures[0].properties.title
-            });
-        }
-    }
-    if (toggleCampsites && toggleCampsites.checked) {
-        for (let i = 0; i < campsiteFeatures.length; i++) {
-            console.log(campsiteFeatures[i]);
-            campsites.push({
-                x: campsiteFeatures[i].properties.distance * distanceConstant,
-                y: campsiteFeatures[i].properties.elevation * elevationConstant,
-                r: 6,
-                label: campsiteFeatures[i].properties.title
-            });
-        }
-    }
-    //const markers = trailheads.concat(campsites);
-    const chartData = {
-        labels: distance,
-        datasets: [{
-            type: 'bubble',
-            data: trailheads,
-            borderWidth: 2,
-            pointStyle: 'rectRot',
-            borderColor: '#147a14',
-            backgroundColor: '#23db23',
-            hitRadius: 30,
-            hoverBorderWidth: 3,
-            options: {
-                interaction: {
-                    intersect: false, 
-                    mode: 'nearest'
-                }
-            }
-        }, 
-        {
-            type: 'bubble',
-            data: campsites,
-            borderWidth: 2,
-            pointStyle: 'rectRounded',
-            borderColor: '#123bc4',
-            backgroundColor: '#5c81ff',
-            hitRadius: 30,
-            hoverBorderWidth: 3,
-            options: {
-                interaction: {
-                    intersect: false, 
-                    mode: 'nearest'
-                }
-            }
-        }, 
-        {
-            type: 'line',
-            data: elevation,
-            fill: true,
-            borderWidth: 2,
-            backgroundColor: '#ff000020',
-            borderColor: '#ff0000',
-            tension: 0.1,
-            pointRadius: 0,
-            spanGaps: true,
-            options: {
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            }
-        }]
-    };
-      
-    const config = {
-        data: chartData,
-        plugins: [{
-            beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(elevation);
-            chart.options.scales.x.min = Math.min(...chart.data.labels);
-            chart.options.scales.x.max = Math.max(...chart.data.labels);
-            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
-            }
-        }],
-        options: {
-            animation: false,
-            maintainAspectRatio: false,
-            clip: false,
-            tooltip: { 
-                position: 'point',
-                tooltips: {
-                    filter: function (tooltipItem) {
-                        return tooltipItem.datasetIndex === 0;
-                    }
-                }
-            },
-            scales: {
-                x: { type: 'linear' },
-                y: { type: 'linear', beginAtZero: false },
-            },
-            plugins: {
-                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
-                legend: { display: false },
-                tooltip: {
-                    displayColors: false,
-                    callbacks: {
-                        title: (tooltipItems) => {
-                            if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit;
-                        },
-                        label: (tooltipItem) => {
-                            const stats = [];
-                            if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
-                                stats.length = 2;
-                                return stats;
-                            } else {
-                                return "Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit; 
-                            }
-                        },
-                    }
-                }
-            }
-        }
-    };
-    this.trailElevationChart = new Chart(ctx, config);
-}
-// Set coordinates and zoom of map
-function initMap() {
-    if (this.leafletMap != undefined) this.leafletMap.remove();
-    const half = Math.round(trailFeature.geometry.coordinates.length / 2);
-    const lat = trailFeature.geometry.coordinates[half][1];
-    const long = trailFeature.geometry.coordinates[half][0];
-    this.leafletMap = L.map('map').setView([lat, long], 10);
-    this.geoJsonLayer = L.geoJSON().addTo(this.leafletMap);
-
-    // create legend
-    // const legend = L.control({ position: "bottomleft" });
-    // legend.onAdd = function () {
-    //     let div = L.DomUtil.create("div", "description");
-    //     L.DomEvent.disableClickPropagation(div);
-    //     //const text = "*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
-    //     //const text = '<div class="toggleVisibility"><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="half-day-label"><small>&nbsp;Trailheads&nbsp;</small></h2></label><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="half-day-label"><small>&nbsp;Campsites&nbsp;</small></h2></label></div>';
-    //     //<span class=\"red\"><b>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = restricted camping<br><span class=\"green\">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = unrestricted camping</b><br>
-    //     //div.insertAdjacentHTML("beforeend", text);
-    //     return div;
-    // };
-    // legend.addTo(this.leafletMap);
-    L.tileLayer('https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=9a6df92c1ad74b39dc40c8690eeac1af ', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this.leafletMap);
-    // L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    // }).addTo(this.leafletMap);
-    resetMap();
-}
-
 function toggleIconVisibility() {
     if (this.route) {
         updateMap();
@@ -237,28 +39,6 @@ function toggleIconVisibility() {
         resetMap();
         initChart();
     }
-}
-
-// Reset map to display only trail and trailheads (no campsites)
-function resetMap() {
-    this.geoJsonLayer.clearLayers();
-    this.geoJsonLayer.addData(trailFeature);
-    if (toggleTrailheads && toggleTrailheads.checked) for (feature of trailheadFeatures) this.geoJsonLayer.addData(feature);
-    if (toggleCampsites && toggleCampsites.checked) for (feature of campsiteFeatures) {
-        if (feature.properties && feature.properties.title !== "*Dispersed Camping*") this.geoJsonLayer.addData(feature);
-    }
-    this.geoJsonLayer.eachLayer(function (layer) {
-        if (layer.feature.geometry.type == "LineString") layer.setStyle({color :'#fc0000'}); 
-        if (layer.feature.geometry.type != "LineString" && layer.feature.properties && layer.feature.properties.title) {
-            if (layer.feature.properties.folderId == trailheadFolder.id) {
-                layer.setIcon(startIcon);
-                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
-            } else if (layer.feature.properties.folderId == campsiteFolder.id) {
-                layer.setIcon(neutralIcon);
-                layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
-            }
-        }
-    });
 }
 
 // Validate trail and set details
@@ -313,7 +93,7 @@ function setTrailDetails(trail) {
     if (trailCircuit && !isClockwise(trailFeature.geometry.coordinates)) trailFeature.geometry.coordinates.reverse();
 
     //iterate through campsites and trailheads to find any that are on the route multiple times
-    //if they are, create NEW featrues for those with the same info
+    //if they are, create NEW features for those with the same info
     //when appending distance, check first to see if duplicate feature with equal distance already exists, if so, then the marker must be meant for a future distance
 
     for (feature of campsiteFeatures) appendDistance(feature);
@@ -341,7 +121,13 @@ function appendDistance(feature) {
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         if ((feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
-            newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
+            if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
+            if (feature.geometry.coordinates[3] == 0) feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
+
+            //newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
+            trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
+            newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
+
             feature.properties.distance = trailFeature.geometry.coordinates[i][3];
             feature.properties.elevation = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);

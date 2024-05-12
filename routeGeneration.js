@@ -551,7 +551,7 @@ function displayRoute(route) {
     cell6 = row.insertCell(5);
     cell7 = row.insertCell(6);
     cell7.classList.add("right");
-    let cell8 = row.insertCell(7);
+    cell8 = row.insertCell(7);
     cell8.classList.add("right");
     cell7.innerHTML = '<strong>Total:<br>' + Math.round(routeLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
     cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
@@ -559,6 +559,8 @@ function displayRoute(route) {
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
+    toggleTrail.disabled = false;
+    toggleTrail.checked = false;
     toggleTrailheads.checked = true;
     toggleCampsites.checked = true;
 
@@ -629,6 +631,8 @@ function reset() {
     this.route = undefined;
     exportedRoute = undefined;
     fullRoute = undefined;
+    toggleTrail.checked = true;
+    toggleTrail.disabled = true;
     toggleTrailheads.checked = true;
     toggleCampsites.checked = false;
     resetMap();
@@ -644,7 +648,7 @@ function removeOptions(element) {
     for (let i = element.options.length - 1; i > 0; i--) {
        element.remove(i);
     }
- }
+}
  
 // Populate dropdown with premade trails
 function populateSelectTrail() {

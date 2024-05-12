@@ -145,13 +145,7 @@
             </div>
             <div class="row align-items-center">
                 <div class="col-md-5">         
-                    <!-- <div class="label-checkbox"> -->
-                        <label for="days"><h2 id="daysLabel">Days</h2></label>
-                        <!-- <div class="hike-in-label">
-                            <input class="half-day-input form-check-input" type="checkbox" id="elevation" title="Toggle Elevation">
-                            <label class="half-day-label form-check-label" for="elevation" title="Toggle Elevation"><h2 class="half-day-label"><small>&nbsp;Toggle Elevation</small></h2></label>
-                        </div>
-                    </div>      -->
+                    <label for="days"><h2 id="daysLabel">Days</h2></label>
                     <input type="number" min="0" max="99" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
                 </div>
                 <div class="col-md-5">                
@@ -167,31 +161,24 @@
                         <br>
                         <input class="form-check-input" type="radio" name="direction" id="ccw" value="ccw" title="Counter-clockwise" onChange="onTrailheadsChange()" disabled>
                         <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;CCW<strong>&nbsp;↺</strong></small></h2></label>
-                        </div>
-                </div>
-            </div>
-            <!-- <br>
-            <br> -->
-            <div class="row">
-                <div class="col-md-12"> 
-                    <button class="btn btn-primary btn-lg btn-block generate-route" type="button" onclick="plan()">Generate Route</button>
-                </div>
-                <!-- <div class="col-md-2">
-                    <div id="calculation-type" class="form-check">
-                        <label class="loop-direction form-check-label" title="Choose whether to "><h2 class="loop-direction"><small><strong class="loop-direction-label">Factors</strong></small></h2></label>
-                        <br>
-                        <input class="form-check-input" type="checkbox" name="direction" id="cw" value="cw" title="Clockwise" onChange="onTrailheadsChange()" disabled>
-                        <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;Distance</small></h2></label>
-                        <br>
-                        <input class="form-check-input" type="checkbox" name="direction" id="ccw" value="ccw" title="Counter-clockwise" onChange="onTrailheadsChange()" disabled>
-                        <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h2 class="loop-direction"><small class="loop-direction-label">&nbsp;Elevation</small></h2></label>
                     </div>
-                </div> -->
+                </div>
             </div>
-            <br>
             <div class="row">
-                <div class="col-md-12"> 
-                    <button class="btn btn-secondary btn-lg btn-block" type="button" onclick="reset()">Reset</button>
+                <div class="col-md-10"> 
+                    <div class="btn-group">
+                        <button class="btn btn-primary btn-lg btn-block generate-route" type="button" onclick="plan()">Generate Route</button>
+                        <button type="button" class="btn btn-primary dropdown-toggle generate-route" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                          </button>
+                          <ul class="dropdown-menu">
+                            <li><a href="#">More Route Options</a></li>
+                          </ul>
+                    </div>
+                </div>
+                <div class="col-md-2"> 
+                    <button class="btn btn-danger btn-lg btn-block generate-route" type="button" onclick="reset()">Reset</button>
                 </div>
             </div>
             <br>
@@ -202,6 +189,10 @@
             </div>
             <div class="toggleVisibility">
                 <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trail" title="Trail" checked disabled onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-trail" title="Trail"><h2 class="toggle-label"><small><strong>&nbsp;Full Trail&nbsp;</strong></small></h2></label>
+                </div>
+                <div class="toggle-visibility-input">
                     <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
                     <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="toggle-label"><small><strong>&nbsp;Trailheads&nbsp;</strong></small></h2></label>
                 </div>
@@ -209,6 +200,10 @@
                     <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
                     <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="toggle-label"><small><strong>&nbsp;Campsites&nbsp;</strong></small></h2></label>
                 </div>
+                <!-- <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-metadata" title="Metadata" onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-metadata" title="Metadata"><h2 class="toggle-label"><small><strong>&nbsp;Metadata&nbsp;</strong></small></h2></label>
+                </div> -->
             </div>
             <table class="table route-table table-striped" id="table">
                 <thead class="thead-dark">
@@ -244,6 +239,8 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="trails.js"></script>
+        <script src="mapConfig.js"></script>
+        <script src="chartConfig.js"></script>
         <script src="loadTrail.js"></script>
         <script src="routeGeneration.js"></script>
         <script src="exportRoute.js"></script>

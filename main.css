@@ -230,3 +230,20 @@
 #toggle-trailheads {
     accent-color: green;
 }
+
+#toggle-metadata {
+    accent-color: orange;
+}
+
+#toggle-trail {
+    accent-color: red;
+}
+
+.btn-group {
+    display: flex;
+}
+
+.dropdown-menu {
+    right: 0;
+    left: auto;
+}
