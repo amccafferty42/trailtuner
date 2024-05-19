@@ -32,12 +32,14 @@ function initChart() {
     }
     if (toggleCampsites && toggleCampsites.checked) {
         for (let i = 0; i < campsiteFeatures.length; i++) {
-            campsites.push({
-                x: campsiteFeatures[i].properties.distance * distanceConstant,
-                y: campsiteFeatures[i].properties.elevation * elevationConstant,
-                r: 6,
-                label: campsiteFeatures[i].properties.title
-            });
+            if (campsiteFeatures[i].properties && campsiteFeatures[i].properties.title !== "*Dispersed Camping*") {
+                campsites.push({
+                    x: campsiteFeatures[i].properties.distance * distanceConstant,
+                    y: campsiteFeatures[i].properties.elevation * elevationConstant,
+                    r: 6,
+                    label: campsiteFeatures[i].properties.title
+                });
+            }
         }
     }
     //const markers = trailheads.concat(campsites);

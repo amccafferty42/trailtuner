@@ -247,3 +247,12 @@
     right: 0;
     left: auto;
 }
+
+.toggle-dispersed-input {
+    display: flex;
+    h2 {
+        margin: 0;
+        padding-left: 10px;
+    }
+}
+
