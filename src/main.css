@@ -1,0 +1,258 @@
+#map { 
+    height: 500px; 
+}
+
+#logo {
+    cursor: pointer;
+}
+
+.trailTitle {
+    display: flex;
+    margin: 0;
+}
+
+.logo {
+    width: 25%;
+}
+
+.generate-route {
+    margin-top: 50px;
+}
+
+.asterisk {
+    padding-left: 20px;
+    color:gray;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.loop-direction {
+    margin: 0;
+}
+
+.upload {
+    display: flex;
+    flex-direction: column;
+}
+
+#submit-trail-btn, #reset-trail-btn{
+    margin: 5px;
+}
+
+.upload-btns, #choose-file, .submit-btns {
+    display: flex;
+    margin-top: 2%;
+    margin-right: auto;
+}
+
+.change-trail-title, .select-trail-desc {
+    text-align: left;
+}
+
+#validJson {
+    margin-top: auto;
+    margin-bottom: auto;
+    font-weight: 100;
+    color: red;
+}
+
+.template {
+    text-align: left;
+}
+
+#json-info {
+    text-align: left;
+}
+
+#json-template {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.select-trail-modal {
+    text-align: center;
+}
+
+.upload-trail, .select-trail {
+    display: flex;
+    flex-direction: column;
+}
+
+#selectTrailLabel, #uploadTrailLabel {
+    margin-right: 5%;
+}
+
+.info {
+    font-size: small;
+    cursor: pointer;
+    color: rgb(99, 99, 99);
+}
+
+.change-trail-info {
+    font-size: medium;
+    cursor: pointer;
+}
+
+#change-trail {
+    cursor: pointer;
+}
+
+.lightgray {
+    color: lightgray !important;
+}
+
+.title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+#changeTrail {
+    align-self: center;
+}
+
+#title {
+    margin-bottom: 0;
+}
+
+.distance-unit {
+    align-self: center;
+    margin-left: auto;
+}
+
+#change-trail {
+    align-self: end;
+    margin-left: 1%;
+}
+
+.label-checkbox {
+    display: flex;
+    justify-content: space-between;
+}
+
+.hike-in-label, .hike-out-label {
+    margin: auto;
+    margin-right: 0;
+}
+
+.form-check-label {
+    margin: 0;
+}
+
+#break {
+    margin: 0;
+}
+
+
+.half-day-label {
+    max-height: 1.5em;
+}
+
+.changeCampBtn {
+    width: 90%;
+    display: block;
+    margin: auto;
+}
+
+.route-table {
+    margin-bottom: 0;
+    margin-top: 0;
+    /* margin-top: 20px; */
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.right {
+    text-align: right
+}
+
+.center {
+    text-align: center
+}
+
+.blue {
+    color: royalblue;
+}
+
+.gray {
+    color: gray !important;
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}
+
+.description {
+    /* width: 350px; */
+    font-size: 16px;
+    color: #333;
+    padding: 10px 14px;
+    background-color: hsla(0, 0%, 100%, 0.8);
+    box-shadow: 0 0 15px rgb(0 0 0 / 20%);
+    border-radius: 5px;
+    line-height: 120%;
+    border: 1px solid grey;
+  }
+
+  .leaflet-div-icon {
+	background: transparent;
+	border: none;
+}
+
+.leaflet-marker-icon .number{
+	position: relative;
+	top: -37px;
+	font-size: 12px;
+	width: 25px;
+	text-align: center;
+}
+
+.toggleVisibility {
+    display: flex;
+    justify-content: center;
+}
+
+.toggle-label {
+    margin: 0;
+}
+
+.toggle-visibility-input {
+    user-select: none;
+    padding-right: 10px;
+    margin: 0;
+}
+
+#toggle-trailheads {
+    accent-color: green;
+}
+
+#toggle-metadata {
+    accent-color: orange;
+}
+
+#toggle-trail {
+    accent-color: red;
+}
+
+.btn-group {
+    display: flex;
+}
+
+.dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.toggle-dispersed-input {
+    display: flex;
+    h2 {
+        margin: 0;
+        padding-left: 10px;
+    }
+}
+

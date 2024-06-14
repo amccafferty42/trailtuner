@@ -2,17 +2,17 @@
 let leafletMap;
 let geoJsonLayer;
 const startIcon = L.icon({
-    iconUrl: 'resources/start.png',
+    iconUrl: '../resources/start.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
 const endIcon = L.icon({
-    iconUrl: 'resources/end.png',
+    iconUrl: '../resources/end.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
 const neutralIcon = L.icon({
-    iconUrl: 'resources/neutral.png',
+    iconUrl: '../resources/neutral.png',
     iconSize: [20, 28],
     iconAnchor: [10, 27]
 });
@@ -91,7 +91,7 @@ function updateMap() {
                 if (nightIndex > 0 && nightIndex < 20) {
                     //numbers created with 600 font, bold, segoe UI
                     const icon = L.icon({
-                        iconUrl: 'resources/' + nightIndex +'.png',
+                        iconUrl: '../resources/' + nightIndex +'.png',
                         iconSize: [20, 28],
                         iconAnchor: [10, 27]
                     });
