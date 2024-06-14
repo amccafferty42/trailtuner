@@ -3,15 +3,16 @@
     <head>
         <meta charset="UTF-8" />
         <title>Itinerary Planning Tool</title>
-        <link rel = "icon" href="../resources/trailtuner-icon.png" type = "image/x-icon" onclick="refresh()">
+        <link rel = "icon" href="resources/trailtuner-icon.png" type = "image/x-icon" onclick="refresh()">
         <link rel="stylesheet" href="..\node_modules\bootstrap\dist\css\bootstrap.css">
+        <link rel="stylesheet" href="..\node_modules\bootstrap-select\dist\css\bootstrap-select.css">
         <link rel="stylesheet" href="..\node_modules\leaflet\dist\leaflet.css">
         <link rel="stylesheet" href="main.css">
     </head>
     <body>
         <div class="container">
             <div class="title">
-                <img id="logo" class="logo" src="../resources/trailtuner.png" alt="">
+                <img id="logo" class="logo" src="resources/trailtuner.png" alt="">
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -194,9 +195,7 @@
                             <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h2><small>Include dispersed camping</small></h2>&nbsp;</label>
                         </div>
                         <div class="exclude-sites-input">
-                            <select id="exclude" class="form-control" onChange="">
-                                <option value="0">No Preference</option>
-                            </select>
+                            <select class="selectpicker" multiple data-live-search="true"></select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -261,6 +260,7 @@
         </div>
         <script src="..\node_modules\jquery\dist\jquery.js"></script>
         <script src="..\node_modules\bootstrap\dist\js\bootstrap.js"></script>
+        <script src="..\node_modules\bootstrap-select\dist\js\bootstrap-select.js"></script>
         <script src="..\node_modules\leaflet\dist\leaflet.js"></script>
         <script src="..\node_modules\chart.js\dist\chart.umd.js"></script>
         <script src="trails.js"></script>
