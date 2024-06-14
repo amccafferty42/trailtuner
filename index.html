@@ -173,7 +173,7 @@
                             <span class="sr-only">Toggle Dropdown</span>
                           </button>
                           <ul class="dropdown-menu">
-                            <li><a href="#" data-toggle="modal" data-target="#moreRouteOptions">More Route Options</a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#moreRouteOptions">Camping Options</a></li>
                           </ul>
                     </div>
                 </div>
@@ -182,11 +182,11 @@
                 </div>
             </div>
             <!-- Modal -->
-            <div class="modal fade" id="moreRouteOptions" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="moreRouteOptions" tabindex="-1" role="dialog" aria-labelledby="campingModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2 class="modal-title" id="exampleModalLabel"><h2>More Route Options</h2>
+                        <h2 class="modal-title" id="campingModalLabel"><h2>Camping Options</h2>
                     </div>
                     <div class="modal-body">
                         <div class="toggle-dispersed-input">
@@ -194,14 +194,15 @@
                             <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h2><small>Include dispersed camping</small></h2>&nbsp;</label>
                         </div>
                         <div class="exclude-sites-input">
-                            <select id="exclude" class="form-control" onChange="">
-                                <option value="0">No Preference</option>
+                            <label for="exclude"><h2 id="excludeLabel"><small>Exclude Campsites: </small></h2></label>
+                            <select id="exclude" class="selectpicker form-control" data-live-search="true">
+                                <option>None</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Apply</button> -->
                     </div>
                 </div>
                 </div>
