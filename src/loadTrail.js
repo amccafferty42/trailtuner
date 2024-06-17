@@ -18,6 +18,8 @@ let trailFeature;
 let campsiteFeatures = [];
 let trailheadFeatures = [];
 
+let hasDispersedCampsites = false;
+
 const toggleTrail = document.getElementById('toggle-trail');
 const toggleTrailheads = document.getElementById('toggle-trailheads');
 const toggleCampsites = document.getElementById('toggle-campsites');
@@ -49,6 +51,10 @@ function setTrailDetails(trail) {
     trailFeature = undefined;
     trailheadFeatures = [];
     campsiteFeatures = [];
+    hasDispersedCampsites = false;
+
+    //set include exclude lists
+    
 
     for (feature of trail.features) {
         if (feature.properties.class === "Folder" && feature.properties.title.toUpperCase() === "TRAIL") {
@@ -96,7 +102,10 @@ function setTrailDetails(trail) {
     //if they are, create NEW features for those with the same info
     //when appending distance, check first to see if duplicate feature with equal distance already exists, if so, then the marker must be meant for a future distance
 
-    for (feature of campsiteFeatures) appendDistance(feature);
+    for (feature of campsiteFeatures) {
+        if (feature.properties && feature.properties.title && feature.properties.title.match(/[*]/)) hasDispersedCampsites = true;
+        appendDistance(feature);
+    }
     for (feature of trailheadFeatures) appendDistance(feature);
 
     //sort result set by distance and append an index for quick reference during route generation

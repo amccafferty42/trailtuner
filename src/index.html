@@ -169,7 +169,7 @@
                 <div class="col-md-10"> 
                     <div class="btn-group">
                         <button class="btn btn-primary btn-lg btn-block generate-route" type="button" onclick="plan()">Generate Route</button>
-                        <button type="button" class="btn btn-primary dropdown-toggle generate-route" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button type="button" class="btn btn-primary dropdown-toggle generate-route" data-toggle="modal" data-target="#moreRouteOptions" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
                             <span class="sr-only">Toggle Dropdown</span>
                           </button>
@@ -190,19 +190,24 @@
                         <h2 class="modal-title" id="exampleModalLabel"><h2>More Route Options</h2>
                     </div>
                     <div class="modal-body">
+                        <div class="exclude-sites-input">
+                            <label for="exclude"><h2 id="excludeLabel"><small>Do not use campsites: </small></h2></label>
+                            <br>
+                            <select class="selectpicker" id="exclude" multiple data-live-search="true" title="Choose to exclude" data-width="100%"></select>
+                        </div>
+                        <div class="includes-sites-input">
+                            <label for="include"><h2 id="includeLabel"><small>Must use campsites: </small></h2></label>
+                            <br>
+                            <select class="selectpicker" id="include" multiple data-live-search="true" title="Choose to include" data-width="100%"></select>
+                        </div>
                         <div class="toggle-dispersed-input">
                             <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-dispersed" title="Dispersed" checked>
-                            <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h2><small>Include dispersed camping</small></h2>&nbsp;</label>
-                        </div>
-                        <div class="exclude-sites-input">
-                            <label for="exclude"><h2 id="excludeLabel"><small>Exclude campsites </small></h2></label>
-                            <br>
-                            <select class="selectpicker" id="exclude" multiple data-live-search="true"></select>
+                            <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h2><small>Include dispersed campsites</small></h2>&nbsp;</label>
                         </div>
                     </div>
                     <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <!-- <button type="button" class="btn btn-primary" data-dismiss="modal">Apply</button> -->
+                    <button type="button" class="btn btn-danger" onclick="resetOptions()">Reset</button>
                     </div>
                 </div>
                 </div>

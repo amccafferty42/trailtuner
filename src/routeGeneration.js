@@ -5,11 +5,14 @@ let routeElevationLoss;
 let isPositiveDirection;
 let userSetDays = false;
 let filteredCampsites;
+let excludedCampsites;
+let includedCampsites;
 
 // Select DOM elements
 const selectStart = document.getElementById('start');
 const selectEnd = document.getElementById('end');
 const selectExclude = document.getElementById('exclude');
+const selectInclude = document.getElementById('include');
 const inputDays = document.getElementById('days');
 const inputDistance = document.getElementById('distance');
 const inputDate = document.getElementById('start-date');
@@ -39,7 +42,7 @@ reset();
 
 function plan() {
     if (validateForm()) {
-        filteredCampsites = filterCampsites(campsiteFeatures);
+        filterCampsites(campsiteFeatures);
         const startDate = new Date(inputDate.value + 'T00:00');
         const days = getDays();
         const distancePerDay = getDistancePerDay();
@@ -49,21 +52,34 @@ function plan() {
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
-        displayRoute(route);
-        shareRoute.scrollIntoView({behavior: 'smooth'});
+        if (!route) {
+            window.alert("Error: unable to generate route");
+        } else {
+            displayRoute(route);
+            shareRoute.scrollIntoView({behavior: 'smooth'});
+        }
     }
 }
 
 function filterCampsites(campsites) {
-    let filteredCampsites = [];
-    for (campsite of campsites) {
-        if (!campsite.properties.title.match(/[*]/)) {
-            filteredCampsites.push(campsite);
-        } else if (includeDispersedCampsites.checked) {
-            filteredCampsites.push(campsite);
+    filteredCampsites = [];
+    excludedCampsites = [];
+    includedCampsites = [];
+    for (let i = 0; i < selectExclude.childNodes.length; i++) {
+        if (selectExclude.childNodes[i].selected) {
+            excludedCampsites.push(selectExclude.childNodes[i].value);
         }
     }
-    return filteredCampsites;
+    for (let i = 0; i < selectInclude.childNodes.length; i++) {
+        if (selectInclude.childNodes[i].selected) {
+            includedCampsites.push(selectInclude.childNodes[i].value);
+        }
+    }
+    for (let i = 0; i < campsites.length; i++) {
+        if (!excludedCampsites.includes(i+1+"") && (!campsites[i].properties.title.match(/[*]/) || includeDispersedCampsites.checked)) {
+            filteredCampsites.push(campsites[i]);
+        }
+    }
 }
 
 function validateForm() {
@@ -334,9 +350,13 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
             }
         }
     }
+    for (campsite of includedCampsites) {
+        campsites.add(campsiteFeatures[parseInt(campsite) - 1]);
+    }
     return campsites;
-}
+}     
 
+//TODO may want to modify how random start/end is selected if there are include/exclude sites added
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
@@ -350,9 +370,39 @@ function calculateRoute(start, end, days, startDate) {
     } else {
         const groupedCampsites = subset(allOptimalCampsites, days - 1);
         let routes = [];
-        for (let campsites of groupedCampsites) {
-            routes.push(buildRoute(start, end, campsites, days, startDate));
+
+        if (includedCampsites.length > 0) {
+            console.log("Included campsites:");
+            console.log(includedCampsites);
+            for (let campsites of groupedCampsites) {
+                let validCampsites = false;
+                for (let i = 0; i < includedCampsites.length; i++) {
+                    for (campsite of campsites) {
+                        if(campsite.properties && campsite.properties.index == (includedCampsites[i] - 1)) {
+                            console.log("Route includes valid campsites:");
+                            console.log(campsites);
+                            validCampsites = true;
+                        }
+                    }
+                    if (!validCampsites) {
+                        break;
+                    } else {
+                        if (i == (includedCampsites.length - 1)) {
+                            break;
+                        } else {
+                            validCampsites = false;
+                        }
+                    }
+                }
+                if (validCampsites) routes.push(buildRoute(start, end, campsites, days, startDate));
+            }
+        } else {
+            for (let campsites of groupedCampsites) {
+                routes.push(buildRoute(start, end, campsites, days, startDate));
+            }
         }
+        
+        
         let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
         for(let i = 0; i < routes.length; i++) {
             let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.length)));
@@ -613,17 +663,46 @@ function furtherCampBtn(day, route) {
     return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
 }
 
+function resetOptions() {
+    if (!hasDispersedCampsites) {
+        includeDispersedCampsites.checked = false;
+        includeDispersedCampsites.disabled = true;
+    } else {
+        includeDispersedCampsites.checked = true;
+        includeDispersedCampsites.disabled = false;
+    }
+    $('.selectpicker').selectpicker('deselectAll');
+    $('.selectpicker').selectpicker('refresh');
+}
+
+function validateOptions() {
+    let isValid = true;
+    // 1. A site cannot be both excluded and included
+    for (includedCampsite of includedCampsites) {
+        if (excludedCampsites.includes(includedCampsite)) {
+            isValid = false;
+        }
+    }
+    // 2. A site cannot be outside of the 2 selected trailheads
+    return isValid;
+}
+
 function reset() {
     removeOptions(selectStart);
     removeOptions(selectEnd);
-    removeOptions(selectExclude);
     for (let i = 0; i < trailheadFeatures.length; i++) {
         addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
         addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
     }
+    removeAllOptions(selectExclude);
+    removeAllOptions(selectInclude);
     for (let i = 0; i < campsiteFeatures.length; i++) {
-        addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
+        if (!campsiteFeatures[i].properties.title.match(/[*]/)) {
+            addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
+            addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
+        }
     }
+    resetOptions();
     tableBody.innerHTML = '';
     selectStart.value = 1;
     selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
@@ -666,6 +745,12 @@ function refresh() {
 
 function removeOptions(element) {
     for (let i = element.options.length - 1; i > 0; i--) {
+       element.remove(i);
+    }
+}
+
+function removeAllOptions(element) {
+    for (let i = element.options.length - 1; i >= 0; i--) {
        element.remove(i);
     }
 }
