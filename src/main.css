@@ -2,6 +2,19 @@
     height: 500px; 
 }
 
+#cw, #ccw {
+    margin-top: .5em;
+    margin-left: 0;
+}
+
+#hike-in, #hike-out {
+    margin-top: .5em;
+}
+
+#loop-direction-form {
+    padding-left: 0;
+}
+
 #logo {
     cursor: pointer;
 }
@@ -78,6 +91,20 @@
     flex-direction: column;
 }
 
+.divider {
+    padding: 0;
+    background-color: white;
+    color: white;
+}
+
+#includeLabel, #excludeLabel {
+    margin-bottom: 30px;
+}
+
+#includeLabel, .toggle-dispersed-input {
+    margin-top: 30px;
+}
+
 #selectTrailLabel, #uploadTrailLabel {
     margin-right: 5%;
 }
@@ -95,6 +122,7 @@
 
 #change-trail {
     cursor: pointer;
+    color: #4d8bc0;
 }
 
 .lightgray {
@@ -114,6 +142,7 @@
 
 #title {
     margin-bottom: 0;
+    margin-top: 20px;
 }
 
 .distance-unit {
@@ -221,22 +250,35 @@
     margin: 0;
 }
 
+.btn-success {
+    background-color: #5cb85c;
+}
+
 .toggle-visibility-input {
+    display: flex;
+    align-self: center;
     user-select: none;
     padding-right: 10px;
-    margin: 0;
 }
 
 #toggle-trailheads {
-    accent-color: green;
+    margin-top: .5em;
+}
+
+#toggle-trailheads:checked {
+    background-color: green;
 }
 
 #toggle-metadata {
-    accent-color: orange;
+    margin-top: .5em;
 }
 
 #toggle-trail {
-    accent-color: red;
+    margin-top: .5em;
+}
+
+#toggle-trail:checked {
+    background-color: red;
 }
 
 .btn-group {
@@ -261,3 +303,7 @@
     height: 4.2em;
 }
 
+.instructions {
+margin-top: 30px;
+  margin-bottom: 30px;
+}

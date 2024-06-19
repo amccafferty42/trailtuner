@@ -10,10 +10,11 @@
   "author": "Alex McCafferty",
   "license": "MIT",
   "dependencies": {
-    "bootstrap": "3.4.1",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
     "bootstrap-select": "^1.13.18",
     "chart.js": "^4.4.3",
-    "jquery": "3.5.0",
+    "jquery": "^3.7.1",
     "leaflet": "1.9.4"
   }
 }

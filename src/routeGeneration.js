@@ -65,6 +65,7 @@ function filterCampsites(campsites) {
     filteredCampsites = [];
     excludedCampsites = [];
     includedCampsites = [];
+    console.log(selectExclude.childNodes.length);
     for (let i = 0; i < selectExclude.childNodes.length; i++) {
         if (selectExclude.childNodes[i].selected) {
             excludedCampsites.push(selectExclude.childNodes[i].value);
@@ -636,31 +637,31 @@ function displayRoute(route) {
 
 // Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
 function closerCampBtn(day, route) {
-    if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let dif = 0;
     if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
     else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
     else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
 
-    if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';    
+    if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';    
 }
 
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
-    if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let dif = 0;
     if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
     else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
     else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
     
-    if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-xs btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-xs btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
 }
 
 function resetOptions() {
@@ -671,8 +672,10 @@ function resetOptions() {
         includeDispersedCampsites.checked = true;
         includeDispersedCampsites.disabled = false;
     }
+    // $('.selectpicker').selectpicker('destroy');
     $('.selectpicker').selectpicker('deselectAll');
     $('.selectpicker').selectpicker('refresh');
+
 }
 
 function validateOptions() {
@@ -702,6 +705,7 @@ function reset() {
             addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
         }
     }
+    console.log(selectExclude);
     resetOptions();
     tableBody.innerHTML = '';
     selectStart.value = 1;
