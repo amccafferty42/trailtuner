@@ -1,4 +1,3 @@
-// Variables for Leaflet map, layer, and icons
 let leafletMap;
 let geoJsonLayer;
 const startIcon = L.icon({

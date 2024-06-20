@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Itinerary Planning Tool</title>
+        <link rel="icon" href="/assets/trailtuner-icon-DZVDqPWm.png" type="image/x-icon">
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@v1.14.0-beta3/dist/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>         -->
+      <script type="module" crossorigin src="/assets/index-BDEbIOCk.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-Ca3IUZJs.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="title">
+                <img id="logo" class="logo" src="/assets/trailtuner-zdxaIXGs.png" alt="">                
+                <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="select-trail-modal modal-body">
+                            <h4 class="modal-title change-trail-title">Select From List</h4>
+                            <br>
+                            <div>
+                                <select id="select-trail" class="form-control" onChange="onTrailSelect(this)">
+                                    <option value="" disabled selected>Select Trail</option>
+                                </select>
+                            </div>
+                            <hr>
+                            <h4 class="modal-title change-trail-title">Upload GeoJSON</h4>
+                            <br>
+                            <div class="upload">
+                                <div class="upload-trail">
+                                    <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
+                                </div>                              
+                            </div>
+                            <br>
+                            <p class="select-trail-desc">To upload a trail, it must be in valid GeoJSON format as a "FeatureCollection" including:</p>
+                            <ul class="select-trail-desc">
+                                <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
+                                <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must</b> be on the trail</li>
+                                <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must</b> be on the trail</li> 
+                                <li>It is OK to include additional geometry features, such as side trails and points of interest, however they must not be included in the above folders</li> 
+                            </ul>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group" role="group" aria-label="change distance unit">
+                    <input type="radio" class="btn-check" name="btnradio" id="mi" autocomplete="off" onChange="setUnit(this.id)" checked>
+                    <label class="btn btn-outline-primary" for="mi">mi</label>
+                  
+                    <input type="radio" class="btn-check" name="btnradio" id="km" autocomplete="off" onChange="setUnit(this.id)">
+                    <label class="btn btn-outline-primary" for="km">km</label>
+                  </div>
+            </div>
+            <div class="trailTitle">
+                <h1 id="title"></h1>
+                <a id="change-trail" data-bs-toggle="modal" data-bs-target="#changeTrail">change</a>
+            </div>
+            <div class="instructions">
+                <h4><small class="text-body-secondary">Select the <strong>start and end trailheads</strong> with either <strong>days <u>or</u> <span id="unit1">miles</span> / day</strong>. If you have <strong>no preference</strong> on the start or end trailhead, select <strong>days <u>and</u> <span id="unit2">miles</span> / day</strong>. Set either value to <strong>0</strong> to defer to the other. </small><span class="info glyphicon glyphicon-info-sign" data-bs-toggle="modal" data-bs-target="#myModal"><a data-bs-toggle="modal" data-bs-target="#myModal">learn more</a></span></h4>
+            </div>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button> -->
+                        <h4 class="modal-title" id="myModalLabel">Trail Tuner</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            This planning tool is designed to generate a consistently paced route given the information you provide. The more information entered, the more "accurate" the resulting itinerary will be. However, if you don't know (or care) about a specific field, feel free to leave it blank and the tool will determine a reasonable value.
+                            <br>
+                            <br>
+                            <h4 class="modal-title" id="myModalLabel">Generate Route</h4>
+                            <br>
+                            Change the unit of distance to <b>mi</b> or <b>km</b> by switching the toggle in the upper right corner. Note: this does not simply switch the labels, it converts all <i>values</i> to the selected unit.
+                            <br>
+                            <br>
+                            Select the <b>Start</b> and <b>End Trailheads</b> from the dropdown lists, or let the tool select them for you by selecting <b>No Preference</b> at the top of each list.
+                            <br>
+                            <br>
+                            Set <b>Days</b> and/or <b>Distance / Day</b> by typing the desired number in the input field. If you previously selected both a start and an end trailhead, then only one of these fields is applicable. Otherwise, you can set both. You can also opt to defer these fields by setting the value to "0". If neither are set, the tool defaults to a random ranged distance / day.
+                            <br>
+                            <br>
+                            Set the <b>Start Date</b> when route will begin by clicking on the calendar.
+                            <br>
+                            <br>
+                            If the trail is a loop, radio buttons labeled <b>Loop Direction</b> will be enabled. These inputs determine which direction your route will travel around the loop, either <b>Clockwise (CW)</b> or <b>Counter-clockwise (CCW)</b>.
+                            <br>
+                            <br>
+                            The <b>Short hike-in</b> and <b>Short hike-out</b> checkboxes will force the resulting route to include a short day at the beginning or end of the route respectively. If <b>Short hike-in</b> is checked, the first night will always end at the first possible destination leading away from the start trailhead.
+                            Likewise for <b>Short hike-out</b>, the final night will always be the last possible destination before reaching the end trailhead. The remaining days will still be generated according to normal inputs. These checkboxes are useful if, for example, you are starting your route late on a Friday after work and you do not have the entire day available.
+                            <br>
+                            <br>
+                            When you are finished, click <b>Generate Route</b> to view your optimized itinerary. The distance of each day will be as consitent as possible. Keep in mind that due to unpredictable and irregular spacing of destinations, the resulting itinerary will rarely be "perfect". <b>Days</b> will always match (if set), but <b>Distance / Day</b> is simply used as a guideline to select the closest option. Rest assured that your route will be as similar to the provided input as statisically possible.  
+                            <br>
+                            <br>
+                            Click <b>Reset</b> to clear the generated route and reset the inputs back to their default values.
+                            <br>
+                            <br>
+                            <h4 class="modal-title" id="myModalLabel">Modify Route</h4>
+                            <br>
+                            For each day of the route, find the option to <b>Modify Destination</b>. Selecting the <span style="color:green;">green</span>, <i>closer destination</i> option will move the end point closer, shortening the current day and lengthening the next. Selecting the <span style="color:red;">red</span>, <i>further destination</i> option will move the end point further away, lengthening the current day and shortening the next. Modifications cannot be made to the start or end trailheads (for this, generate a new route). Furthermore, a route cannot go "backwards" by covering fewer than 0 miles on the current or subsequent day.
+                            <br>
+                            <br>
+                            <h4 class="modal-title" id="myModalLabel">How It Works</h4>
+                            <br>
+                            Depending on the supplied input, a variety of algorithms are used to generate the itinerary. To generate a route for a certain number of days, the app looks at the daily mileage of all possibilities, calculates the standard deviation of each, and selects the lowest value. That is to say, it prioritizes the route with the most consistent daily mileage. So, at least from a purely mileage perspective, the optimal route is planned every time.
+                            <br>
+                            <br>
+                            When fields are missing, the app does its best to fill in the gaps. Typically, this is done by finding all of the reasonable options, then selecting one at random. If you generate multiple routes with No Preference on the trailheads, you will likely see different outputs each time. Play around with different inputs to generate new routes!
+                        </p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="label-checkbox">
+                        <label for="start"><h2>Start Trailhead</h2></label>
+                        <div class="hike-in-label">
+                            <input class="half-day-input form-check-input" type="checkbox" id="hike-in" title="Hike-in to the first campsite from the start">
+                            <label class="half-day-label form-check-label" for="hike-in" title="Hike-in to the first campsite from the start"><h4 class="half-day-label"><small class="text-body-secondary">&nbsp;Short hike-in</small></h4></label>
+                        </div>
+                    </div>
+                    <select id="start" class="form-control" onChange="onTrailheadsChange()">
+                        <option value="0">No Preference</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <div class="label-checkbox">
+                        <label for="end"><h2>End Trailhead</h2></label>
+                        <div class="hike-out-label">
+                            <input class="half-day-input form-check-input" type="checkbox" id="hike-out" title="Hike-out from the last campsite before the end">
+                            <label class="half-day-label form-check-label" for="hike-out" title="Hike-out from the last campsite before the end"><h4 class="half-day-label"><small class="text-body-secondary">&nbsp;Short hike-out</small></h4></label>
+                        </div>
+                    </div>
+                    <select id="end" class="form-control" onChange="onTrailheadsChange()">
+                        <option value="0">No Preference</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="start-date" for="date"><h4><small class="text-body-secondary"><strong>Start Date</strong></small></h4></label>
+                    <br>
+                    <input type="date" id="start-date" name="start-date" value="2018-07-22">
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-md-5">         
+                    <label for="days"><h2 id="daysLabel">Days</h2></label>
+                    <input type="number" min="0" max="99" value="3" placeholder="" onChange="onDaysChange()" name="days" id="days" class="form-control">
+                </div>
+                <div class="col-md-5">                
+                    <label for="distance"><h2 id="distanceLabel"><span id="unit3">Miles</span> / Day</h2></label>
+                    <input type="number" min="0" max="99" value="" placeholder="N/A" onChange="onDistancePerDayChange()" name="distance" id="distance" class="form-control">
+                </div>
+                <div class="col-sm-2">
+                    <div id="loop-direction-form" class="form-check">
+                        <label class="loop-direction form-check-label" title="Select which direction to travel around loop"><h4 class="loop-direction"><small class="text-body-secondary loop-direction-label"><strong>Loop Direction</strong></small></h4></label>
+                        <br>
+                        <input class="form-check-input" type="radio" name="direction" id="cw" value="cw" title="Clockwise" onChange="onTrailheadsChange()" disabled>
+                        <label class="loop-direction form-check-label" for="cw" title="Clockwise"><h4 class="loop-direction"><small class="loop-direction-label text-body-secondary">&nbsp;CW<strong>&nbsp;↻</strong></small></h4></label>
+                        <br>
+                        <input class="form-check-input" type="radio" name="direction" id="ccw" value="ccw" title="Counter-clockwise" onChange="onTrailheadsChange()" disabled>
+                        <label class="loop-direction form-check-label" for="ccw" title="Counter-clockwise"><h4 class="loop-direction"><small class="loop-direction-label text-body-secondary">&nbsp;CCW<strong>&nbsp;↺</strong></small></h4></label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="btn-group col-10" role="group" aria-label="Button group with nested dropdown">
+                    <button type="button" id="generate-route" class="btn btn-primary btn-lg generate-route" onclick="plan()">Generate Route</button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-secondary btn-lg generate-route divider mx-0" disabled></button>
+                        <button type="button" class="btn btn-primary btn-lg generate-route dropdown-toggle" data-bs-toggle="modal" data-bs-target="#moreRouteOptions" aria-expanded="false"></button>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 col"> 
+                    <button type="button" id="reset" class="btn btn-danger btn-lg generate-route" onclick="reset()">Reset</button>
+                </div>
+            </div>
+            <div class="modal fade" id="moreRouteOptions" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="exampleModalLabel"><h2>More Route Options</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="exclude-sites-input">
+                                <label for="exclude"><h3 id="excludeLabel"><small class="text-body-secondary">Do not use campsites: </small></h3></label>
+                                <br>
+                                <select class="selectpicker" id="exclude" multiple data-live-search="true" title="Choose to exclude" data-width="100%"></select>
+                            </div>
+                            <div class="includes-sites-input">
+                                <label for="include"><h3 id="includeLabel"><small class="text-body-secondary">Must use campsites: </small></h3></label>
+                                <br>
+                                <select class="selectpicker" id="include" multiple data-live-search="true" title="Choose to include" data-width="100%"></select>
+                            </div>
+                            <div class="toggle-dispersed-input">
+                                <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-dispersed" title="Dispersed" checked>
+                                <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h3><small class="text-body-secondary">Include dispersed campsites</small></h3>&nbsp;</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" id="reset-options" class="btn btn-danger" onclick="resetOptions()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div id="map"></div>
+            <div class="elevation-profile-container" style="height:250px">
+                <canvas id="elevationProfile"></canvas>
+            </div>
+            <div class="toggleVisibility">
+                <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trail" title="Trail" checked disabled onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-trail" title="Trail"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Full Trail&nbsp;</strong></small></h2></label>
+                </div>
+                <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Trailheads&nbsp;</strong></small></h2></label>
+                </div>
+                <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Campsites&nbsp;</strong></small></h2></label>
+                </div>
+                <!-- <div class="toggle-visibility-input">
+                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-metadata" title="Metadata" onchange="toggleIconVisibility(this)">
+                    <label class="toggle-visibility-input form-check-label" for="toggle-metadata" title="Metadata"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Metadata&nbsp;</strong></small></h2></label>
+                </div> -->
+            </div>
+            <table class="table route-table table-striped" id="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th style="width: 3%" scope="col">#</th>
+                    <th style="width: 10%" scope="col">Date</th>
+                    <th style="width: 15%" scope="col">Origin</th>
+                    <th style="width: 15%" scope="col">Destination</th>
+                    <th class="center" style="width: 40%" scope="col" colspan="2">Modify Destination</th>
+                    <th class="right" style="width: 9%" scope="col">Distance</th>
+                    <th class="right" style="width: 9%" scope="col">Elevation</th>
+                </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="d-grid gap-2"> 
+                    <button id="shareRoute" class="btn btn-primary btn-lg" type="button" onclick="emailRoute()" disabled>Share Route</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="d-grid gap-2"> 
+                    <button id="exportRoute" class="btn btn-success btn-lg" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Export GeoJSON</button>
+                </div>
+            </div>
+            <br>
+            <p></p>
+        </div>
+        <!-- <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>        
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@v1.14.0-beta3/js/bootstrap-select.min.js"></script>        
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>     -->
+        <!-- <script src="trails.js"></script>
+        <script src="mapConfig.js"></script>
+        <script src="chartConfig.js"></script>
+        <script src="loadTrail.js"></script>
+        <script src="routeGeneration.js"></script>
+        <script src="exportRoute.js"></script> -->
+    </body>
+</html>
