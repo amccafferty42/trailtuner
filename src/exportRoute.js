@@ -41,6 +41,9 @@ function updateGeoJSON() {
                     &&  trailFeature.geometry.coordinates[i][1] == this.route[j].end.geometry.coordinates[1]
                     && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end || fullRoute.geometry.coordinates.length >= 10)) { 
                         dayRoute.properties.title = "Day " + (j + 1);
+                        dayRoute.properties.date = this.route[j].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
+                        dayRoute.properties.elevationGain = this.route[j].elevationGain;
+                        dayRoute.properties.elevationLoss = this.route[j].elevationLoss;
                         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
                         dayRoute.geometry.coordinates = [];
                         dayRoute.geometry.coordinates.push(trailFeature.geometry.coordinates[i]);
@@ -57,6 +60,7 @@ function updateGeoJSON() {
             }
         }        
         dayRoute.properties.title = "Day " + this.route.length;
+        dayRoute.properties.date = this.route[this.route.length - 1].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
     // if (trailCircuit || this.route[0].start != this.route[this.route.length - 1].end) {
@@ -98,8 +102,45 @@ function updateGeoJSON() {
     //     dayRoute.properties.title = "Day " + this.route.length;
     //     exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     // }
-    updateMap();
+    exportedRoute = calculateAdjustedDistance(exportedRoute);
+    console.log(exportedRoute);
     updateChart();
+    updateMap();
+}
+
+function calculateAdjustedDistance(exportedRoute) {
+    const startDistance = fullRoute.geometry.coordinates[0][3];
+    const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+    const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
+    let currDistance, adjustedDistance;
+    for (let i = 0; i < exportedRoute.features.length; i++) {
+        if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === "LineString") {
+            for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
+                currDistance = exportedRoute.features[i].geometry.coordinates[j][3];
+                if (exportedRoute.features[i].properties.title === "Day 1" && j === 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
+                    adjustedDistance = 0;
+                } else if (this.isPositiveDirection && currDistance < startDistance) {
+                    adjustedDistance = currDistance + wrapAroundDistance;
+                } else if (!this.isPositiveDirection && currDistance > startDistance) {
+                    adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+                } else {
+                    adjustedDistance = Math.abs(currDistance - startDistance);
+                }
+                exportedRoute.features[i].geometry.coordinates[j][4] = adjustedDistance;
+            }
+        } else if (exportedRoute.features[i].geometry) {
+            currDistance = exportedRoute.features[i].geometry.coordinates[3];
+            if (this.isPositiveDirection && currDistance < startDistance) {
+                adjustedDistance = currDistance + wrapAroundDistance;
+            } else if (!this.isPositiveDirection && currDistance > startDistance) {
+                adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+            } else {
+                adjustedDistance = Math.abs(currDistance - startDistance);
+            }
+            exportedRoute.features[i].geometry.coordinates[4] = adjustedDistance;
+        }
+    }
+    return exportedRoute;
 }
 
 // Download GeoJSON

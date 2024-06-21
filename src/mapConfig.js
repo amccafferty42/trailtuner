@@ -56,14 +56,18 @@ function resetMap() {
         if (feature.properties && feature.properties.title !== "*Dispersed Camping*") this.geoJsonLayer.addData(feature);
     }
     this.geoJsonLayer.eachLayer(function (layer) {
-        if (layer.feature.geometry.type == "LineString") layer.setStyle({color :'#fc0000'}); 
-        if (layer.feature.geometry.type != "LineString" && layer.feature.properties && layer.feature.properties.title) {
+        if (layer.feature.geometry.type == "LineString") {
+            layer.setStyle({color :'#fc0000'});
+            layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + Math.round(trailLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</p><p><img src="./resources/graph-up-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation gain:</strong> ' + Math.trunc(trailElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p><p><img src="./resources/graph-down-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation loss:</strong> ' + Math.trunc(trailElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
+        } else if (layer.feature.geometry.type != "LineString" && layer.feature.properties && layer.feature.properties.title) {
             if (layer.feature.properties.folderId == trailheadFolder.id) {
                 layer.setIcon(startIcon);
                 layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+                layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/pin-map-fill.svg" alt="*">&nbsp;&nbsp;<strong>GPS:</strong> ' + layer.feature.geometry.coordinates[1].toFixed(5) + ',' + layer.feature.geometry.coordinates[0].toFixed(5) + '</p><p><img src="./resources/mountain.svg" alt="*">&nbsp;&nbsp;<strong>Elevation:</strong> ' + Math.trunc(layer.feature.geometry.coordinates[2] * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
             } else if (layer.feature.properties.folderId == campsiteFolder.id) {
                 layer.setIcon(neutralIcon);
                 layer.bindTooltip(layer.feature.properties.title, {permanent: true, opacity: 0.75});
+                layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/pin-map-fill.svg" alt="*">&nbsp;&nbsp;<strong>GPS:</strong> ' + layer.feature.geometry.coordinates[1].toFixed(5) + ',' + layer.feature.geometry.coordinates[0].toFixed(5) + '</p><p><img src="./resources/mountain.svg" alt="*">&nbsp;&nbsp;<strong>Elevation:</strong> ' + Math.trunc(layer.feature.geometry.coordinates[2] * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
             }
         }
     });
@@ -99,21 +103,23 @@ function updateMap() {
                 } else {
                     layer.setIcon(neutralIcon);
                 }
+                layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/moon.svg" alt="*">&nbsp;&nbsp;<strong>Night ' + nightIndex + ':</strong> ' + this.route[nightIndex - 1].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"}) + '</p><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + (layer.feature.geometry.coordinates[4] * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</p><p><img src="./resources/pin-map-fill.svg" alt="*">&nbsp;&nbsp;<strong>GPS:</strong> ' + layer.feature.geometry.coordinates[1].toFixed(5) + ',' + layer.feature.geometry.coordinates[0].toFixed(5) + '</p><p><img src="./resources/mountain.svg" alt="*">&nbsp;&nbsp;<strong>Elevation:</strong> ' + Math.trunc(layer.feature.geometry.coordinates[2] * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
             } else if (layer.feature.properties && layer.feature.properties.folderId == trailheadFolder.id && layer.feature.properties.title == this.route[0].start.properties.title) {
-                layer.bindPopup('Start');
+                layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/play-fill.svg" alt="*">&nbsp;&nbsp;<strong>Start: </strong>' + this.route[0].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"}) + '</p><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + (layer.feature.geometry.coordinates[4] * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</p><p><img src="./resources/pin-map-fill.svg" alt="*">&nbsp;&nbsp;<strong>GPS:</strong> ' + layer.feature.geometry.coordinates[1].toFixed(5) + ',' + layer.feature.geometry.coordinates[0].toFixed(5) + '</p><p><img src="./resources/mountain.svg" alt="*">&nbsp;&nbsp;<strong>Elevation:</strong> ' + Math.trunc(layer.feature.geometry.coordinates[2] * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
                 layer.setIcon(startIcon);
             } else if (layer.feature.properties && layer.feature.properties.folderId == trailheadFolder.id && layer.feature.properties.title == this.route[this.route.length - 1].end.properties.title) {
-                layer.bindPopup('Finish');
+                layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/flag-fill.svg" alt="*">&nbsp;&nbsp;<strong>End: </strong>' + this.route[this.route.length - 1].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"}) + '</small></p><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + (layer.feature.geometry.coordinates[4] * distanceConstant).toFixed(1) + ' ' + distanceUnit + '</p><p><img src="./resources/pin-map-fill.svg" alt="*">&nbsp;&nbsp;<strong>GPS:</strong> ' + layer.feature.geometry.coordinates[1].toFixed(5) + ',' + layer.feature.geometry.coordinates[0].toFixed(5) + '</p><p><img src="./resources/mountain.svg" alt="*">&nbsp;&nbsp;<strong>Elevation:</strong> ' + Math.trunc(layer.feature.geometry.coordinates[2] * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
                 layer.setIcon(endIcon);
             }
         } else if (layer.feature.geometry.type == "LineString") {
             layer.setStyle({color :'red'}); 
-            layer.bindPopup('Start: ' + this.route[dayIndex].start.properties.title + '<br>End: ' + this.route[dayIndex].end.properties.title + '<br>Length: ' + Math.round(this.route[dayIndex].length * distanceConstant * 10) / 10 + ' ' + distanceUnit);
+            if (toggleTrail && !toggleTrail.checked) layer.bindPopup('<h5>' + this.route[dayIndex].start.properties.title + ' to</h5><h5>' + this.route[dayIndex].end.properties.title + '</h5><hr><p><img src="./resources/sun-fill.svg" alt="*">&nbsp;&nbsp;<strong>' + layer.feature.properties.title + ': </strong>' + layer.feature.properties.date + '</p><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + Math.round(this.route[dayIndex].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</p><p><img src="./resources/graph-up-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation gain:</strong> ' + Math.trunc(this.route[dayIndex].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p><p><img src="./resources/graph-down-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation loss:</strong> ' + Math.trunc(this.route[dayIndex].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
+            else layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + Math.round(trailLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</p><p><img src="./resources/graph-up-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation gain:</strong> ' + Math.trunc(trailElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p><p><img src="./resources/graph-down-arrow.svg" alt="*">&nbsp;&nbsp;<strong>Elevation loss:</strong> ' + Math.trunc(trailElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p>');
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
             // if (dayIndex % 2 == 0) layer.setStyle({color :'#ff7d7d'});
             // if (dayIndex % 2 == 0) layer.setStyle({color :'blue'});
             // if (dayIndex % 3 == 0) layer.setStyle({color :'yellow'});
-            if (layer.feature.properties.folderId != trailFolder.id) dayIndex++;
+            if (layer.feature.properties.folderId == trailFolder.id) dayIndex++;
         }
     });
 }

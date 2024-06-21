@@ -267,6 +267,7 @@
 
 #toggle-trailheads:checked {
     background-color: green;
+    border-color: green;
 }
 
 #toggle-metadata {
@@ -279,6 +280,7 @@
 
 #toggle-trail:checked {
     background-color: red;
+    border-color: red;
 }
 
 .btn-group {

@@ -111,6 +111,8 @@ function initChart() {
             }
         }],
         options: {
+            // onHover: (evt, activeEls, chart) => {
+            // },
             animation: false,
             maintainAspectRatio: false,
             clip: false,
@@ -181,6 +183,7 @@ function updateChart() {
                     elevations.push(exportedRoute.features[i].geometry.coordinates[j][2] * elevationConstant);
                     days.push(exportedRoute.features[i].properties.title);
                 }
+                //exportedRoute.features[i].geometry.coordinates[j][4] = adjustedDistance;
             }
         }
     }
@@ -217,7 +220,6 @@ function updateChart() {
                 } else {
                     adjustedDistance = Math.abs(currDistance - startDistance);
                 }
-
                 let x;
                 const y = this.route[i].end.properties.elevation * elevationConstant;
                 const label = 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title;
@@ -239,46 +241,6 @@ function updateChart() {
             }
             nights = [];
         }
-        // let nights = [];
-        // for (let i = 0; i < this.route.length - 1; i++) {
-        //     nights.push(i+1);
-        //     if (this.route[i].end != this.route[i + 1].end) {
-        //         const currDistance = this.route[i].end.properties.distance;
-        //         let adjustedDistance;
-        //         if (this.isPositiveDirection && currDistance < startDistance) {
-        //             adjustedDistance = currDistance + wrapAroundDistance;
-        //         } else if (!this.isPositiveDirection && currDistance > startDistance) {
-        //             adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
-        //         } else {
-        //             adjustedDistance = Math.abs(currDistance - startDistance);
-        //         }
-        //         if (toggleTrail && toggleTrail.checked && this.route[0].start != this.route[this.route.length - 1].end) {
-        //             if (this.isPositiveDirection) {
-        //                 campsites.push({
-        //                     x: this.route[i].end.properties.distance * distanceConstant,
-        //                     y: this.route[i].end.properties.elevation * elevationConstant,
-        //                     r: 6,
-        //                     label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
-        //                 });
-        //             } else {
-        //                 campsites.push({
-        //                     x: Math.abs(trailLength - this.route[i].end.properties.distance) * distanceConstant,
-        //                     y: this.route[i].end.properties.elevation * elevationConstant,
-        //                     r: 6,
-        //                     label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
-        //                 });
-        //             }
-        //         } else {
-        //             campsites.push({
-        //                 x: adjustedDistance * distanceConstant,
-        //                 y: this.route[i].end.properties.elevation * elevationConstant,
-        //                 r: 6,
-        //                 label: 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title
-        //             });
-        //         }
-        //         nights = [];
-        //     }
-        // }
     }
     if (toggleTrailheads && toggleTrailheads.checked) {
         let x1, x2;
@@ -310,33 +272,6 @@ function updateChart() {
             r: 6,
             label: label2
         });
-        // if (toggleTrail && toggleTrail.checked && this.route[0].start != this.route[this.route.length - 1].end) {
-        //     trailheads.push({
-        //         x: Math.abs(trailLength - this.route[0].start.properties.distance) * distanceConstant,
-        //         y: this.route[0].start.properties.elevation * elevationConstant,
-        //         r: 6,
-        //         label: this.route[0].start.properties.title
-        //     });
-        //     trailheads.push({
-        //         x: Math.abs(trailLength - this.route[this.route.length - 1].end.properties.distance) * distanceConstant,
-        //         y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-        //         r: 6,
-        //         label: this.route[this.route.length - 1].end.properties.title
-        //     });
-        // } else {
-        //     trailheads.push({
-        //         x: 0,
-        //         y: this.route[0].start.properties.elevation * elevationConstant,
-        //         r: 6,
-        //         label: this.route[0].start.properties.title
-        //     });
-        //     trailheads.push({
-        //         x: distances[distances.length - 1],
-        //         y: this.route[this.route.length - 1].end.properties.elevation * elevationConstant,
-        //         r: 6,
-        //         label: this.route[this.route.length - 1].end.properties.title
-        //     });
-        // }
     }
     const chartData = {
         labels: distances,
