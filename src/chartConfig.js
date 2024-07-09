@@ -158,6 +158,10 @@ function initChart() {
 }
 
 function updateChart() {
+    //if (circuit && start trailhead != default start trailhead) {
+    //  recalculate all distances in trailFeatures and exported route using startTrailhead as 0
+    //}
+
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     let distances = [], elevations = [], days = [], trailheads = [], campsites = [];
@@ -193,8 +197,22 @@ function updateChart() {
         elevations = [];
         days = [];
         for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
-                elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
-                distances.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
+            elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
+            distances.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
+
+            // const currDistance = trailFeature.geometry.coordinates[i][3];
+            // let adjustedDistance;
+            // if (this.isPositiveDirection && currDistance < startDistance) {
+            //     adjustedDistance = currDistance + wrapAroundDistance;
+            // } else if (!this.isPositiveDirection && currDistance > startDistance) {
+            //     adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+            // } else {
+            //     adjustedDistance = Math.abs(currDistance - startDistance);
+            // }
+            // if (i === 0 || trailFeature.geometry.coordinates[i][2] !== trailFeature.geometry.coordinates[i-1][2]) {
+            //     distances.push(adjustedDistance * distanceConstant);
+            //     elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
+            // }
         }
         if (!this.isPositiveDirection) {
             distances = distances.reverse();
@@ -353,6 +371,10 @@ function updateChart() {
                     }
                 }
             },
+            //events: ['click', 'touchmove'],
+            // onClick: (e) => {
+            //     console.log(e.chart.tooltip.title[0]);
+            // },
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },

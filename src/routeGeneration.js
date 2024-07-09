@@ -55,7 +55,7 @@ function plan() {
         if (!route) {
             window.alert("Error: unable to generate route");
         } else {
-            displayRoute(route);
+            displayRoute(route, true);
             shareRoute.scrollIntoView({behavior: 'smooth'});
         }
     }
@@ -65,7 +65,6 @@ function filterCampsites(campsites) {
     filteredCampsites = [];
     excludedCampsites = [];
     includedCampsites = [];
-    console.log(selectExclude.childNodes.length);
     for (let i = 0; i < selectExclude.childNodes.length; i++) {
         if (selectExclude.childNodes[i].selected) {
             excludedCampsites.push(selectExclude.childNodes[i].value);
@@ -528,7 +527,8 @@ function changeCamp(dayIndex, isNext) {
         this.route[dayIndex + 1].elevationGain = Math.abs(this.route[dayIndex + 1].start.properties.elevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
         this.route[dayIndex + 1].elevationLoss = Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     }
-    displayRoute(this.route);
+    displayRoute(this.route, false);
+    markerOpen(this.route[dayIndex].end.id);
 }
 
 function onDistancePerDayChange() {
@@ -578,7 +578,37 @@ function onTrailheadsChange() {
     }
 }
 
-function displayRoute(route) {
+const createClickHandler = function(index, row) {
+    return function() { 
+        if (row.classList.contains("table-active")) {
+            markerClose();
+            row.classList.remove("table-active");
+        } else {
+            for (const childNode of tableBody.childNodes) {
+                childNode.classList.remove("table-active");
+            }
+            markerOpen(index);
+            row.classList.add("table-active");
+        }
+    };
+};
+
+function selectRow(index) {
+    for (const childNode of tableBody.childNodes) {
+        //childNode.classList.remove("table-active");
+        if (index == childNode.childNodes[0].innerText) {
+            childNode.classList.add("table-active");
+        }
+    }
+}
+
+function deselectRows() {
+    for (const childNode of tableBody.childNodes) {
+        childNode.classList.remove("table-active");
+    }
+}
+
+function displayRoute(route, isRouteGen) {
     routeLength = 0;
     routeElevationGain = 0;
     routeElevationLoss = 0;
@@ -589,14 +619,20 @@ function displayRoute(route) {
         routeElevationLoss += route[i].elevationLoss;
         let row = tableBody.insertRow(i);
         let cell1 = row.insertCell(0);
+        cell1.onclick = createClickHandler('Day ' + (i + 1), row);
         let cell2 = row.insertCell(1);
+        cell2.onclick = createClickHandler('Day ' + (i + 1), row);
         let cell3 = row.insertCell(2);
+        cell3.onclick = createClickHandler('Day ' + (i + 1), row);
         let cell4 = row.insertCell(3);
+        cell4.onclick = createClickHandler('Day ' + (i + 1), row);
         let cell5 = row.insertCell(4);
         let cell6 = row.insertCell(5);
         let cell7 = row.insertCell(6);
+        cell7.onclick = createClickHandler('Day ' + (i + 1), row);
         cell7.classList.add("right");
         let cell8 = row.insertCell(7);
+        cell8.onclick = createClickHandler('Day ' + (i + 1), row);
         cell8.classList.add("right");
         cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
         cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
@@ -605,7 +641,7 @@ function displayRoute(route) {
         cell5.innerHTML = closerCampBtn(route[i], route);
         cell6.innerHTML = furtherCampBtn(route[i], route);
         cell7.innerHTML = '<strong class="blue">' + Math.round(route[i].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>'
+        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>';
     }
     row = tableBody.insertRow();
     cell1 = row.insertCell(0);
@@ -624,11 +660,12 @@ function displayRoute(route) {
     table.style.visibility = 'visible';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
-    toggleTrail.disabled = false;
-    toggleTrail.checked = false;
-    toggleTrailheads.checked = true;
-    toggleCampsites.checked = true;
-
+    if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
+        toggleTrail.disabled = false;
+        toggleTrail.checked = false;
+        toggleTrailheads.checked = true;
+        toggleCampsites.checked = true;
+    }
     updateGeoJSON();
     console.table(route);
 }
@@ -703,7 +740,6 @@ function reset() {
             addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
         }
     }
-    console.log(selectExclude);
     resetOptions();
     tableBody.innerHTML = '';
     selectStart.value = 1;
@@ -786,7 +822,7 @@ function setUnit(unit) {
         if (inputDays.value == 0 || inputDays.value == '') onDaysChange(); // update labels on days and distance / day inputs
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
         if (this.route != undefined && this.route.length > 0) {
-            displayRoute(this.route);
+            displayRoute(this.route, false);
         } else { //re-initialize map and chart to show updated units
             initMap();
             initChart();
