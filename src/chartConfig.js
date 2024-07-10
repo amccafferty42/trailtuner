@@ -129,7 +129,7 @@ function initChart() {
                 y: { type: 'linear', beginAtZero: false },
             },
             plugins: {
-                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
+                // title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
                 legend: { display: false },
                 tooltip: {
                     displayColors: false,
@@ -161,135 +161,121 @@ function updateChart() {
     //if (circuit && start trailhead != default start trailhead) {
     //  recalculate all distances in trailFeatures and exported route using startTrailhead as 0
     //}
-
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     let distances = [], elevations = [], days = [], trailheads = [], campsites = [];
-    const startDistance = fullRoute.geometry.coordinates[0][3];
-    const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
-    const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
-    for (let i = 0; i < exportedRoute.features.length; i++) {
-        if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === "LineString") {
-            for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
-                const currDistance = exportedRoute.features[i].geometry.coordinates[j][3];
-                let adjustedDistance;
-                if (exportedRoute.features[i].properties.title === "Day 1" && j === 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
-                    adjustedDistance = 0;
-                } else if (this.isPositiveDirection && currDistance < startDistance) {
-                    adjustedDistance = currDistance + wrapAroundDistance;
-                } else if (!this.isPositiveDirection && currDistance > startDistance) {
-                    adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
-                } else {
-                    adjustedDistance = Math.abs(currDistance - startDistance);
-                }
-                if (j === 0 || exportedRoute.features[i].geometry.coordinates[j][2] !== exportedRoute.features[i].geometry.coordinates[j-1][2]) {
-                    distances.push(adjustedDistance * distanceConstant);
-                    elevations.push(exportedRoute.features[i].geometry.coordinates[j][2] * elevationConstant);
-                    days.push(exportedRoute.features[i].properties.title);
-                }
-                //exportedRoute.features[i].geometry.coordinates[j][4] = adjustedDistance;
-            }
-        }
-    }
-    if (distances[distances.length - 1] === 0) distances.pop(); //for circuits, the last distance is sometimes set to 0, which breaks the chart
-    if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
-        distances = [];
-        elevations = [];
-        days = [];
-        for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
-            elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
-            distances.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
-
-            // const currDistance = trailFeature.geometry.coordinates[i][3];
-            // let adjustedDistance;
-            // if (this.isPositiveDirection && currDistance < startDistance) {
-            //     adjustedDistance = currDistance + wrapAroundDistance;
-            // } else if (!this.isPositiveDirection && currDistance > startDistance) {
-            //     adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
-            // } else {
-            //     adjustedDistance = Math.abs(currDistance - startDistance);
-            // }
-            // if (i === 0 || trailFeature.geometry.coordinates[i][2] !== trailFeature.geometry.coordinates[i-1][2]) {
-            //     distances.push(adjustedDistance * distanceConstant);
-            //     elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
-            // }
-        }
-        if (!this.isPositiveDirection) {
-            distances = distances.reverse();
-            elevations = elevations.reverse();
-            for (let i = 0; i < distances.length; i++) {
-                //inverting the distances (as well as reversing the array) is necessary because the distribution of points/distances along the route is not guarenteed to be evenly distributed
-                //this means that if it is not inverted, the elevations will be applied to slightly misaligned distances for the reversed elevations, creating a noticeable error
-                distances[i] = Math.abs((trailLength * distanceConstant) - distances[i]);
-            }
-        }
-    }
-    if (toggleCampsites && toggleCampsites.checked) {
-        let nights = [];
-        for (let i = 0; i < this.route.length - 1; i++) {
-            nights.push(i+1);
-            if (this.route[i].end != this.route[i + 1].end) {
-                const currDistance = this.route[i].end.properties.distance;
-                let adjustedDistance;
-                if (this.isPositiveDirection && currDistance < startDistance) {
-                    adjustedDistance = currDistance + wrapAroundDistance;
-                } else if (!this.isPositiveDirection && currDistance > startDistance) {
-                    adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
-                } else {
-                    adjustedDistance = Math.abs(currDistance - startDistance);
-                }
-                let x;
-                const y = this.route[i].end.properties.elevation * elevationConstant;
-                const label = 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title;
-                if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
-                    if (this.isPositiveDirection) {
-                        x = this.route[i].end.properties.distance * distanceConstant;
+    if (routeLength > 0) {
+        const startDistance = fullRoute.geometry.coordinates[0][3];
+        const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
+        const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
+        for (let i = 0; i < exportedRoute.features.length; i++) {
+            if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === "LineString") {
+                for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
+                    const currDistance = exportedRoute.features[i].geometry.coordinates[j][3];
+                    let adjustedDistance;
+                    if (exportedRoute.features[i].properties.title === "Day 1" && j === 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
+                        adjustedDistance = 0;
+                    } else if (this.isPositiveDirection && currDistance < startDistance) {
+                        adjustedDistance = currDistance + wrapAroundDistance;
+                    } else if (!this.isPositiveDirection && currDistance > startDistance) {
+                        adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
                     } else {
-                        x = Math.abs(trailLength - this.route[i].end.properties.distance) * distanceConstant;
+                        adjustedDistance = Math.abs(currDistance - startDistance);
                     }
-                } else {
-                    x = adjustedDistance * distanceConstant;
+                    if (j === 0 || exportedRoute.features[i].geometry.coordinates[j][2] !== exportedRoute.features[i].geometry.coordinates[j-1][2]) {
+                        distances.push(adjustedDistance * distanceConstant);
+                        elevations.push(exportedRoute.features[i].geometry.coordinates[j][2] * elevationConstant);
+                        days.push(exportedRoute.features[i].properties.title);
+                    }
                 }
-                campsites.push({
-                    x: x,
-                    y: y,
-                    r: 6,
-                    label: label
-                });
             }
-            nights = [];
         }
-    }
-    if (toggleTrailheads && toggleTrailheads.checked) {
-        let x1, x2;
-        const y1 = this.route[0].start.properties.elevation * elevationConstant;
-        const y2 = this.route[this.route.length - 1].end.properties.elevation * elevationConstant;
-        const label1 = this.route[0].start.properties.title;
-        const label2 = this.route[this.route.length - 1].end.properties.title;
+        if (distances[distances.length - 1] === 0) distances.pop(); //for circuits, the last distance is sometimes set to 0, which breaks the chart
         if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
-            if (this.isPositiveDirection) {
-                x1 = this.route[0].start.properties.distance * distanceConstant; //actual distance from 0
-                x2 = this.route[this.route.length - 1].end.properties.distance * distanceConstant; //actual distance from 0
-            } else {
-                x1 = Math.abs(trailLength - this.route[0].start.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
-                x2 = Math.abs(trailLength - this.route[this.route.length - 1].end.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
+            distances = [];
+            elevations = [];
+            days = [];
+            for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
+                elevations.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
+                distances.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
             }
-        } else {
-            x1 = 0; //start of chart
-            x2 = distances[distances.length - 1]; //end of chart
+            if (!this.isPositiveDirection) {
+                distances = distances.reverse();
+                elevations = elevations.reverse();
+                for (let i = 0; i < distances.length; i++) {
+                    //inverting the distances (as well as reversing the array) is necessary because the distribution of points/distances along the route is not guarenteed to be evenly distributed
+                    //this means that if it is not inverted, the elevations will be applied to slightly misaligned distances for the reversed elevations, creating a noticeable error
+                    distances[i] = Math.abs((trailLength * distanceConstant) - distances[i]);
+                }
+            }
         }
-        trailheads.push({
-            x: x1,
-            y: y1,
-            r: 6,
-            label: label1
-        });
-        trailheads.push({
-            x: x2,
-            y: y2,
-            r: 6,
-            label: label2
-        });
+        if (toggleCampsites && toggleCampsites.checked) {
+            let nights = [];
+            for (let i = 0; i < this.route.length - 1; i++) {
+                nights.push(i+1);
+                if (this.route[i].end != this.route[i + 1].end) {
+                    const currDistance = this.route[i].end.properties.distance;
+                    let adjustedDistance;
+                    if (this.isPositiveDirection && currDistance < startDistance) {
+                        adjustedDistance = currDistance + wrapAroundDistance;
+                    } else if (!this.isPositiveDirection && currDistance > startDistance) {
+                        adjustedDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+                    } else {
+                        adjustedDistance = Math.abs(currDistance - startDistance);
+                    }
+                    let x;
+                    const y = this.route[i].end.properties.elevation * elevationConstant;
+                    const label = 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title;
+                    if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
+                        if (this.isPositiveDirection) {
+                            x = this.route[i].end.properties.distance * distanceConstant;
+                        } else {
+                            x = Math.abs(trailLength - this.route[i].end.properties.distance) * distanceConstant;
+                        }
+                    } else {
+                        x = adjustedDistance * distanceConstant;
+                    }
+                    campsites.push({
+                        x: x,
+                        y: y,
+                        r: 6,
+                        label: label
+                    });
+                }
+                nights = [];
+            }
+        }
+        if (toggleTrailheads && toggleTrailheads.checked) {
+            let x1, x2;
+            const y1 = this.route[0].start.properties.elevation * elevationConstant;
+            const y2 = this.route[this.route.length - 1].end.properties.elevation * elevationConstant;
+            const label1 = this.route[0].start.properties.title;
+            const label2 = this.route[this.route.length - 1].end.properties.title;
+            if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
+                if (this.isPositiveDirection) {
+                    x1 = this.route[0].start.properties.distance * distanceConstant; //actual distance from 0
+                    x2 = this.route[this.route.length - 1].end.properties.distance * distanceConstant; //actual distance from 0
+                } else {
+                    x1 = Math.abs(trailLength - this.route[0].start.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
+                    x2 = Math.abs(trailLength - this.route[this.route.length - 1].end.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
+                }
+            } else {
+                x1 = 0; //start of chart
+                x2 = distances[distances.length - 1]; //end of chart
+            }
+            trailheads.push({
+                x: x1,
+                y: y1,
+                r: 6,
+                label: label1
+            });
+            trailheads.push({
+                x: x2,
+                y: y2,
+                r: 6,
+                label: label2
+            });
+        }
     }
     const chartData = {
         labels: distances,
@@ -371,16 +357,12 @@ function updateChart() {
                     }
                 }
             },
-            //events: ['click', 'touchmove'],
-            // onClick: (e) => {
-            //     console.log(e.chart.tooltip.title[0]);
-            // },
             scales: {
                 x: { type: 'linear' },
                 y: { type: 'linear', beginAtZero: false },
             },
             plugins: {
-                title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
+                // title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
                 legend: { display: false },
                 tooltip: {
                     displayColors: false,

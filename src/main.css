@@ -2,6 +2,10 @@
     height: 500px; 
 }
 
+#routeTitleIcon {
+    margin-left: 8px;
+}
+
 #cw, #ccw {
     margin-top: .5em;
     margin-left: 0;
@@ -20,6 +24,11 @@
 }
 
 .trailTitle {
+    display: flex;
+    margin: 0;
+}
+
+#routeTitleGroup {
     display: flex;
     margin: 0;
 }

@@ -24,9 +24,12 @@ const inputMi = document.getElementById('mi');
 const inputKm = document.getElementById('km');
 const title = document.getElementById('title');
 const table = document.getElementById('table');
+const routeTitle = document.getElementById('routeTitle')
+const routeTitleGroup = document.getElementById('routeTitleGroup');
 const exportRoute = document.getElementById('exportRoute');
 const shareRoute = document.getElementById('shareRoute');
 const tableBody = document.getElementById('table-body');
+const tableFooter = document.getElementById('table-footer');
 const unitLabel1 = document.getElementById('unit1');
 const unitLabel2 = document.getElementById('unit2');
 const unitLabel3 = document.getElementById('unit3');
@@ -56,7 +59,7 @@ function plan() {
             window.alert("Error: unable to generate route");
         } else {
             displayRoute(route, true);
-            shareRoute.scrollIntoView({behavior: 'smooth'});
+            routeTitle.scrollIntoView({behavior: 'smooth'});
         }
     }
 }
@@ -613,11 +616,13 @@ function displayRoute(route, isRouteGen) {
     routeElevationGain = 0;
     routeElevationLoss = 0;
     tableBody.innerHTML = '';
+    tableFooter.innerHTML = '';
     for (let i = 0; i < route.length; i++) {
         routeLength += route[i].length;
         routeElevationGain += route[i].elevationGain;
         routeElevationLoss += route[i].elevationLoss;
         let row = tableBody.insertRow(i);
+        if (i == 0) row.classList.add('table-group-divider');
         let cell1 = row.insertCell(0);
         cell1.onclick = createClickHandler('Day ' + (i + 1), row);
         let cell2 = row.insertCell(1);
@@ -643,7 +648,8 @@ function displayRoute(route, isRouteGen) {
         cell7.innerHTML = '<strong class="blue">' + Math.round(route[i].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
         cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>';
     }
-    row = tableBody.insertRow();
+    row = tableFooter.insertRow();
+    row.classList.add('table-group-divider');
     cell1 = row.insertCell(0);
     cell2 = row.insertCell(1);
     cell3 = row.insertCell(2);
@@ -657,7 +663,9 @@ function displayRoute(route, isRouteGen) {
     cell7.innerHTML = '<strong>Total:<br>' + Math.round(routeLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
     cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
     table.style.marginTop = '20px';
-    table.style.visibility = 'visible';
+    routeTitle.innerText = route.length + " Day Route"
+    routeTitleGroup.style.display = 'flex';
+    table.style.display = '';
     shareRoute.disabled = false;
     exportRoute.disabled = false;
     if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
@@ -707,22 +715,14 @@ function resetOptions() {
         includeDispersedCampsites.checked = true;
         includeDispersedCampsites.disabled = false;
     }
-    // $('.selectpicker').selectpicker('destroy');
-    $('.selectpicker').selectpicker('deselectAll');
-    $('.selectpicker').selectpicker('refresh');
-
-}
-
-function validateOptions() {
-    let isValid = true;
-    // 1. A site cannot be both excluded and included
-    for (includedCampsite of includedCampsites) {
-        if (excludedCampsites.includes(includedCampsite)) {
-            isValid = false;
+    removeAllOptions(selectExclude);
+    removeAllOptions(selectInclude);
+    for (let i = 0; i < campsiteFeatures.length; i++) {
+        if (!campsiteFeatures[i].properties.title.match(/[*]/)) {
+            addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
+            addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
         }
     }
-    // 2. A site cannot be outside of the 2 selected trailheads
-    return isValid;
 }
 
 function reset() {
@@ -731,14 +731,6 @@ function reset() {
     for (let i = 0; i < trailheadFeatures.length; i++) {
         addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
         addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
-    }
-    removeAllOptions(selectExclude);
-    removeAllOptions(selectInclude);
-    for (let i = 0; i < campsiteFeatures.length; i++) {
-        if (!campsiteFeatures[i].properties.title.match(/[*]/)) {
-            addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
-            addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
-        }
     }
     resetOptions();
     tableBody.innerHTML = '';
@@ -761,7 +753,8 @@ function reset() {
     this.userSetDays = false;
     if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
-    table.style.visibility = 'hidden';
+    routeTitleGroup.style.display = 'none';
+    table.style.display = 'none';
     exportRoute.disabled = true;
     shareRoute.disabled = true;
     table.style.marginTop = 0;
@@ -789,7 +782,7 @@ function removeOptions(element) {
 
 function removeAllOptions(element) {
     for (let i = element.options.length - 1; i >= 0; i--) {
-       element.remove(i);
+        element.remove(i);
     }
 }
  

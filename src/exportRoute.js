@@ -69,6 +69,7 @@ function updateGeoJSON() {
 }
 
 function calculateAdjustedDistance(exportedRoute) {
+    if (routeLength <= 0) return exportedRoute;
     const startDistance = fullRoute.geometry.coordinates[0][3];
     const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
     const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
