@@ -16,39 +16,47 @@
                 <div class="modal fade" id="changeTrail" tabindex="-1" role="dialog" aria-labelledby="changeTrailLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
-                        <div class="select-trail-modal modal-body">
-                            <h4 class="modal-title change-trail-title">Select From List</h4>
-                            <br>
-                            <div>
-                                <select id="select-trail" class="form-control" onChange="onTrailSelect(this)">
-                                    <option value="" disabled selected>Select Trail</option>
-                                </select>
+                            <div class="select-trail-modal modal-body">
+                                <h4 class="modal-title change-trail-title">Select Trail From List</h4>
+                                <br>
+                                <div>
+                                    <select id="select-trail" class="form-control" onChange="onTrailSelect(this)">
+                                        <option value="" disabled selected>Select Trail</option>
+                                    </select>
+                                </div>
+                                <hr>
+                                <h4 class="modal-title change-trail-title">Upload Trail</h4>
+                                <br>
+                                <div class="upload">
+                                    <div class="upload-trail">
+                                        <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFileTrail(this)">
+                                    </div>                              
+                                </div>
+                                <br>
+                                <p class="select-trail-desc">To upload a trail, it must be in valid GeoJSON format as a "FeatureCollection" including:</p>
+                                <ul class="select-trail-desc">
+                                    <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
+                                    <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must</b> be on the trail</li>
+                                    <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must</b> be on the trail</li> 
+                                    <li>It is OK to include additional geometry features, such as side trails and points of interest, however they must not be included in the above folders</li> 
+                                </ul>
+                                <hr>
+                                <h4 class="modal-title change-trail-title">Upload Route</h4>
+                                <br>
+                                <div class="upload">
+                                    <div class="upload-trail">
+                                        <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFileRoute(this)">
+                                    </div>                              
+                                </div>
                             </div>
-                            <hr>
-                            <h4 class="modal-title change-trail-title">Upload GeoJSON</h4>
-                            <br>
-                            <div class="upload">
-                                <div class="upload-trail">
-                                    <input type="file" id="trailFile" name="filename" accept=".json" onchange="readFile(this)">
-                                </div>                              
-                            </div>
-                            <br>
-                            <p class="select-trail-desc">To upload a trail, it must be in valid GeoJSON format as a "FeatureCollection" including:</p>
-                            <ul class="select-trail-desc">
-                                <li>A "Folder" feature titled "<b>Trail</b>", containing <b>one</b> "LineString" feature representing the entire trail from start to finish</li>
-                                <li>A "Folder" feature titled "<b>Trailheads</b>", containing <b>two or more</b> "Marker" features for each trailhead. The coordinates of each marker <b>must</b> be on the trail</li>
-                                <li>A "Folder" feature titled "<b>Campsites</b>", containing <b>one or more</b> "Marker" features for each campsite. The coordinates of each marker <b>must</b> be on the trail</li> 
-                                <li>It is OK to include additional geometry features, such as side trails and points of interest, however they must not be included in the above folders</li> 
-                            </ul>
-                        </div>
                         </div>
                     </div>
                 </div>
                 <div class="btn-group" role="group" aria-label="change distance unit">
                     <input type="radio" class="btn-check" name="btnradio" id="mi" autocomplete="off" onChange="setUnit(this.id)" checked>
-                    <label class="btn btn-outline-dark" for="mi">mi</label>
+                    <label class="btn btn-outline-secondary" for="mi">mi</label>
                     <input type="radio" class="btn-check" name="btnradio" id="km" autocomplete="off" onChange="setUnit(this.id)">
-                    <label class="btn btn-outline-dark" for="km">km</label>
+                    <label class="btn btn-outline-secondary" for="km">km</label>
                   </div>
             </div>
             <div class="trailTitle">
@@ -173,7 +181,10 @@
                         <button type="button" class="btn btn-primary btn-lg generate-route dropdown-toggle" data-bs-toggle="modal" data-bs-target="#moreRouteOptions" aria-expanded="false"></button>
                     </div>
                 </div>
-                <div class="d-grid gap-2 col"> 
+                <!-- <div class="d-grid gap-2 col-2"> 
+                    <button type="button" class="btn btn-success btn-lg generate-route" onclick="reset()">Load</button>
+                </div> -->
+                <div class="d-grid gap-2 col-2"> 
                     <button type="button" class="btn btn-danger btn-lg generate-route" onclick="reset()">Reset</button>
                 </div>
             </div>
@@ -210,6 +221,10 @@
             <div id="routeTitleGroup">
                 <h1 id="routeTitle" contentEditable="true" onkeypress="return (this.innerText.length <= 64)"></h1>
                 <img id="routeTitleIcon" src="./resources/pencil.svg" alt="*">
+                <div class="saveButtons">
+                    <button id="exportRoute" class="btn btn-sm btn-primary" onclick="exportGeoJSON()">Download</button>
+                    <button id="shareRoute" class="btn btn-sm btn-outline-primary" onclick="emailRoute()">Share</button>
+                </div>
             </div>
             <table class="table route-table table-hover table-striped" id="table">
                 <thead>
@@ -226,57 +241,31 @@
                 <tbody id="table-body" class="clickable"></tbody>
                 <tfoot id="table-footer"></tfoot>
             </table>
-            <div id="map"></div>
-            <br>
-            <div class="elevation-profile-container" style="height:180px">
-                <canvas id="elevationProfile"></canvas>
-            </div>
-            <div class="toggleVisibility">
-                <div class="toggle-visibility-input">
-                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trail" title="Trail" checked disabled onchange="toggleIconVisibility(this)">
-                    <label class="toggle-visibility-input form-check-label" for="toggle-trail" title="Trail"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Full Trail&nbsp;</strong></small></h2></label>
+            <div class="display">
+                <div id="map"></div>
+                <br>
+                <div class="elevation-profile-container" style="height:180px">
+                    <canvas id="elevationProfile"></canvas>
                 </div>
-                <div class="toggle-visibility-input">
-                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
-                    <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Trailheads&nbsp;</strong></small></h2></label>
-                </div>
-                <div class="toggle-visibility-input">
-                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
-                    <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Campsites&nbsp;</strong></small></h2></label>
-                </div>
-                <!-- <div class="toggle-visibility-input">
-                    <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-metadata" title="Metadata" onchange="toggleIconVisibility(this)">
-                    <label class="toggle-visibility-input form-check-label" for="toggle-metadata" title="Metadata"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Metadata&nbsp;</strong></small></h2></label>
-                </div> -->
-            </div>
-            <br>
-            <!-- <div class="row">
-                <div class="d-grid gap-2"> 
-                    <button id="shareRoute" class="btn btn-primary btn-lg" type="button" onclick="emailRoute()" disabled>Share Route</button>
+                <div class="toggleVisibility">
+                    <div class="toggle-visibility-input">
+                        <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trail" title="Trail" checked disabled onchange="toggleIconVisibility(this)">
+                        <label class="toggle-visibility-input form-check-label" for="toggle-trail" title="Trail"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Full Trail&nbsp;</strong></small></h2></label>
+                    </div>
+                    <div class="toggle-visibility-input">
+                        <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)">
+                        <label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Trailheads&nbsp;</strong></small></h2></label>
+                    </div>
+                    <div class="toggle-visibility-input">
+                        <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)">
+                        <label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Campsites&nbsp;</strong></small></h2></label>
+                    </div>
+                    <!-- <div class="toggle-visibility-input">
+                        <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-metadata" title="Metadata" onchange="toggleIconVisibility(this)">
+                        <label class="toggle-visibility-input form-check-label" for="toggle-metadata" title="Metadata"><h2 class="toggle-label"><small class="text-body-secondary"><strong>&nbsp;Metadata&nbsp;</strong></small></h2></label>
+                    </div> -->
                 </div>
             </div>
-            <br>
-            <div class="row">
-                <div class="d-grid gap-2"> 
-                    <button id="exportRoute" class="btn btn-success btn-lg" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Export GeoJSON</button>
-                </div>
-            </div> -->
-            <div class="row">
-                <div class="d-grid gap-2"> 
-                    <button id="shareRoute" class="btn btn-primary btn-lg" type="button" onclick="emailRoute()" disabled>Save Route</button>
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="d-grid gap-2 col-6"> 
-                    <button id="exportRoute" class="btn btn-success btn-lg" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Share</button>
-                </div>
-                <div class="d-grid gap-2 col-6">
-                    <button id="exportRoute" class="btn btn-secondary btn-lg" type="button" onclick="exportGeoJSON()" href="/geoJSON/wt.json" download disabled>Export GeoJSON</button>
-                </div>
-            </div>
-            <br>
-            <p></p>
         </div>
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>        
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>

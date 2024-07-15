@@ -10,8 +10,12 @@ function updateGeoJSON() {
     };
 
     // Add trailheads and campsites
-    for (let day of this.route) exportedRoute.features.push(day.start);
-    if(this.route[0].start != this.route[this.route.length - 1].end) exportedRoute.features.push(this.route[this.route.length - 1].end);
+    for (let day of this.route) {
+        exportedRoute.features.push(day.start);
+    }
+    if (this.route[0].start != this.route[this.route.length - 1].end) {
+        exportedRoute.features.push(this.route[this.route.length - 1].end);
+    }
 
     fullRoute = {
         "geometry": {
@@ -107,15 +111,38 @@ function calculateAdjustedDistance(exportedRoute) {
 // Download GeoJSON
 function exportGeoJSON() {
     if (exportedRoute) {
-        exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
+        let finalRoute = structuredClone(exportedRoute);
+        finalRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
+        finalRoute = structuredClone(finalRoute);
+        finalRoute = trimCoordinates(finalRoute);
+        finalRoute.properties = {};
+        finalRoute.properties.title = this.routeTitle.innerText;
+        finalRoute.properties.route = this.route;
+        finalRoute.properties.trail = trail;
         const a = document.createElement('a');
-        const blob = new Blob([JSON.stringify(exportedRoute)], {type: 'application/json'});
+        const blob = new Blob([JSON.stringify(finalRoute)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         a.href = url;
         a.target = '_blank';
-        a.download = trailFeature.properties.title + '.json';
+        a.download = finalRoute.properties.title.replace(/\s+/g, '') + '.json';
         a.click();
     }
+}
+
+//trimming coordinates is necessary because official GeoJSON standard states that coordinates[] should have no more than three items for [lat, long, elev]. distance needs to be appended for the elevation chart to loasdf, 
+function trimCoordinates(featureCollection) {
+    for (const feature of featureCollection.features) {
+        if (feature.geometry != undefined && feature.geometry.coordinates != undefined) {
+            if (Array.isArray(feature.geometry.coordinates[0])) {
+                for (const coordinates of feature.geometry.coordinates) {
+                    coordinates.length = 3;
+                }
+            } else {
+                feature.geometry.coordinates.length = 3;
+            }
+        }
+    }
+    return featureCollection;
 }
 
 // Share route via email

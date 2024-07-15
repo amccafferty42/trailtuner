@@ -33,6 +33,12 @@ function refresh() {
     location.reload(); 
 }
 
+function loadRoute(file) {
+    const route = JSON.parse(file);
+    console.log(route.properties.trail);
+    changeTrail(route.properties.trail);
+}
+
 function toggleIconVisibility() {
     if (this.route) {
         updateMap();
@@ -51,10 +57,7 @@ function setTrailDetails(trail) {
     trailFeature = undefined;
     trailheadFeatures = [];
     campsiteFeatures = [];
-    hasDispersedCampsites = false;
-
-    //set include exclude lists
-    
+    hasDispersedCampsites = false;  
 
     for (feature of trail.features) {
         if (feature.properties.class === "Folder" && feature.properties.title.toUpperCase() === "TRAIL") {
@@ -188,12 +191,24 @@ function setTrailFromURL() {
     }
 }
 
-function readFile(input) {
+function readFileTrail(input) {
     let file = input.files[0];
     let fileReader = new FileReader();
     fileReader.readAsText(file); 
     fileReader.onload = function() {
         changeTrail(fileReader.result)
+    }; 
+    fileReader.onerror = function() {
+        alert(fileReader.error);
+    }; 
+}
+
+function readFileRoute(input) {
+    let file = input.files[0];
+    let fileReader = new FileReader();
+    fileReader.readAsText(file); 
+    fileReader.onload = function() {
+        loadRoute(fileReader.result)
     }; 
     fileReader.onerror = function() {
         alert(fileReader.error);

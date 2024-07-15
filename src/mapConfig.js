@@ -36,10 +36,6 @@ function initMap() {
     // legend.onAdd = function () {
     //     let div = L.DomUtil.create("div", "description");
     //     L.DomEvent.disableClickPropagation(div);
-    //     //const text = "*Dispersed Camping is defined as staying anywhere on trail <b>outside</b> of a designated campground";
-    //     //const text = '<div class="toggleVisibility"><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-trailheads" title="Trailheads" checked onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-trailheads" title="Trailheads"><h2 class="half-day-label"><small>&nbsp;Trailheads&nbsp;</small></h2></label><input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-campsites" title="Campsites" onchange="toggleIconVisibility(this)"><label class="toggle-visibility-input form-check-label" for="toggle-campsites" title="Campsites"><h2 class="half-day-label"><small>&nbsp;Campsites&nbsp;</small></h2></label></div>';
-    //     //<span class=\"red\"><b>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = restricted camping<br><span class=\"green\">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span> = unrestricted camping</b><br>
-    //     //div.insertAdjacentHTML("beforeend", text);
     //     return div;
     // };
     // legend.addTo(this.leafletMap);

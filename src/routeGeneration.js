@@ -26,8 +26,6 @@ const title = document.getElementById('title');
 const table = document.getElementById('table');
 const routeTitle = document.getElementById('routeTitle')
 const routeTitleGroup = document.getElementById('routeTitleGroup');
-const exportRoute = document.getElementById('exportRoute');
-const shareRoute = document.getElementById('shareRoute');
 const tableBody = document.getElementById('table-body');
 const tableFooter = document.getElementById('table-footer');
 const unitLabel1 = document.getElementById('unit1');
@@ -666,8 +664,6 @@ function displayRoute(route, isRouteGen) {
     routeTitle.innerText = route.length + " Day Route"
     routeTitleGroup.style.display = 'flex';
     table.style.display = '';
-    shareRoute.disabled = false;
-    exportRoute.disabled = false;
     if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
         toggleTrail.disabled = false;
         toggleTrail.checked = false;
@@ -755,8 +751,6 @@ function reset() {
     if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
     routeTitleGroup.style.display = 'none';
     table.style.display = 'none';
-    exportRoute.disabled = true;
-    shareRoute.disabled = true;
     table.style.marginTop = 0;
     this.route = undefined;
     exportedRoute = undefined;

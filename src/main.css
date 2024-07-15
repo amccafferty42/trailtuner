@@ -4,6 +4,19 @@
 
 #routeTitleIcon {
     margin-left: 8px;
+    margin-right: 8px;
+}
+
+.elevation-profile-container {
+    width: 95%;
+    margin: auto;
+}
+
+.saveButtons {
+    margin-left: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    height: 50%;
 }
 
 #cw, #ccw {
@@ -251,6 +264,7 @@
 }
 
 .toggleVisibility {
+    padding-bottom: 10px;
     display: flex;
     justify-content: center;
 }
