@@ -25,18 +25,68 @@ const toggleTrailheads = document.getElementById('toggle-trailheads');
 const toggleCampsites = document.getElementById('toggle-campsites');
 
 setTrailFromURL();
-setTrailDetails(trail);
+setTrailDetails();
 initMap();
 initChart();
 
-function refresh() {
-    location.reload(); 
+function loadTrail(geoJSON) {
+    trail = geoJSON;
+    setTrailDetails();
+    reset();
+    initMap();
+    initChart();
 }
 
-function loadRoute(file) {
-    const route = JSON.parse(file);
-    console.log(route.properties.trail);
-    changeTrail(route.properties.trail);
+function loadRoute(geoJSON) {
+    const trail = geoJSON.properties.trail;
+    loadTrail(trail);
+    const route = geoJSON.properties.route;
+    for (const day of route) {
+        day.date = new Date(day.date);
+        if (!day.prev_site) day.prev_site = undefined;
+        if (!day.next_site) day.next_site = undefined;
+    }
+    this.route = route;
+    filterCampsites(campsiteFeatures);
+    this.isPositiveDirection = getDirection(route[0].start, route[route.length - 1].end);
+    displayRoute(route, true);
+    routeTitle.scrollIntoView({behavior: 'smooth'});
+}
+
+function onTrailSelect() {
+    trail = trails[selectTrail.value].geoJSON;
+    loadTrail(trail);
+    closeTrailModal();
+}
+
+function readFile(input, isRoute) {
+    let file = input.files[0];
+    let fileReader = new FileReader();
+    fileReader.readAsText(file); 
+    fileReader.onload = function() {
+        const geoJSON = JSON.parse(fileReader.result);
+        if (isRoute) loadRoute(geoJSON);
+        else loadTrail(geoJSON);
+        closeTrailModal();
+    }; 
+    fileReader.onerror = function() {
+        alert(fileReader.error);
+    };     
+}
+
+function closeTrailModal() {
+    document.getElementById('trailFile').value = '';
+    document.getElementById('routeFile').value = '';
+    $('#changeTrail').modal('hide');
+}
+
+function setTrailFromURL() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.has('trail')) {
+        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
+        trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
+    }
 }
 
 function toggleIconVisibility() {
@@ -50,7 +100,7 @@ function toggleIconVisibility() {
 }
 
 // Validate trail and set details
-function setTrailDetails(trail) {
+function setTrailDetails() {
     trailFolder = undefined;
     trailheadFolder = undefined;
     campsiteFolder = undefined;
@@ -62,30 +112,22 @@ function setTrailDetails(trail) {
     for (feature of trail.features) {
         if (feature.properties.class === "Folder" && feature.properties.title.toUpperCase() === "TRAIL") {
             if (!trailFolder) trailFolder = feature;
-            else return;
         } else if (feature.properties.class === "Folder" && feature.properties.title.toUpperCase() === "TRAILHEADS") {
             if (!trailheadFolder) trailheadFolder = feature;
-            else return;
         } else if (feature.properties.class === "Folder" && feature.properties.title.toUpperCase() === "CAMPSITES") {
             if (!campsiteFolder) campsiteFolder = feature;
-            else return;
         }
     }
-    if (!campsiteFolder || !trailheadFolder || !trailFolder) return;
 
     for (feature of trail.features) {
         if (feature.geometry && feature.geometry.type === "LineString" && feature.properties.folderId == trailFolder.id) {
-            if (!trailFeature) trailFeature = feature;
-            else return;
+            trailFeature = feature;
         } else if (feature.geometry && feature.geometry.type === "Point" && feature.properties.folderId == trailheadFolder.id) {
             trailheadFeatures.push(feature);
         } else if (feature.geometry && feature.geometry.type === "Point" && feature.properties.folderId == campsiteFolder.id) {
             campsiteFeatures.push(feature);
         }
     }
-    if (!trailFeature || !trailFeature.properties || !trailFeature.properties.title || trailFeature.properties.title.length > 30 || trailFeature.geometry.coordinates.length < 20) return;
-    if (trailheadFeatures.length <= 1) return;
-    if (campsiteFeatures.length <= 0) return;
 
     trailName = trailFeature.properties.title;
     trailLength = calculateLength(trailFeature.geometry.coordinates);
@@ -115,9 +157,6 @@ function setTrailDetails(trail) {
     trailheadFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
     campsiteFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
     for (let i = 0; i < campsiteFeatures.length; i++) campsiteFeatures[i].properties.index = i;
-
-    if (trailCircuit && campsiteFeatures[0].properties.distance != 0) return;
-    // else if (!trailCircuit && campsiteFeatures[0].properties.distance != 0 && campsiteFeatures[campsiteFeatures.length - 1].properties.distance != trailLength) return;
 
     console.info(trailFeature);
     console.info(trailheadFeatures);
@@ -171,83 +210,6 @@ function appendDistance(feature) {
     }
 }
 
-// Load selected trail and reset
-function onTrailSelect() {
-    trail = trails[selectTrail.value].geoJSON;
-    setTrailDetails(trail);
-    reset();
-    initMap();
-    initChart();
-    selectTrail.value = "";
-    $('#changeTrail').modal('hide');
-}
-
-function setTrailFromURL() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    if (urlParams.has('trail')) {
-        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
-        trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
-    }
-}
-
-function readFileTrail(input) {
-    let file = input.files[0];
-    let fileReader = new FileReader();
-    fileReader.readAsText(file); 
-    fileReader.onload = function() {
-        changeTrail(fileReader.result)
-    }; 
-    fileReader.onerror = function() {
-        alert(fileReader.error);
-    }; 
-}
-
-function readFileRoute(input) {
-    let file = input.files[0];
-    let fileReader = new FileReader();
-    fileReader.readAsText(file); 
-    fileReader.onload = function() {
-        loadRoute(fileReader.result)
-    }; 
-    fileReader.onerror = function() {
-        alert(fileReader.error);
-    }; 
-}
-
-function changeTrail(file) {
-    const newTrail = validJson(file);
-    if (newTrail) {
-        trail = newTrail;
-        reset();
-        initMap();
-        document.getElementById('trailFile').value = '';
-        $('#changeTrail').modal('hide');
-    }
-}
-
-function validJson(file) {
-    try {
-        const trail = JSON.parse(file);
-        let numTrailFolders = 0, numTrailheadFolders = 0, numCampsiteFolders = 0;
-        for (feature of trail.features) {
-            if (!feature.geometry) {
-                if (feature.properties.title === 'Trailheads') numTrailheadFolders++;
-                else if (feature.properties.title === 'Campsites') numCampsiteFolders++;
-                else if (feature.properties.title === 'Trail') numTrailFolders++;
-            }
-        }
-        if (numTrailFolders != 1 || numTrailheadFolders != 1 || numCampsiteFolders != 1) return false;
-        setTrailDetails(trail); //set trail details to verify each marker is on trail and has "distance" appended to the properties
-        for (campsite of campsiteFeatures) if (campsite.properties.distance === undefined) return false;
-        for (trailhead of trailheadFeatures) if (trailhead.properties.distance === undefined) return false;
-        return trail;
-    } catch (e) {
-        console.error(e);
-    }
-    return false;
-}
-
 // Return whether or not point C is on the segment of the line passing through the points A and B
 function inLine(a, b, c) {
     const dxc = c[0] - a[0];
@@ -267,19 +229,16 @@ function inLine(a, b, c) {
 function calculateElevation(lineString) {   
     let elevationGain = 0;
     let elevationLoss = 0;
-    
     for (let i = 1; i < lineString.coordinates.length; i++) {
         const currentElevation = lineString.coordinates[i][2] || 0; // If elevation is not present, assume 0
         const previousElevation = lineString.coordinates[i - 1][2] || 0;
         const elevationDifference = currentElevation - previousElevation;
-    
         if (elevationDifference > 0) {
           elevationGain += elevationDifference;
         } else {
           elevationLoss -= elevationDifference; // Using subtraction to get positive value
         }
     }
-    
     return { elevationGain, elevationLoss };
 }
 

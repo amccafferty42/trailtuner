@@ -129,7 +129,7 @@ function exportGeoJSON() {
     }
 }
 
-//trimming coordinates is necessary because official GeoJSON standard states that coordinates[] should have no more than three items for [lat, long, elev]. distance needs to be appended for the elevation chart to loasdf, 
+//trimming coordinates is necessary because official GeoJSON standard states that coordinates[] should have no more than three items for [lat, long, elev]. distance needs to be appended for the elevation chart to load, 
 function trimCoordinates(featureCollection) {
     for (const feature of featureCollection.features) {
         if (feature.geometry != undefined && feature.geometry.coordinates != undefined) {
