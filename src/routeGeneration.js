@@ -81,6 +81,11 @@ function filterCampsites(campsites) {
             filteredCampsites.push(campsites[i]);
         }
     }
+    if (filteredCampsites.length != campsites.length) {
+        for (let i = 0; i < filteredCampsites.length; i++) {
+            filteredCampsites[i].properties.index = i;
+        }
+    }
 }
 
 function validateForm() {
@@ -251,6 +256,9 @@ function generateShortHikeOut(end, startDate) {
 function getPrevCampsite(campsite) {
     if (campsite.properties.index === undefined) return undefined;
     if (trailCircuit && campsite == filteredCampsites[0]) return filteredCampsites[filteredCampsites.length - 1];
+    //if campsites are filtered, need to find the next available site
+    // let i = 1;
+    // while (filteredCampsites[campsite.properties.index - i] === undefined) i--;
     return filteredCampsites[campsite.properties.index - 1] === undefined ? undefined : filteredCampsites[campsite.properties.index - 1];
 }
 
@@ -754,12 +762,11 @@ function reset() {
     table.style.marginTop = 0;
     this.route = undefined;
     exportedRoute = undefined;
-    fullRoute = undefined;
     toggleTrail.checked = true;
     toggleTrail.disabled = true;
     toggleTrailheads.checked = true;
     toggleCampsites.checked = false;
-    resetMap();
+    initMap();
     initChart();
     window.scrollTo(0, 0);
 }

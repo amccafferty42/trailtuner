@@ -1,6 +1,4 @@
 let exportedRoute;
-let fullRoute;
-let days = [];
 
 // Update GeoJSON with all trailheads and campsites on the generated route, as well as an individual LineString for each day
 function updateGeoJSON() {
@@ -17,7 +15,7 @@ function updateGeoJSON() {
         exportedRoute.features.push(this.route[this.route.length - 1].end);
     }
 
-    fullRoute = {
+    let fullRoute = {
         "geometry": {
             "type": "LineString",
             "coordinates": []
@@ -67,12 +65,13 @@ function updateGeoJSON() {
         dayRoute.properties.date = this.route[this.route.length - 1].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
         exportedRoute.features.push(JSON.parse(JSON.stringify(dayRoute)));
     }
-    exportedRoute = calculateAdjustedDistance(exportedRoute);
-    updateChart();
+    exportedRoute = calculateAdjustedDistance(exportedRoute, fullRoute);
+    exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
+    updateChart(fullRoute);
     updateMap();
 }
 
-function calculateAdjustedDistance(exportedRoute) {
+function calculateAdjustedDistance(exportedRoute, fullRoute) {
     if (routeLength <= 0) return exportedRoute;
     const startDistance = fullRoute.geometry.coordinates[0][3];
     const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
@@ -112,7 +111,6 @@ function calculateAdjustedDistance(exportedRoute) {
 function exportGeoJSON() {
     if (exportedRoute) {
         let finalRoute = structuredClone(exportedRoute);
-        finalRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
         finalRoute = structuredClone(finalRoute);
         finalRoute = trimCoordinates(finalRoute);
         finalRoute.properties = {};

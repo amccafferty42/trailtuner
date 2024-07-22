@@ -1,5 +1,4 @@
-let trail = trails[0].geoJSON;
-
+let trail;
 let trailName;
 let trailCircuit;
 let trailLength; // in km
@@ -9,8 +8,8 @@ let distanceUnit = 'mi'; // default
 let distanceConstant = 0.621371; // default 1 km = 0.621371 mi
 let elevationUnit = 'ft'; // default
 let elevationConstant = 3.28084; // default 1 m = 3.28084 ft
+let hasDispersedCampsites = false;
 
-// Variables for the required GeoJSON features
 let trailFolder;
 let trailheadFolder;
 let campsiteFolder;
@@ -18,29 +17,34 @@ let trailFeature;
 let campsiteFeatures = [];
 let trailheadFeatures = [];
 
-let hasDispersedCampsites = false;
-
 const toggleTrail = document.getElementById('toggle-trail');
 const toggleTrailheads = document.getElementById('toggle-trailheads');
 const toggleCampsites = document.getElementById('toggle-campsites');
 
-setTrailFromURL();
-setTrailDetails();
-initMap();
-initChart();
+initTrail();
+
+function initTrail() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.has('trail')) {
+        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
+        trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
+    } else {
+        trail = trails[0].geoJSON;
+    }
+    setTrailDetails();
+}
 
 function loadTrail(geoJSON) {
     trail = geoJSON;
     setTrailDetails();
     reset();
-    initMap();
-    initChart();
 }
 
 function loadRoute(geoJSON) {
     const trail = geoJSON.properties.trail;
-    loadTrail(trail);
     const route = geoJSON.properties.route;
+    loadTrail(trail);
     for (const day of route) {
         day.date = new Date(day.date);
         if (!day.prev_site) day.prev_site = undefined;
@@ -74,21 +78,6 @@ function readFile(input, isRoute) {
     };     
 }
 
-function closeTrailModal() {
-    document.getElementById('trailFile').value = '';
-    document.getElementById('routeFile').value = '';
-    $('#changeTrail').modal('hide');
-}
-
-function setTrailFromURL() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    if (urlParams.has('trail')) {
-        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
-        trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
-    }
-}
-
 function toggleIconVisibility() {
     if (this.route) {
         updateMap();
@@ -99,7 +88,6 @@ function toggleIconVisibility() {
     }
 }
 
-// Validate trail and set details
 function setTrailDetails() {
     trailFolder = undefined;
     trailheadFolder = undefined;
@@ -301,4 +289,14 @@ function calcArea(poly) {
 
 function isClockwise(poly) {
     return calcArea(poly) < 0;
+}
+
+function closeTrailModal() {
+    document.getElementById('trailFile').value = '';
+    document.getElementById('routeFile').value = '';
+    $('#changeTrail').modal('hide');
+}
+
+function closeMoreRouteOptionsModal() {
+    $('#moreRouteOptions').modal('hide');
 }

@@ -165,11 +165,12 @@ function updateChart() {
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     let distances = [], elevations = [], days = [], trailheads = [], campsites = [];
     if (routeLength > 0) {
+        const fullRoute = exportedRoute.features.filter((feature) => feature.properties && feature.properties.title == "Full Route")[0];
         const startDistance = fullRoute.geometry.coordinates[0][3];
         const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
         const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
         for (let i = 0; i < exportedRoute.features.length; i++) {
-            if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === "LineString") {
+            if (exportedRoute.features[i].geometry && exportedRoute.features[i].geometry.type === "LineString" && exportedRoute.features[i].properties.title != "Full Route") {
                 for (let j = 0; j < exportedRoute.features[i].geometry.coordinates.length; j++) {
                     const currDistance = exportedRoute.features[i].geometry.coordinates[j][3];
                     let adjustedDistance;
