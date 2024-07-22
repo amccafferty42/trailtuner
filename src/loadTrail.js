@@ -141,10 +141,9 @@ function setTrailDetails() {
     }
     for (feature of trailheadFeatures) appendDistance(feature);
 
-    //sort result set by distance and append an index for quick reference during route generation
+    //sort result set by distance for quick reference during route generation
     trailheadFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
     campsiteFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
-    for (let i = 0; i < campsiteFeatures.length; i++) campsiteFeatures[i].properties.index = i;
 
     console.info(trailFeature);
     console.info(trailheadFeatures);
