@@ -6,13 +6,13 @@ let isPositiveDirection;
 let userSetDays = false;
 let filteredCampsites;
 let excludedCampsites;
-let includedCampsites;
+//let includedCampsites;
 
 // Select DOM elements
 const selectStart = document.getElementById('start');
 const selectEnd = document.getElementById('end');
 const selectExclude = document.getElementById('exclude');
-const selectInclude = document.getElementById('include');
+//const selectInclude = document.getElementById('include');
 const inputDays = document.getElementById('days');
 const inputDistance = document.getElementById('distance');
 const inputDate = document.getElementById('start-date');
@@ -57,6 +57,7 @@ function plan() {
             window.alert("Error: unable to generate route");
         } else {
             displayRoute(route, true);
+            updateGeoJSON();
             routeTitle.scrollIntoView({behavior: 'smooth'});
         }
     }
@@ -65,17 +66,17 @@ function plan() {
 function filterCampsites(campsites) {
     filteredCampsites = [];
     excludedCampsites = [];
-    includedCampsites = [];
+    //includedCampsites = [];
     for (const node of selectExclude.childNodes) {
         if (node.selected) {
             excludedCampsites.push(campsiteFeatures.filter(campsite => campsite.properties.title == node.text)[0]);
         }
     }
-    for (const node of selectInclude.childNodes) {
-        if (node.selected) {
-            includedCampsites.push(campsiteFeatures.filter(campsite => campsite.properties.title == node.text)[0]);
-        }
-    }
+    // for (const node of selectInclude.childNodes) {
+    //     if (node.selected) {
+    //         includedCampsites.push(campsiteFeatures.filter(campsite => campsite.properties.title == node.text)[0]);
+    //     }
+    // }
     for (const campsite of campsites) {
         if (!excludedCampsites.includes(campsite) && (!campsite.properties.title.match(/[*]/) || includeDispersedCampsites.checked)) {
             filteredCampsites.push(campsite);
@@ -261,24 +262,6 @@ function getNextCampsite(campsite) {
     return filteredCampsites[filteredCampsites.indexOf(campsite) + 1] === undefined ? undefined : filteredCampsites[filteredCampsites.indexOf(campsite) + 1];
 }
 
-// Return list of all campsites between a start and end distance in order (includes wrapping around a circuit)
-function getAllCampsites(startDistance, endDistance) {
-    let campsites = [];
-    if (!trailCircuit && startDistance == endDistance) return campsites;
-    else if (this.isPositiveDirection) {
-        for (let i = 0; i < filteredCampsites.length; i++) {
-            if ((startDistance >= endDistance && (filteredCampsites[i].properties.distance > startDistance || filteredCampsites[i].properties.distance < endDistance)) || (startDistance < endDistance && (filteredCampsites[i].properties.distance > startDistance && filteredCampsites[i].properties.distance < endDistance))) campsites.push(filteredCampsites[i]);
-        }
-        while (startDistance < filteredCampsites[filteredCampsites.length - 1].properties.distance && campsites[0].properties.distance < startDistance) campsites.push(campsites.shift());
-    } else {
-        for (let i = filteredCampsites.length - 1; i >= 0; i--) {
-            if ((startDistance <= endDistance && (filteredCampsites[i].properties.distance < startDistance || filteredCampsites[i].properties.distance > endDistance)) || (startDistance > endDistance && (filteredCampsites[i].properties.distance < startDistance && filteredCampsites[i].properties.distance > endDistance))) campsites.push(filteredCampsites[i]);
-        }
-        while (startDistance > filteredCampsites[0].properties.distance && campsites[0].properties.distance > startDistance) campsites.push(campsites.shift());
-    }
-    return campsites;
-}
-
 // Calculate distance between start and end (includes wrapping around a circuit)
 function getDistanceBetween(startDistance, endDistance) {
     if (startDistance === endDistance) return 0;
@@ -351,17 +334,21 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
             }
         }
     }
-    for (campsite of includedCampsites) {
-        campsites.add(campsite);
-    }
+    // for (campsite of includedCampsites) {
+    //     campsites.add(campsite);
+    // }
     return campsites;
-}     
+}    
 
-//TODO may want to modify how random start/end is selected if there are include/exclude sites added
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
+    routeLength = trailCircuit && start == end ? trailLength : getDistanceBetween(start.properties.distance, end.properties.distance);
+    const routeElevation = getElevationBetween(start, end);
+    routeElevationGain = trailCircuit && start == end ? trailElevationGain : routeElevation.gain;
+    routeElevationLoss = trailCircuit && start == end ? trailElevationLoss : routeElevation.loss;
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
-    allOptimalCampsites.sort((a, b) => {return a.properties.distance - b.properties.distance});
+    // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.properties.distance, end.properties.distance, routeLength);
+    // allOptimalCampsites.sort((a, b) => {return a.properties.relativeDistance - b.properties.relativeDistance});
     if (days > filteredCampsites.length || days > allOptimalCampsites.length) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
         return buildRoute(start, end, allOptimalCampsites, days, startDate);
@@ -372,34 +359,34 @@ function calculateRoute(start, end, days, startDate) {
     } else {
         const groupedCampsites = subset(allOptimalCampsites, days - 1);
         let routes = [];
-        if (includedCampsites.length > 0) {
-            console.log("Included campsites:");
-            console.log(includedCampsites);
-            for (let campsites of groupedCampsites) {
-                let validCampsites = false;
-                for (let i = 0; i < includedCampsites.length; i++) {
-                    for (campsite of campsites) {
-                        if (campsite === includedCampsites[i]) {
-                            validCampsites = true;
-                        }
-                    }
-                    if (!validCampsites) {
-                        break;
-                    } else {
-                        if (i == (includedCampsites.length - 1)) {
-                            break;
-                        } else {
-                            validCampsites = false;
-                        }
-                    }
-                }
-                if (validCampsites) routes.push(buildRoute(start, end, campsites, days, startDate));
-            }
-        } else {
+        // if (includedCampsites.length > 0) {
+        //     console.log("Included campsites:");
+        //     console.log(includedCampsites);
+        //     for (let campsites of groupedCampsites) {
+        //         let validCampsites = false;
+        //         for (let i = 0; i < includedCampsites.length; i++) {
+        //             for (campsite of campsites) {
+        //                 if (campsite === includedCampsites[i]) {
+        //                     validCampsites = true;
+        //                 }
+        //             }
+        //             if (!validCampsites) {
+        //                 break;
+        //             } else {
+        //                 if (i == (includedCampsites.length - 1)) {
+        //                     break;
+        //                 } else {
+        //                     validCampsites = false;
+        //                 }
+        //             }
+        //         }
+        //         if (validCampsites) routes.push(buildRoute(start, end, campsites, days, startDate));
+        //     }
+        // } else {
             for (let campsites of groupedCampsites) {
                 routes.push(buildRoute(start, end, campsites, days, startDate));
             }
-        }
+        //}
         let bestRoute = routes[0], lowestSD = Number.MAX_VALUE;
         for(let i = 0; i < routes.length; i++) {
             let sd = calculateSD(calculateVariance(Array.from(routes[i], x => x.length)));
@@ -527,7 +514,165 @@ function changeCamp(dayIndex, isNext) {
         this.route[dayIndex + 1].elevationLoss = Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     }
     displayRoute(this.route, false);
+    updateGeoJSON();
     markerOpen(this.route[dayIndex].end.id);
+}
+
+function displayRoute(route, isRouteGen) {
+    // routeLength = 0;
+    // routeElevationGain = 0;
+    // routeElevationLoss = 0;
+    tableBody.innerHTML = '';
+    tableFooter.innerHTML = '';
+    for (let i = 0; i < route.length; i++) {
+        // routeLength += route[i].length;
+        // routeElevationGain += route[i].elevationGain;
+        // routeElevationLoss += route[i].elevationLoss;
+        let row = tableBody.insertRow(i);
+        if (i == 0) row.classList.add('table-group-divider');
+        let cell1 = row.insertCell(0);
+        cell1.onclick = createClickHandler('Day ' + (i + 1), row);
+        let cell2 = row.insertCell(1);
+        cell2.onclick = createClickHandler('Day ' + (i + 1), row);
+        let cell3 = row.insertCell(2);
+        cell3.onclick = createClickHandler('Day ' + (i + 1), row);
+        let cell4 = row.insertCell(3);
+        cell4.onclick = createClickHandler('Day ' + (i + 1), row);
+        let cell5 = row.insertCell(4);
+        let cell6 = row.insertCell(5);
+        let cell7 = row.insertCell(6);
+        cell7.onclick = createClickHandler('Day ' + (i + 1), row);
+        cell7.classList.add("right");
+        let cell8 = row.insertCell(7);
+        cell8.onclick = createClickHandler('Day ' + (i + 1), row);
+        cell8.classList.add("right");
+        cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
+        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
+        cell3.innerHTML = i == 0 ? '<u>' + route[i].start.properties.title + '</u>' : route[i].start.properties.title;
+        cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
+        cell5.innerHTML = closerCampBtn(route[i], route);
+        cell6.innerHTML = furtherCampBtn(route[i], route);
+        cell7.innerHTML = '<strong class="blue">' + Math.round(route[i].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
+        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>';
+    }
+    row = tableFooter.insertRow();
+    row.classList.add('table-group-divider');
+    cell1 = row.insertCell(0);
+    cell2 = row.insertCell(1);
+    cell3 = row.insertCell(2);
+    cell4 = row.insertCell(3);
+    cell5 = row.insertCell(4);
+    cell6 = row.insertCell(5);
+    cell7 = row.insertCell(6);
+    cell7.classList.add("right");
+    cell8 = row.insertCell(7);
+    cell8.classList.add("right");
+    cell7.innerHTML = '<strong>Total:<br>' + Math.round(routeLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
+    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
+    table.style.marginTop = '20px';
+    routeTitle.innerText = route.length + " Day Route"
+    routeTitleGroup.style.display = 'flex';
+    table.style.display = '';
+    console.table(route);
+    if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
+        toggleTrail.disabled = false;
+        toggleTrail.checked = false;
+        toggleTrailheads.checked = true;
+        toggleCampsites.checked = true;
+    }
+}
+
+// Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
+function closerCampBtn(day, route) {
+    if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    
+    let dif = 0;
+    if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
+    else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
+
+    if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';    
+}
+
+// Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
+function furtherCampBtn(day, route) {
+    const nextDay = route[route.indexOf(day) + 1];
+    if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    
+    let dif = 0;
+    if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
+    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
+    
+    if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
+    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+    return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
+}
+
+function reset() {
+    removeOptions(selectStart);
+    removeOptions(selectEnd);
+    for (let i = 0; i < trailheadFeatures.length; i++) {
+        addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
+        addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
+    }
+    resetOptions();
+    tableBody.innerHTML = '';
+    selectStart.value = 1;
+    selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
+    inputDate.valueAsDate = new Date();
+    // title.innerHTML = trailName;
+    inputDays.value = Math.max(1, Math.round(trailLength / 16.0934));
+    inputDistance.value = "";
+    inputDistance.placeholder = "N/A";
+    inputShortHikeIn.checked = false;
+    inputShortHikeOut.checked = false;
+    inputCW.disabled = trailCircuit ? false : true;
+    inputCCW.disabled = trailCircuit ? false : true;
+    inputCW.checked = trailCircuit ? true : false;
+    inputCCW.checked = false;
+    if (distanceUnit === 'km') inputKm.click();
+    else inputMi.click();
+    setUnitLabels(distanceUnit);
+    this.userSetDays = false;
+    if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
+    if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
+    routeTitleGroup.style.display = 'none';
+    table.style.display = 'none';
+    table.style.marginTop = 0;
+    this.route = undefined;
+    exportedRoute = undefined;
+    toggleTrail.checked = true;
+    toggleTrail.disabled = true;
+    toggleTrailheads.checked = true;
+    toggleCampsites.checked = false;
+    initMap();
+    initChart();
+    window.scrollTo(0, 0);
+}
+
+function resetOptions() {
+    if (!hasDispersedCampsites) {
+        includeDispersedCampsites.checked = false;
+        includeDispersedCampsites.disabled = true;
+    } else {
+        includeDispersedCampsites.checked = true;
+        includeDispersedCampsites.disabled = false;
+    }
+    removeAllOptions(selectExclude);
+    //removeAllOptions(selectInclude);
+    for (let i = 0; i < campsiteFeatures.length; i++) {
+        if (!campsiteFeatures[i].properties.title.match(/[*]/)) {
+            addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
+            //addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
+        }
+    }
+}
+
+function refresh() {
+    location.reload(); 
 }
 
 function onDistancePerDayChange() {
@@ -605,164 +750,6 @@ function deselectRows() {
     }
 }
 
-function displayRoute(route, isRouteGen) {
-    routeLength = 0;
-    routeElevationGain = 0;
-    routeElevationLoss = 0;
-    tableBody.innerHTML = '';
-    tableFooter.innerHTML = '';
-    for (let i = 0; i < route.length; i++) {
-        routeLength += route[i].length;
-        routeElevationGain += route[i].elevationGain;
-        routeElevationLoss += route[i].elevationLoss;
-        let row = tableBody.insertRow(i);
-        if (i == 0) row.classList.add('table-group-divider');
-        let cell1 = row.insertCell(0);
-        cell1.onclick = createClickHandler('Day ' + (i + 1), row);
-        let cell2 = row.insertCell(1);
-        cell2.onclick = createClickHandler('Day ' + (i + 1), row);
-        let cell3 = row.insertCell(2);
-        cell3.onclick = createClickHandler('Day ' + (i + 1), row);
-        let cell4 = row.insertCell(3);
-        cell4.onclick = createClickHandler('Day ' + (i + 1), row);
-        let cell5 = row.insertCell(4);
-        let cell6 = row.insertCell(5);
-        let cell7 = row.insertCell(6);
-        cell7.onclick = createClickHandler('Day ' + (i + 1), row);
-        cell7.classList.add("right");
-        let cell8 = row.insertCell(7);
-        cell8.onclick = createClickHandler('Day ' + (i + 1), row);
-        cell8.classList.add("right");
-        cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
-        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
-        cell3.innerHTML = i == 0 ? '<u>' + route[i].start.properties.title + '</u>' : route[i].start.properties.title;
-        cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
-        cell5.innerHTML = closerCampBtn(route[i], route);
-        cell6.innerHTML = furtherCampBtn(route[i], route);
-        cell7.innerHTML = '<strong class="blue">' + Math.round(route[i].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
-        cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(route[i].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit +' </span><br><span class="green">-' + Math.trunc(route[i].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span></strong>';
-    }
-    row = tableFooter.insertRow();
-    row.classList.add('table-group-divider');
-    cell1 = row.insertCell(0);
-    cell2 = row.insertCell(1);
-    cell3 = row.insertCell(2);
-    cell4 = row.insertCell(3);
-    cell5 = row.insertCell(4);
-    cell6 = row.insertCell(5);
-    cell7 = row.insertCell(6);
-    cell7.classList.add("right");
-    cell8 = row.insertCell(7);
-    cell8.classList.add("right");
-    cell7.innerHTML = '<strong>Total:<br>' + Math.round(routeLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</strong>';
-    cell8.innerHTML = '<strong><span class="red">+' + Math.trunc(routeElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + ' </span><br><span class="green">-' + Math.trunc(routeElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</span><strong>';
-    table.style.marginTop = '20px';
-    routeTitle.innerText = route.length + " Day Route"
-    routeTitleGroup.style.display = 'flex';
-    table.style.display = '';
-    if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
-        toggleTrail.disabled = false;
-        toggleTrail.checked = false;
-        toggleTrailheads.checked = true;
-        toggleCampsites.checked = true;
-    }
-    updateGeoJSON();
-    console.table(route);
-}
-
-// Display the closer camp option as long as it does not compromise the direction of the route (i.e. change daily mileage < 0)
-function closerCampBtn(day, route) {
-    if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    
-    let dif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
-    else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
-
-    if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';    
-}
-
-// Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
-function furtherCampBtn(day, route) {
-    const nextDay = route[route.indexOf(day) + 1];
-    if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    
-    let dif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
-    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
-    
-    if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
-    if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
-    return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title+'</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
-}
-
-function resetOptions() {
-    if (!hasDispersedCampsites) {
-        includeDispersedCampsites.checked = false;
-        includeDispersedCampsites.disabled = true;
-    } else {
-        includeDispersedCampsites.checked = true;
-        includeDispersedCampsites.disabled = false;
-    }
-    removeAllOptions(selectExclude);
-    removeAllOptions(selectInclude);
-    for (let i = 0; i < campsiteFeatures.length; i++) {
-        if (!campsiteFeatures[i].properties.title.match(/[*]/)) {
-            addOption(selectExclude, campsiteFeatures[i].properties.title, i+1);
-            addOption(selectInclude, campsiteFeatures[i].properties.title, i+1);
-        }
-    }
-}
-
-function reset() {
-    removeOptions(selectStart);
-    removeOptions(selectEnd);
-    for (let i = 0; i < trailheadFeatures.length; i++) {
-        addOption(selectStart, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
-        addOption(selectEnd, trailheadFeatures[i].properties.title.replace(" Trailhead", ""), i+1);
-    }
-    resetOptions();
-    tableBody.innerHTML = '';
-    selectStart.value = 1;
-    selectEnd.value = trailCircuit ? 1 : selectEnd.length - 1;
-    inputDate.valueAsDate = new Date();
-    title.innerHTML = trailName;
-    inputDays.value = Math.max(1, Math.round(trailLength / 16.0934));
-    inputDistance.value = "";
-    inputDistance.placeholder = "N/A";
-    inputShortHikeIn.checked = false;
-    inputShortHikeOut.checked = false;
-    inputCW.disabled = trailCircuit ? false : true;
-    inputCCW.disabled = trailCircuit ? false : true;
-    inputCW.checked = trailCircuit ? true : false;
-    inputCCW.checked = false;
-    if (distanceUnit === 'km') inputKm.click();
-    else inputMi.click();
-    setUnitLabels(distanceUnit);
-    this.userSetDays = false;
-    if (!trailCircuit) for (element of loopDirectionLabel) element.classList.add('lightgray');
-    if (trailCircuit) for (element of loopDirectionLabel) element.classList.remove('lightgray');
-    routeTitleGroup.style.display = 'none';
-    table.style.display = 'none';
-    table.style.marginTop = 0;
-    this.route = undefined;
-    exportedRoute = undefined;
-    toggleTrail.checked = true;
-    toggleTrail.disabled = true;
-    toggleTrailheads.checked = true;
-    toggleCampsites.checked = false;
-    initMap();
-    initChart();
-    window.scrollTo(0, 0);
-}
-
-function refresh() {
-    location.reload(); 
-}
-
 function removeOptions(element) {
     for (let i = element.options.length - 1; i > 0; i--) {
        element.remove(i);
@@ -804,6 +791,7 @@ function setUnit(unit) {
         if (inputDistance.value != 0 && inputDistance.value != '') inputDistance.value = unit === 'km' ? Math.round(inputDistance.value * 1.609344) : Math.round(inputDistance.value * 0.6213711922);
         if (this.route != undefined && this.route.length > 0) {
             displayRoute(this.route, false);
+            updateGeoJSON();
         } else { //re-initialize map and chart to show updated units
             initMap();
             initChart();

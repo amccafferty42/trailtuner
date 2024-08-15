@@ -199,11 +199,11 @@
                                 <br>
                                 <select class="form-select" id="exclude" multiple></select>
                             </div>
-                            <div class="includes-sites-input">
+                            <!-- <div class="includes-sites-input">
                                 <label for="include"><h3 id="includeLabel"><small class="text-body-secondary">Must use campsites: </small></h3></label>
                                 <br>
                                 <select class="form-select" id="include" multiple></select>
-                            </div>      
+                            </div>       -->
                             <div class="toggle-dispersed-input">
                                 <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-dispersed" title="Dispersed" checked>
                                 <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h3><small class="text-body-secondary">Include dispersed campsites</small></h3>&nbsp;</label>
@@ -226,8 +226,8 @@
                 <h1 id="routeTitle" contentEditable="true" onkeypress="return (this.innerText.length <= 64)"></h1>
                 <img id="routeTitleIcon" src="./resources/pencil.svg" alt="*">
                 <div class="saveButtons">
-                    <button id="exportRoute" class="btn btn-sm btn-primary" onclick="exportGeoJSON()">Download</button>
-                    <button id="shareRoute" class="btn btn-sm btn-outline-primary" onclick="emailRoute()">Share</button>
+                    <button id="exportRoute" class="btn btn-primary" onclick="exportGeoJSON()">Download</button>
+                    <button id="shareRoute" class="btn btn-outline-primary" onclick="emailRoute()">Share</button>
                 </div>
             </div>
             <table class="table route-table table-hover table-striped" id="table">
