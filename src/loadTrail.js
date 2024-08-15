@@ -1,5 +1,4 @@
 let trail;
-let trailName;
 let trailCircuit;
 let trailLength; // in km
 let trailElevationGain; // in m
@@ -54,6 +53,7 @@ function loadRoute(geoJSON) {
     filterCampsites(campsiteFeatures);
     this.isPositiveDirection = getDirection(route[0].start, route[route.length - 1].end);
     displayRoute(route, true);
+    updateGeoJSON();
     routeTitle.scrollIntoView({behavior: 'smooth'});
 }
 
@@ -117,7 +117,7 @@ function setTrailDetails() {
         }
     }
 
-    trailName = trailFeature.properties.title;
+    title.innerHTML = trailFeature.properties.title;
     trailLength = calculateLength(trailFeature.geometry.coordinates);
 
     const elevationChange = calculateElevation(trailFeature.geometry);

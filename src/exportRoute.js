@@ -107,6 +107,44 @@ function calculateAdjustedDistance(exportedRoute, fullRoute) {
     return exportedRoute;
 }
 
+// function calculateRelativeDistance(features, startDistance, endDistance, routeLength) {
+//     if (routeLength <= 0) return features;
+//     const wrapAroundDistance = this.isPositiveDirection ? endDistance - startDistance : endDistance;
+//     const reverseDistance = this.isPositiveDirection ? 0 : routeLength;
+//     let currDistance, relativeDistance;
+//     for (let i = 0; i < features.length; i++) {
+//         if (features[i].geometry && features[i].geometry.type === "LineString") {
+//             features[i].properties.relativeDistances = [];
+//             for (let j = 0; j < features[i].geometry.coordinates.length; j++) {
+//                 //currDistance = features[i].geometry.coordinates[j][3];
+//                 currDistance = features[i].properties.distances[j];
+//                 if (features[i].properties.title === "Day 1" && j === 0) { // first distance should always be 0 (due to route clipping, sometimes the first distance is ~0.1)
+//                     relativeDistance = 0;
+//                 } else if (this.isPositiveDirection && currDistance < startDistance) {
+//                     relativeDistance = currDistance + wrapAroundDistance;
+//                 } else if (!this.isPositiveDirection && currDistance > startDistance) {
+//                     relativeDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+//                 } else {
+//                     relativeDistance = Math.abs(currDistance - startDistance);
+//                 }
+//                 //features[i].geometry.coordinates[j][4] = relativeDistance;
+//                 features[i].properties.relativeDistances.push(relativeDistance);
+//             }
+//         } else if (features[i].geometry) {
+//             currDistance = features[i].properties.distance;
+//             if (this.isPositiveDirection && currDistance < startDistance) {
+//                 relativeDistance = currDistance + wrapAroundDistance;
+//             } else if (!this.isPositiveDirection && currDistance > startDistance) {
+//                 relativeDistance = Math.abs(reverseDistance - currDistance + wrapAroundDistance);
+//             } else {
+//                 relativeDistance = Math.abs(currDistance - startDistance);
+//             }
+//             features[i].properties.relativeDistance = relativeDistance;
+//         }
+//     }
+//     return features;
+// }
+
 // Download GeoJSON
 function exportGeoJSON() {
     if (exportedRoute) {
