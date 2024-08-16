@@ -221,13 +221,14 @@
                 </div>
             </div>
             <br>
+            <hr>
             <br>
             <div id="routeTitleGroup">
                 <h1 id="routeTitle" contentEditable="true" onkeypress="return (this.innerText.length <= 64)"></h1>
                 <img id="routeTitleIcon" src="./resources/pencil.svg" alt="*">
                 <div class="saveButtons">
-                    <button id="exportRoute" class="btn btn-primary" onclick="exportGeoJSON()">Download</button>
-                    <button id="shareRoute" class="btn btn-outline-primary" onclick="emailRoute()">Share</button>
+                    <button id="exportRoute" class="btn btn-sm btn-primary" onclick="exportGeoJSON()">Download</button>
+                    <button id="shareRoute" class="btn btn-sm btn-outline-primary" onclick="emailRoute()">Share</button>
                 </div>
             </div>
             <table class="table route-table table-hover table-striped" id="table">

@@ -101,16 +101,16 @@ function getDays() {
         let days;
         if (selectStart.value != 0 && selectEnd.value != 0) {
             this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
-            const totalDistance = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
+            const totalDistance = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].geometry.coordinates[3], trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3]);
             const distancePerDay = getDistancePerDay();
             days = (totalDistance / distancePerDay) < filteredCampsites.length ? Math.round(totalDistance / distancePerDay) : filteredCampsites.length;
         } else if (inputDistance.value > 0) {
             if (trailCircuit) {
                 days = Math.round(trailLength / inputDistance.value); // if start or end are not set, route length will always be full length so days must always be trail length / miles/days
             } else if (selectStart.value != 0) {
-                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trailLength - trailheadFeatures[selectStart.value - 1].properties.distance), Math.abs(0 - trailheadFeatures[selectStart.value - 1].properties.distance)) / inputDistance.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
+                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trailLength - trailheadFeatures[selectStart.value - 1].geometry.coordinates[3]), Math.abs(0 - trailheadFeatures[selectStart.value - 1].geometry.coordinates[3])) / inputDistance.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
             } else if (selectEnd.value != 0) {
-                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trailLength - trailheadFeatures[selectEnd.value - 1].properties.distance), Math.abs(0 - trailheadFeatures[selectEnd.value - 1].properties.distance)) / inputDistance.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
+                days = Math.floor(Math.random() * (Math.round(Math.max(Math.abs(trailLength - trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3]), Math.abs(0 - trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3])) / inputDistance.value)) + 1); // min = 1, max = longest possible distance in either direction / miles per day
             } else {
                 days = Math.floor(Math.random() * (Math.round(trailLength / inputDistance.value)) + 1); // min = 1, max = trail length / miles per day
             }
@@ -131,7 +131,7 @@ function getDistancePerDay() {
 
 // Calculate distance given days and distance per day. Returned value is only used when trailheads are not set
 function getDistance(days, distancePerDay) {
-    if (selectStart.value != 0 && selectEnd.value != 0) return getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
+    if (selectStart.value != 0 && selectEnd.value != 0) return getDistanceBetween(trailheadFeatures[selectStart.value - 1].geometry.coordinates[3], trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3]);
     return !inputShortHikeIn.checked ? distancePerDay * days : (distancePerDay * days) - Math.round(distancePerDay / 2);
 }
 
@@ -143,7 +143,7 @@ function selectStartTrailhead(endTrailhead, length) {
         } else {
             let validTrailheads = [];
             for (let i = 0; i < trailheadFeatures.length; i++) {
-                if (trailheadFeatures[i].properties.distance <= (trailLength - length) || trailheadFeatures[i].properties.distance >= length) {
+                if (trailheadFeatures[i].geometry.coordinates[3] <= (trailLength - length) || trailheadFeatures[i].geometry.coordinates[3] >= length) {
                     validTrailheads.push(i);
                 }
             }
@@ -153,16 +153,16 @@ function selectStartTrailhead(endTrailhead, length) {
         }
     } else {
         if (trailCircuit) return endTrailhead; //prioritize full loops for route generation
-        const startCandidate1 = getNearestTrailhead(endTrailhead.properties.distance + length);
-        const startCandidate2 = getNearestTrailhead(endTrailhead.properties.distance - length);
-        if ((endTrailhead.properties.distance + length) > trailLength && (endTrailhead.properties.distance - length) < 0) {
-            return Math.abs(endTrailhead.properties.distance - startCandidate1.properties.distance) > Math.abs(endTrailhead.properties.distance - startCandidate2.properties.distance) ? startCandidate1 : startCandidate2;
-        } else if ((endTrailhead.properties.distance + length) > trailLength) {
+        const startCandidate1 = getNearestTrailhead(endTrailhead.geometry.coordinates[3] + length);
+        const startCandidate2 = getNearestTrailhead(endTrailhead.geometry.coordinates[3] - length);
+        if ((endTrailhead.geometry.coordinates[3] + length) > trailLength && (endTrailhead.geometry.coordinates[3] - length) < 0) {
+            return Math.abs(endTrailhead.geometry.coordinates[3] - startCandidate1.geometry.coordinates[3]) > Math.abs(endTrailhead.geometry.coordinates[3] - startCandidate2.geometry.coordinates[3]) ? startCandidate1 : startCandidate2;
+        } else if ((endTrailhead.geometry.coordinates[3] + length) > trailLength) {
             return startCandidate2;
-        } else if ((endTrailhead.properties.distance - length) < 0) {
+        } else if ((endTrailhead.geometry.coordinates[3] - length) < 0) {
             return startCandidate1;
         }
-        //return Math.abs(startCandidate1.properties.distance - length) < Math.abs(startCandidate2.properties.distance - length) ? startCandidate1 : startCandidate2;
+        //return Math.abs(startCandidate1.geometry.coordinates[3] - length) < Math.abs(startCandidate2.geometry.coordinates[3] - length) ? startCandidate1 : startCandidate2;
         return Math.floor(Math.random() * 2) === 0 ? startCandidate1 : startCandidate2;
     }
 }
@@ -170,20 +170,20 @@ function selectStartTrailhead(endTrailhead, length) {
 // If end trailhead is not provided, determine a reasonable end
 function selectEndTrailhead(startTrailhead, length) {
     if (trailCircuit && ((inputDays.value == '' || inputDistance.value == '') || length >= trailLength)) return startTrailhead; //prioritize full loops for route generation
-    const endCandidate1 = getNearestTrailhead(startTrailhead.properties.distance + length);
-    const endCandidate2 = getNearestTrailhead(startTrailhead.properties.distance - length);
+    const endCandidate1 = getNearestTrailhead(startTrailhead.geometry.coordinates[3] + length);
+    const endCandidate2 = getNearestTrailhead(startTrailhead.geometry.coordinates[3] - length);
     if (trailCircuit && inputCW.checked) {
         return endCandidate1;
     } else if (trailCircuit && inputCCW.checked) {
         return endCandidate2;
-    } else if ((startTrailhead.properties.distance + length) > trailLength && (startTrailhead.properties.distance - length) < 0) {
-        return Math.abs(startTrailhead.properties.distance - endCandidate1.properties.distance) > Math.abs(startTrailhead.properties.distance - endCandidate2.properties.distance) ? endCandidate1 : endCandidate2;
-    } else if ((startTrailhead.properties.distance + length) > trailLength) {
+    } else if ((startTrailhead.geometry.coordinates[3] + length) > trailLength && (startTrailhead.geometry.coordinates[3] - length) < 0) {
+        return Math.abs(startTrailhead.geometry.coordinates[3] - endCandidate1.geometry.coordinates[3]) > Math.abs(startTrailhead.geometry.coordinates[3] - endCandidate2.geometry.coordinates[3]) ? endCandidate1 : endCandidate2;
+    } else if ((startTrailhead.geometry.coordinates[3] + length) > trailLength) {
         return endCandidate2;
-    } else if ((startTrailhead.properties.distance - length) < 0) {
+    } else if ((startTrailhead.geometry.coordinates[3] - length) < 0) {
         return endCandidate1;
     }
-    //return Math.abs(endCandidate1.properties.distance - length) < Math.abs(endCandidate2.properties.distance - length) ? endCandidate1 : endCandidate2;
+    //return Math.abs(endCandidate1.geometry.coordinates[3] - length) < Math.abs(endCandidate2.geometry.coordinates[3] - length) ? endCandidate1 : endCandidate2;
     return Math.floor(Math.random() * 2) === 0 ? endCandidate1 : endCandidate2;
 }
 
@@ -219,13 +219,13 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
 }
 
 function generateShortHikeIn(start, startDate) {
-    const end = getNextCampsiteFromTrailhead(start.properties.distance, this.isPositiveDirection);
+    const end = getNextCampsiteFromTrailhead(start.geometry.coordinates[3], this.isPositiveDirection);
     const elevationChange = getElevationBetween(start, end);
     return {
         start: start,
         date: startDate,
         end: end,
-        length: getDistanceBetween(start.properties.distance, end.properties.distance),
+        length: getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]),
         prev_site: getPrevCampsite(end),
         next_site: getNextCampsite(end),
         elevationGain: elevationChange.gain,
@@ -234,13 +234,13 @@ function generateShortHikeIn(start, startDate) {
 }
 
 function generateShortHikeOut(end, startDate) {
-    const start = getNextCampsiteFromTrailhead(end.properties.distance, !this.isPositiveDirection);
+    const start = getNextCampsiteFromTrailhead(end.geometry.coordinates[3], !this.isPositiveDirection);
     const elevationChange = getElevationBetween(start, end);
     return {
         start: start,
         date: startDate,
         end: end,
-        length: getDistanceBetween(start.properties.distance, end.properties.distance),
+        length: getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]),
         prev_site: undefined,
         next_site: undefined,
         elevationGain: elevationChange.gain,
@@ -275,11 +275,11 @@ function getElevationBetween(start, end) {
         gain: 0, 
         loss: 0
     };
-    if (start.properties.distance === end.properties.distance) return elevation;
-    else if (trailCircuit && this.isPositiveDirection && start.properties.distance > end.properties.distance) {
+    if (start.geometry.coordinates[3] === end.geometry.coordinates[3]) return elevation;
+    else if (trailCircuit && this.isPositiveDirection && start.geometry.coordinates[3] > end.geometry.coordinates[3]) {
         elevation.gain = Math.abs(trailElevationGain - start.properties.elevationGain + end.properties.elevationGain);
         elevation.loss = Math.abs(trailElevationLoss - start.properties.elevationLoss + end.properties.elevationLoss);
-    } else if (trailCircuit && !this.isPositiveDirection && start.properties.distance < end.properties.distance) {
+    } else if (trailCircuit && !this.isPositiveDirection && start.geometry.coordinates[3] < end.geometry.coordinates[3]) {
         elevation.gain = Math.abs(trailElevationGain - end.properties.elevationGain + start.properties.elevationGain);
         elevation.loss = Math.abs(trailElevationLoss - end.properties.elevationLoss + start.properties.elevationLoss);
     } else {
@@ -295,14 +295,14 @@ function getElevationBetween(start, end) {
 
 // Determine positive or negative direction
 function getDirection(start, end) {
-    return (trailCircuit && inputCW.checked) || (!trailCircuit && start.properties.distance < end.properties.distance) ? true : false;
+    return (trailCircuit && inputCW.checked) || (!trailCircuit && start.geometry.coordinates[3] < end.geometry.coordinates[3]) ? true : false;
 }
 
 function getOptimalCampsites(start, end, days, includeBothCandidates) {
-    let length = getDistanceBetween(start.properties.distance, end.properties.distance);
+    let length = getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
     if ((trailCircuit && length == 0) || length > trailLength) length = trailLength;
     let avgDistance = length / days;
-    let distance = start.properties.distance;
+    let distance = start.geometry.coordinates[3];
     let campsites = new Set();
     for (let i = 0; i < days - 1; i++) {
         if (this.isPositiveDirection) {
@@ -316,18 +316,18 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
         //complex validation necessary to ensure both campsite candidates are valid for all possible directions
         if (this.isPositiveDirection) { 
-            if (campsiteCandidate1 && !((start.properties.distance >= end.properties.distance && (campsiteCandidate1.properties.distance > start.properties.distance || campsiteCandidate1.properties.distance < end.properties.distance)) || (start.properties.distance < end.properties.distance && (campsiteCandidate1.properties.distance > start.properties.distance && campsiteCandidate1.properties.distance < end.properties.distance)))) campsiteCandidate1 = undefined;
-            if (campsiteCandidate2 && !((start.properties.distance >= end.properties.distance && (campsiteCandidate2.properties.distance > start.properties.distance || campsiteCandidate2.properties.distance < end.properties.distance)) || (start.properties.distance < end.properties.distance && (campsiteCandidate2.properties.distance > start.properties.distance && campsiteCandidate2.properties.distance < end.properties.distance)))) campsiteCandidate2 = undefined;
+            if (campsiteCandidate1 && !((start.geometry.coordinates[3] >= end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] > start.geometry.coordinates[3] || campsiteCandidate1.geometry.coordinates[3] < end.geometry.coordinates[3])) || (start.geometry.coordinates[3] < end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] > start.geometry.coordinates[3] && campsiteCandidate1.geometry.coordinates[3] < end.geometry.coordinates[3])))) campsiteCandidate1 = undefined;
+            if (campsiteCandidate2 && !((start.geometry.coordinates[3] >= end.geometry.coordinates[3] && (campsiteCandidate2.geometry.coordinates[3] > start.geometry.coordinates[3] || campsiteCandidate2.geometry.coordinates[3] < end.geometry.coordinates[3])) || (start.geometry.coordinates[3] < end.geometry.coordinates[3] && (campsiteCandidate2.geometry.coordinates[3] > start.geometry.coordinates[3] && campsiteCandidate2.geometry.coordinates[3] < end.geometry.coordinates[3])))) campsiteCandidate2 = undefined;
         } else {
-            if (campsiteCandidate1 && !((start.properties.distance <= end.properties.distance && (campsiteCandidate1.properties.distance < start.properties.distance || campsiteCandidate1.properties.distance > end.properties.distance)) || (start.properties.distance > end.properties.distance && (campsiteCandidate1.properties.distance < start.properties.distance && campsiteCandidate1.properties.distance > end.properties.distance)))) campsiteCandidate1 = undefined;
-            if (campsiteCandidate2 && !((start.properties.distance <= end.properties.distance && (campsiteCandidate2.properties.distance < start.properties.distance || campsiteCandidate2.properties.distance > end.properties.distance)) || (start.properties.distance > end.properties.distance && (campsiteCandidate2.properties.distance < start.properties.distance && campsiteCandidate2.properties.distance > end.properties.distance)))) campsiteCandidate2 = undefined;
+            if (campsiteCandidate1 && !((start.geometry.coordinates[3] <= end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] < start.geometry.coordinates[3] || campsiteCandidate1.geometry.coordinates[3] > end.geometry.coordinates[3])) || (start.geometry.coordinates[3] > end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] < start.geometry.coordinates[3] && campsiteCandidate1.geometry.coordinates[3] > end.geometry.coordinates[3])))) campsiteCandidate1 = undefined;
+            if (campsiteCandidate2 && !((start.geometry.coordinates[3] <= end.geometry.coordinates[3] && (campsiteCandidate2.geometry.coordinates[3] < start.geometry.coordinates[3] || campsiteCandidate2.geometry.coordinates[3] > end.geometry.coordinates[3])) || (start.geometry.coordinates[3] > end.geometry.coordinates[3] && (campsiteCandidate2.geometry.coordinates[3] < start.geometry.coordinates[3] && campsiteCandidate2.geometry.coordinates[3] > end.geometry.coordinates[3])))) campsiteCandidate2 = undefined;
         }
         if (campsiteCandidate1 && campsiteCandidate2 && includeBothCandidates) {
             campsites.add(campsiteCandidate1);
             campsites.add(campsiteCandidate2);
         } else {
             //only add the campsite closer to the average distance
-            if (campsiteCandidate1 && campsiteCandidate2 && Math.abs(campsiteCandidate1.properties.distance - distance) < Math.abs(campsiteCandidate2.properties.distance - distance)) {
+            if (campsiteCandidate1 && campsiteCandidate2 && Math.abs(campsiteCandidate1.geometry.coordinates[3] - distance) < Math.abs(campsiteCandidate2.geometry.coordinates[3] - distance)) {
                 campsites.add(campsiteCandidate1);
             } else if (campsiteCandidate2) {
                 campsites.add(campsiteCandidate2);
@@ -342,12 +342,12 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
 
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
-    routeLength = trailCircuit && start == end ? trailLength : getDistanceBetween(start.properties.distance, end.properties.distance);
+    routeLength = trailCircuit && start == end ? trailLength : getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
     const routeElevation = getElevationBetween(start, end);
     routeElevationGain = trailCircuit && start == end ? trailElevationGain : routeElevation.gain;
     routeElevationLoss = trailCircuit && start == end ? trailElevationLoss : routeElevation.loss;
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
-    // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.properties.distance, end.properties.distance, routeLength);
+    // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.geometry.coordinates[3], end.geometry.coordinates[3], routeLength);
     // allOptimalCampsites.sort((a, b) => {return a.properties.relativeDistance - b.properties.relativeDistance});
     if (days > filteredCampsites.length || days > allOptimalCampsites.length) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
@@ -439,7 +439,7 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
         }
         route[j].prev_site = getPrevCampsite(route[j].end);
         route[j].next_site = getNextCampsite(route[j].end);     
-        route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.properties.distance, route[j].end.properties.distance);
+        route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.geometry.coordinates[3], route[j].end.geometry.coordinates[3]);
         const elevation = getElevationBetween(route[j].start, route[j].end);
         route[j].elevationGain = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationGain : elevation.gain;
         route[j].elevationLoss = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationLoss : elevation.loss;
@@ -452,12 +452,12 @@ function getNextCampsiteFromTrailhead(distance, isPositiveDirection) {
     if (distance < 0 || distance > trailLength) return undefined;
     if (isPositiveDirection) {
         for (let i = 0; i < filteredCampsites.length; i++) {
-            if (filteredCampsites[i].properties.distance > distance) return filteredCampsites[i];
+            if (filteredCampsites[i].geometry.coordinates[3] > distance) return filteredCampsites[i];
         }
         return trailCircuit ? filteredCampsites[0] : undefined;
     } else {
         for (let i = filteredCampsites.length - 1; i >= 0; i--) {
-            if (filteredCampsites[i].properties.distance < distance) return filteredCampsites[i];
+            if (filteredCampsites[i].geometry.coordinates[3] < distance) return filteredCampsites[i];
         }
         return trailCircuit ? filteredCampsites[filteredCampsites.length - 1] : undefined;
     }
@@ -470,9 +470,9 @@ function getNearestTrailhead(distance) {
     if (!trailCircuit && distance > trailLength) return trailheadFeatures[trailheadFeatures.length - 1];
     else if (trailCircuit && distance > trailLength) distance = distance - trailLength;
     for (let i = 0; i < trailheadFeatures.length; i++) {
-        if (trailheadFeatures[i].properties.distance > distance) {
+        if (trailheadFeatures[i].geometry.coordinates[3] > distance) {
             if (i == 0) return trailheadFeatures[0];
-            return Math.abs(distance - trailheadFeatures[i].properties.distance) < Math.abs(distance - trailheadFeatures[i - 1].properties.distance) ? trailheadFeatures[i] : trailheadFeatures[i - 1];
+            return Math.abs(distance - trailheadFeatures[i].geometry.coordinates[3]) < Math.abs(distance - trailheadFeatures[i - 1].geometry.coordinates[3]) ? trailheadFeatures[i] : trailheadFeatures[i - 1];
         }
     }
     return trailheadFeatures[trailheadFeatures.length - 1];
@@ -482,16 +482,16 @@ function getNearestTrailhead(distance) {
 function changeCamp(dayIndex, isNext) {
     this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
 
-    if (trailCircuit && this.isPositiveDirection && this.route[dayIndex].start.properties.distance > this.route[dayIndex].end.properties.distance) { //dest wraps around start of trail CW
-        this.route[dayIndex].length = (trailLength - this.route[dayIndex].start.properties.distance) + this.route[dayIndex].end.properties.distance;
+    if (trailCircuit && this.isPositiveDirection && this.route[dayIndex].start.geometry.coordinates[3] > this.route[dayIndex].end.geometry.coordinates[3]) { //dest wraps around start of trail CW
+        this.route[dayIndex].length = (trailLength - this.route[dayIndex].start.geometry.coordinates[3]) + this.route[dayIndex].end.geometry.coordinates[3];
         this.route[dayIndex].elevationGain = (trailElevationGain - this.route[dayIndex].start.properties.elevationGain) + this.route[dayIndex].end.properties.elevationGain;
         this.route[dayIndex].elevationLoss = (trailElevationLoss - this.route[dayIndex].start.properties.elevationLoss) + this.route[dayIndex].end.properties.elevationLoss;
-    } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex].start.properties.distance < this.route[dayIndex].end.properties.distance) { //dest wraps around start of trail CCW
-        this.route[dayIndex].length = this.route[dayIndex].start.properties.distance + (trailLength - this.route[dayIndex].end.properties.distance);
+    } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex].start.geometry.coordinates[3] < this.route[dayIndex].end.geometry.coordinates[3]) { //dest wraps around start of trail CCW
+        this.route[dayIndex].length = this.route[dayIndex].start.geometry.coordinates[3] + (trailLength - this.route[dayIndex].end.geometry.coordinates[3]);
         this.route[dayIndex].elevationGain = this.route[dayIndex].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex].end.properties.elevationGain);
         this.route[dayIndex].elevationLoss = this.route[dayIndex].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     } else {
-        this.route[dayIndex].length = Math.abs(this.route[dayIndex].start.properties.distance - this.route[dayIndex].end.properties.distance);
+        this.route[dayIndex].length = Math.abs(this.route[dayIndex].start.geometry.coordinates[3] - this.route[dayIndex].end.geometry.coordinates[3]);
         this.route[dayIndex].elevationGain = Math.abs(this.route[dayIndex].start.properties.elevationGain - this.route[dayIndex].end.properties.elevationGain);
         this.route[dayIndex].elevationLoss = Math.abs(this.route[dayIndex].start.properties.elevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     }
@@ -500,16 +500,16 @@ function changeCamp(dayIndex, isNext) {
     this.route[dayIndex].next_site = trailCircuit && this.route[dayIndex].end == filteredCampsites[filteredCampsites.length - 1] ? this.route[dayIndex].next_site = filteredCampsites[0] : filteredCampsites[filteredCampsites.indexOf(this.route[dayIndex].end) + 1];
     this.route[dayIndex + 1].start = this.route[dayIndex].end;
 
-    if (trailCircuit && this.isPositiveDirection && this.route[dayIndex + 1].start.properties.distance > this.route[dayIndex + 1].end.properties.distance) { //next day dest wraps around start of trail CW
-        this.route[dayIndex + 1].length = (trailLength - this.route[dayIndex + 1].start.properties.distance) + this.route[dayIndex + 1].end.properties.distance;
+    if (trailCircuit && this.isPositiveDirection && this.route[dayIndex + 1].start.geometry.coordinates[3] > this.route[dayIndex + 1].end.geometry.coordinates[3]) { //next day dest wraps around start of trail CW
+        this.route[dayIndex + 1].length = (trailLength - this.route[dayIndex + 1].start.geometry.coordinates[3]) + this.route[dayIndex + 1].end.geometry.coordinates[3];
         this.route[dayIndex + 1].elevationGain = (trailElevationGain - this.route[dayIndex + 1].start.properties.elevationGain) + this.route[dayIndex + 1].end.properties.elevationGain;
         this.route[dayIndex + 1].elevationLoss = (trailElevationLoss - this.route[dayIndex + 1].start.properties.elevationLoss) + this.route[dayIndex + 1].end.properties.elevationLoss;
-    } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.properties.distance < this.route[dayIndex + 1].end.properties.distance) { //next day dest wraps around start of trail CCW
-        this.route[dayIndex + 1].length = this.route[dayIndex + 1].start.properties.distance + (trailLength - this.route[dayIndex + 1].end.properties.distance);
+    } else if (trailCircuit && !this.isPositiveDirection && this.route[dayIndex + 1].start.geometry.coordinates[3] < this.route[dayIndex + 1].end.geometry.coordinates[3]) { //next day dest wraps around start of trail CCW
+        this.route[dayIndex + 1].length = this.route[dayIndex + 1].start.geometry.coordinates[3] + (trailLength - this.route[dayIndex + 1].end.geometry.coordinates[3]);
         this.route[dayIndex + 1].elevationGain = this.route[dayIndex + 1].start.properties.elevationGain + (trailElevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
         this.route[dayIndex + 1].elevationLoss = this.route[dayIndex + 1].start.properties.elevationLoss + (trailElevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     } else {
-        this.route[dayIndex + 1].length = Math.abs(this.route[dayIndex + 1].start.properties.distance - this.route[dayIndex + 1].end.properties.distance);
+        this.route[dayIndex + 1].length = Math.abs(this.route[dayIndex + 1].start.geometry.coordinates[3] - this.route[dayIndex + 1].end.geometry.coordinates[3]);
         this.route[dayIndex + 1].elevationGain = Math.abs(this.route[dayIndex + 1].start.properties.elevationGain - this.route[dayIndex + 1].end.properties.elevationGain);
         this.route[dayIndex + 1].elevationLoss = Math.abs(this.route[dayIndex + 1].start.properties.elevationLoss - this.route[dayIndex + 1].end.properties.elevationLoss);
     }
@@ -587,9 +587,9 @@ function closerCampBtn(day, route) {
     if (trailLength === 1 || day === route[route.length - 1] || day.length === 0 || (day.prev_site === undefined && day.next_site === undefined) || (!trailCircuit && this.isPositiveDirection && day.prev_site === undefined) || (!trailCircuit && !this.isPositiveDirection && day.next_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let dif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = ((trailLength - day.prev_site.properties.distance) + day.end.properties.distance);
-    else if (trailCircuit && !this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.prev_site.properties.distance) : Math.abs(day.end.properties.distance - day.next_site.properties.distance);
+    if (trailCircuit && this.isPositiveDirection && day.prev_site.geometry.coordinates[3] > day.end.geometry.coordinates[3]) dif = ((trailLength - day.prev_site.geometry.coordinates[3]) + day.end.geometry.coordinates[3]);
+    else if (trailCircuit && !this.isPositiveDirection && day.next_site.geometry.coordinates[3] < day.end.geometry.coordinates[3]) dif = (day.next_site.geometry.coordinates[3] + (trailLength - day.end.geometry.coordinates[3]));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.geometry.coordinates[3] - day.prev_site.geometry.coordinates[3]) : Math.abs(day.end.geometry.coordinates[3] - day.next_site.geometry.coordinates[3]);
 
     if (day === route[0] && day.length - dif < 0) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-success" onclick="changeCamp(' + route.indexOf(day) + ', false)" value="">' + day.prev_site.properties.title + '</br>-' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
@@ -602,9 +602,9 @@ function furtherCampBtn(day, route) {
     if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let dif = 0;
-    if (trailCircuit && this.isPositiveDirection && day.next_site.properties.distance < day.end.properties.distance) dif = (day.next_site.properties.distance + (trailLength - day.end.properties.distance));
-    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.properties.distance > day.end.properties.distance) dif = (day.end.properties.distance + (trailLength - day.prev_site.properties.distance));
-    else dif = (this.isPositiveDirection) ? Math.abs(day.end.properties.distance - day.next_site.properties.distance) : Math.abs(day.end.properties.distance - day.prev_site.properties.distance);
+    if (trailCircuit && this.isPositiveDirection && day.next_site.geometry.coordinates[3] < day.end.geometry.coordinates[3]) dif = (day.next_site.geometry.coordinates[3] + (trailLength - day.end.geometry.coordinates[3]));
+    else if (trailCircuit && !this.isPositiveDirection && day.prev_site.geometry.coordinates[3] > day.end.geometry.coordinates[3]) dif = (day.end.geometry.coordinates[3] + (trailLength - day.prev_site.geometry.coordinates[3]));
+    else dif = (this.isPositiveDirection) ? Math.abs(day.end.geometry.coordinates[3] - day.next_site.geometry.coordinates[3]) : Math.abs(day.end.geometry.coordinates[3] - day.prev_site.geometry.coordinates[3]);
     
     if ((day === route[route.length - 2] && nextDay.length - dif < 0)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     if (this.isPositiveDirection) return '<button class="changeCampBtn btn btn-sm btn-danger" onclick="changeCamp(' + route.indexOf(day) + ', true)" value="">' + day.next_site.properties.title + '</br>+' + Math.round(dif * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</button>';
@@ -716,7 +716,7 @@ function onTrailheadsChange() {
     // If days has not been set by the user, determine a reasonable number based on distance between trailheads
     if (!this.userSetDays && selectStart.value != 0 && selectEnd.value != 0) {
         this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
-        const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].properties.distance, trailheadFeatures[selectEnd.value - 1].properties.distance);
+        const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].geometry.coordinates[3], trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3]);
         inputDays.value = Math.max(1, Math.round(length / 16.0934)); // 10 miles/day
     }
 }

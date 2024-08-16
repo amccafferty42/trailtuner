@@ -118,15 +118,15 @@ function updateMap() {
                 layer.setIcon(endIcon);
             }
         } else if (layer.feature.geometry.type == "LineString") {
+            //dayIndex = parseInt(layer.feature.properties.title.slice(-1)) - 1;
+            dayIndex = parseInt(layer.feature.properties.title.match(/\d+/g)) - 1;
             layer.setStyle({color :'red'}); 
             if (toggleTrail && !toggleTrail.checked) layer.bindPopup('<h4><strong>' + layer.feature.properties.title + '&nbsp;&nbsp;</strong><small class="text-body-secondary">' + this.route[dayIndex].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"}) + '</small></h4><h5>' + this.route[dayIndex].start.properties.title + ' to</h5><h5>' + this.route[dayIndex].end.properties.title + '</h5><hr><nobr><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<strong>Distance:</strong> ' + Math.round(this.route[dayIndex].length * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</p></nobr><p><img src="./resources/graph-up-arrow.svg" alt="*">&nbsp;&nbsp;<nobr><strong>Elevation gain:</strong> ' + Math.trunc(this.route[dayIndex].elevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p></nobr><p><img src="./resources/graph-down-arrow.svg" alt="*">&nbsp;&nbsp;<nobr><strong>Elevation loss:</strong> ' + Math.trunc(this.route[dayIndex].elevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p></nobr>');
             else layer.bindPopup('<h5>' + layer.feature.properties.title + '</h5><hr><p><img src="./resources/rulers.svg" alt="*">&nbsp;&nbsp;<nobr><strong>Distance:</strong> ' + Math.round(trailLength * distanceConstant * 10) / 10 + ' ' + distanceUnit + '</p></nobr><p><img src="./resources/graph-up-arrow.svg" alt="*">&nbsp;&nbsp;<nobr><strong>Elevation gain:</strong> ' + Math.trunc(trailElevationGain * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p></nobr><p><img src="./resources/graph-down-arrow.svg" alt="*">&nbsp;&nbsp;<nobr><strong>Elevation loss:</strong> ' + Math.trunc(trailElevationLoss * elevationConstant).toLocaleString() + ' ' + elevationUnit + '</p></nobr>');
             layer.bindTooltip(layer.feature.properties.title, {permanent: false, opacity: 0.75});
-            if (layer.feature.properties.folderId == trailFolder.id) dayIndex++;
         }
     });
     this.geoJsonLayer.on('click', function(e) { 
-        console.log(this.trailElevationChart);
         e.layer._map.panTo([e.latlng.lat, e.latlng.lng]);
         deselectRows();
         if (tableBody.innerHTML != "") {
@@ -159,7 +159,6 @@ function centerMarker(layer) {
         layer._map.panTo([layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]]);
     } else {
         const half = Math.round(layer.feature.geometry.coordinates.length / 2);
-        console.log(half);
         layer._map.panTo([layer.feature.geometry.coordinates[half][1], layer.feature.geometry.coordinates[half][0]]);
     }
 }

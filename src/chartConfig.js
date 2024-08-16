@@ -15,8 +15,8 @@ function initChart() {
     if (toggleTrailheads && toggleTrailheads.checked) {
         for (let i = 0; i < trailheadFeatures.length; i++) {
             trailheads.push({
-                x: trailheadFeatures[i].properties.distance * distanceConstant,
-                y: trailheadFeatures[i].properties.elevation * elevationConstant,
+                x: trailheadFeatures[i].geometry.coordinates[3] * distanceConstant,
+                y: trailheadFeatures[i].geometry.coordinates[2] * elevationConstant,
                 r: 6,
                 label: trailheadFeatures[i].properties.title
             });
@@ -24,7 +24,7 @@ function initChart() {
         if (trailCircuit) {
             trailheads.push({
                 x: trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] * distanceConstant,
-                y: trailheadFeatures[0].properties.elevation * elevationConstant,
+                y: trailheadFeatures[0].geometry.coordinates[2] * elevationConstant,
                 r: 6,
                 label: trailheadFeatures[0].properties.title
             });
@@ -34,8 +34,8 @@ function initChart() {
         for (let i = 0; i < campsiteFeatures.length; i++) {
             if (campsiteFeatures[i].properties && campsiteFeatures[i].properties.title !== "*Dispersed Camping*") {
                 campsites.push({
-                    x: campsiteFeatures[i].properties.distance * distanceConstant,
-                    y: campsiteFeatures[i].properties.elevation * elevationConstant,
+                    x: campsiteFeatures[i].geometry.coordinates[3] * distanceConstant,
+                    y: campsiteFeatures[i].geometry.coordinates[2] * elevationConstant,
                     r: 6,
                     label: campsiteFeatures[i].properties.title
                 });
@@ -215,7 +215,7 @@ function updateChart() {
             for (let i = 0; i < this.route.length - 1; i++) {
                 nights.push(i+1);
                 if (this.route[i].end != this.route[i + 1].end) {
-                    const currDistance = this.route[i].end.properties.distance;
+                    const currDistance = this.route[i].end.geometry.coordinates[3];
                     let adjustedDistance;
                     if (this.isPositiveDirection && currDistance < startDistance) {
                         adjustedDistance = currDistance + wrapAroundDistance;
@@ -225,13 +225,13 @@ function updateChart() {
                         adjustedDistance = Math.abs(currDistance - startDistance);
                     }
                     let x;
-                    const y = this.route[i].end.properties.elevation * elevationConstant;
+                    const y = this.route[i].end.geometry.coordinates[2] * elevationConstant;
                     const label = 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title;
                     if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
                         if (this.isPositiveDirection) {
-                            x = this.route[i].end.properties.distance * distanceConstant;
+                            x = this.route[i].end.geometry.coordinates[3] * distanceConstant;
                         } else {
-                            x = Math.abs(trailLength - this.route[i].end.properties.distance) * distanceConstant;
+                            x = Math.abs(trailLength - this.route[i].end.geometry.coordinates[3]) * distanceConstant;
                         }
                     } else {
                         x = adjustedDistance * distanceConstant;
@@ -248,17 +248,17 @@ function updateChart() {
         }
         if (toggleTrailheads && toggleTrailheads.checked) {
             let x1, x2;
-            const y1 = this.route[0].start.properties.elevation * elevationConstant;
-            const y2 = this.route[this.route.length - 1].end.properties.elevation * elevationConstant;
+            const y1 = this.route[0].start.geometry.coordinates[2] * elevationConstant;
+            const y2 = this.route[this.route.length - 1].end.geometry.coordinates[2] * elevationConstant;
             const label1 = this.route[0].start.properties.title;
             const label2 = this.route[this.route.length - 1].end.properties.title;
             if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
                 if (this.isPositiveDirection) {
-                    x1 = this.route[0].start.properties.distance * distanceConstant; //actual distance from 0
-                    x2 = this.route[this.route.length - 1].end.properties.distance * distanceConstant; //actual distance from 0
+                    x1 = this.route[0].start.geometry.coordinates[3] * distanceConstant; //actual distance from 0
+                    x2 = this.route[this.route.length - 1].end.geometry.coordinates[3] * distanceConstant; //actual distance from 0
                 } else {
-                    x1 = Math.abs(trailLength - this.route[0].start.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
-                    x2 = Math.abs(trailLength - this.route[this.route.length - 1].end.properties.distance) * distanceConstant; //actual distance from 0 (inverted)
+                    x1 = Math.abs(trailLength - this.route[0].start.geometry.coordinates[3]) * distanceConstant; //actual distance from 0 (inverted)
+                    x2 = Math.abs(trailLength - this.route[this.route.length - 1].end.geometry.coordinates[3]) * distanceConstant; //actual distance from 0 (inverted)
                 }
             } else {
                 x1 = 0; //start of chart

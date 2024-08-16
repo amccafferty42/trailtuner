@@ -142,8 +142,8 @@ function setTrailDetails() {
     for (feature of trailheadFeatures) appendDistance(feature);
 
     //sort result set by distance for quick reference during route generation
-    trailheadFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
-    campsiteFeatures.sort((a, b) => {return a.properties.distance - b.properties.distance});
+    trailheadFeatures.sort((a, b) => {return a.geometry.coordinates[3] - b.geometry.coordinates[3]});
+    campsiteFeatures.sort((a, b) => {return a.geometry.coordinates[3] - b.geometry.coordinates[3]});
 
     console.info(trailFeature);
     console.info(trailheadFeatures);
@@ -157,40 +157,37 @@ function appendDistance(feature) {
     newGeometry.type = 'LineString';
     // First attempt: find a coordinate pair at a trail vertex within 0.001 degrees (~111 m) of marker
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
-        if ((feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
+        if ((  feature.geometry.coordinates[0].toFixed(3) == trailFeature.geometry.coordinates[i][0].toFixed(3)
             && feature.geometry.coordinates[1].toFixed(3) == trailFeature.geometry.coordinates[i][1].toFixed(3))) {
             if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
             if (feature.geometry.coordinates[3] == 0) feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
-
-            //newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i);
             trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
             newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
-
-            feature.properties.distance = trailFeature.geometry.coordinates[i][3];
-            feature.properties.elevation = trailFeature.geometry.coordinates[i][2];
+            feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
+            feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
             const elevationChange = calculateElevation(newGeometry);
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
-            if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
+            if (trailCircuit && feature.geometry.coordinates[3].toFixed(1) == trailLength.toFixed(1)) feature.geometry.coordinates[3] = 0; 
             break;
         }
     }
     // Second attempt: find a coordinate pair in line between two pairs of trail coordinates
     // This covers the scenario when a marker is placed on trail, but > 0.001 degrees from a trail vertex (i.e. low sampling)
     // If a marker is found on the line segment between two vertices, create a new vertex on the trail where the marker lies between those two points
-    if (feature.properties.distance === undefined) {
+    if (feature.geometry.coordinates[3] === undefined) {
         for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
             if (inLine(trailFeature.geometry.coordinates[i], trailFeature.geometry.coordinates[i+1], feature.geometry.coordinates)) {
                 if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
                 if (feature.geometry.coordinates[3] == 0) feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
                 trailFeature.geometry.coordinates.splice(i+1, 0, feature.geometry.coordinates);
                 newGeometry.coordinates = trailFeature.geometry.coordinates.slice(0, i+1);
-                feature.properties.distance = trailFeature.geometry.coordinates[i][3];
-                feature.properties.elevation = trailFeature.geometry.coordinates[i][2];
+                feature.geometry.coordinates[3] = trailFeature.geometry.coordinates[i][3];
+                feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];
                 const elevationChange = calculateElevation(newGeometry);
                 feature.properties.elevationGain = elevationChange.elevationGain;
                 feature.properties.elevationLoss = elevationChange.elevationLoss;
-                if (trailCircuit && feature.properties.distance.toFixed(1) == trailLength.toFixed(1)) feature.properties.distance = 0; 
+                if (trailCircuit && feature.geometry.coordinates[3].toFixed(1) == trailLength.toFixed(1)) feature.geometry.coordinates[3] = 0;
                 break;
             }
         }
