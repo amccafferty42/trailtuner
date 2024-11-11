@@ -1,4 +1,5 @@
 let trail;
+let unmodifiedTrail;
 let trailCircuit;
 let trailLength; // in km
 let trailElevationGain; // in m
@@ -26,16 +27,18 @@ function initTrail() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     if (urlParams.has('trail')) {
-        const matchTrail = trails.filter((x) => x.name == urlParams.get('trail').replaceAll("_", " "));
+        const matchTrail = trails.filter((x) => x.name.toUpperCase() == urlParams.get('trail').replaceAll("_", " ").toUpperCase());
         trail = (matchTrail === undefined || matchTrail.length === 0) ? trail = trails[0].geoJSON : matchTrail[0].geoJSON;
     } else {
         trail = trails[0].geoJSON;
     }
+    unmodifiedTrail = structuredClone(trail);
     setTrailDetails();
 }
 
 function loadTrail(geoJSON) {
     trail = geoJSON;
+    unmodifiedTrail = structuredClone(trail);
     setTrailDetails();
     reset();
 }
@@ -52,8 +55,10 @@ function loadRoute(geoJSON) {
     this.route = route;
     filterCampsites(campsiteFeatures);
     this.isPositiveDirection = getDirection(route[0].start, route[route.length - 1].end);
+    setRouteDetails(route[0].start, route[route.length - 1].end);
     displayRoute(route, true);
-    updateGeoJSON();
+    updateGeoJSON(); //trail feature already different before here
+    zoomOut();
     routeTitle.scrollIntoView({behavior: 'smooth'});
 }
 
@@ -86,6 +91,7 @@ function toggleIconVisibility() {
         resetMap();
         initChart();
     }
+    zoomOut();
 }
 
 function setTrailDetails() {

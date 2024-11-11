@@ -58,6 +58,7 @@ function plan() {
         } else {
             displayRoute(route, true);
             updateGeoJSON();
+            zoomOut();
             routeTitle.scrollIntoView({behavior: 'smooth'});
         }
     }
@@ -338,14 +339,18 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
     //     campsites.add(campsite);
     // }
     return campsites;
-}    
+}   
+
+function setRouteDetails(start, end) {
+    routeLength = trailCircuit && start.coordinates == end.coordinates ? trailLength : getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
+    const routeElevation = getElevationBetween(start, end);
+    routeElevationGain = trailCircuit && start.coordinates == end.coordinates ? trailElevationGain : routeElevation.gain;
+    routeElevationLoss = trailCircuit && start.coordinates == end.coordinates ? trailElevationLoss : routeElevation.loss;
+}
 
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
-    routeLength = trailCircuit && start == end ? trailLength : getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
-    const routeElevation = getElevationBetween(start, end);
-    routeElevationGain = trailCircuit && start == end ? trailElevationGain : routeElevation.gain;
-    routeElevationLoss = trailCircuit && start == end ? trailElevationLoss : routeElevation.loss;
+    this.setRouteDetails(start, end);
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
     // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.geometry.coordinates[3], end.geometry.coordinates[3], routeLength);
     // allOptimalCampsites.sort((a, b) => {return a.properties.relativeDistance - b.properties.relativeDistance});
@@ -480,6 +485,7 @@ function getNearestTrailhead(distance) {
 
 // Change destination and recalculate length, next_site, and prev_site, as well as the next day's start and length
 function changeCamp(dayIndex, isNext) {
+    console.log(filteredCampsites);
     this.route[dayIndex].end = isNext ? this.route[dayIndex].next_site : this.route[dayIndex].prev_site;
 
     if (trailCircuit && this.isPositiveDirection && this.route[dayIndex].start.geometry.coordinates[3] > this.route[dayIndex].end.geometry.coordinates[3]) { //dest wraps around start of trail CW
@@ -496,8 +502,8 @@ function changeCamp(dayIndex, isNext) {
         this.route[dayIndex].elevationLoss = Math.abs(this.route[dayIndex].start.properties.elevationLoss - this.route[dayIndex].end.properties.elevationLoss);
     }
 
-    this.route[dayIndex].prev_site = trailCircuit && this.route[dayIndex].end == filteredCampsites[0] ? filteredCampsites[filteredCampsites.length - 1] : filteredCampsites[filteredCampsites.indexOf(this.route[dayIndex].end) - 1];
-    this.route[dayIndex].next_site = trailCircuit && this.route[dayIndex].end == filteredCampsites[filteredCampsites.length - 1] ? this.route[dayIndex].next_site = filteredCampsites[0] : filteredCampsites[filteredCampsites.indexOf(this.route[dayIndex].end) + 1];
+    this.route[dayIndex].prev_site = trailCircuit && equalCoordinates(this.route[dayIndex].end.geometry.coordinates, filteredCampsites[0].geometry.coordinates, false) ? filteredCampsites[filteredCampsites.length - 1] : filteredCampsites[filteredCampsites.findIndex(campsite => equalCoordinates(campsite.geometry.coordinates, this.route[dayIndex].end.geometry.coordinates, false)) - 1];
+    this.route[dayIndex].next_site = trailCircuit && equalCoordinates(this.route[dayIndex].end.geometry.coordinates, filteredCampsites[filteredCampsites.length - 1].geometry.coordinates, false) ? filteredCampsites[0] : filteredCampsites[filteredCampsites.findIndex(campsite => equalCoordinates(campsite.geometry.coordinates, this.route[dayIndex].end.geometry.coordinates, false)) + 1];
     this.route[dayIndex + 1].start = this.route[dayIndex].end;
 
     if (trailCircuit && this.isPositiveDirection && this.route[dayIndex + 1].start.geometry.coordinates[3] > this.route[dayIndex + 1].end.geometry.coordinates[3]) { //next day dest wraps around start of trail CW
@@ -547,7 +553,7 @@ function displayRoute(route, isRouteGen) {
         cell8.onclick = createClickHandler('Day ' + (i + 1), row);
         cell8.classList.add("right");
         cell1.innerHTML = '<strong>' + (i + 1) + '</strong>';
-        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"short", year:"2-digit", month:"numeric", day:"numeric"});
+        cell2.innerHTML = route[i].date.toLocaleDateString('en-us', { weekday:"long", year:"2-digit", month:"numeric", day:"numeric"});
         cell3.innerHTML = i == 0 ? '<u>' + route[i].start.properties.title + '</u>' : route[i].start.properties.title;
         cell4.innerHTML = i == route.length - 1 ? '<u>' + route[i].end.properties.title + '</u>' : route[i].end.properties.title;
         cell5.innerHTML = closerCampBtn(route[i], route);
@@ -574,6 +580,8 @@ function displayRoute(route, isRouteGen) {
     routeTitleGroup.style.display = 'flex';
     table.style.display = '';
     console.table(route);
+    inputCW.disabled = true;
+    inputCCW.disabled = true;
     if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
         toggleTrail.disabled = false;
         toggleTrail.checked = false;
@@ -599,6 +607,8 @@ function closerCampBtn(day, route) {
 // Display the further camp option as long as it does not compromise the direction of the route (i.e. change next daily mileage < 0)
 function furtherCampBtn(day, route) {
     const nextDay = route[route.indexOf(day) + 1];
+    //console.log(nextDay);
+    //const nextDay = route[route.findIndex(day => equalCoordinates(day.geometry.coordinates, this.route[dayIndex].end.geometry.coordinates, false)) - 1]
     if (trailLength === 1 || day === route[route.length - 1] || nextDay.length === 0 || (this.isPositiveDirection && day.next_site === undefined) || (!this.isPositiveDirection && day.prev_site === undefined)) return '<button class="changeCampBtn btn btn-sm btn-secondary" disabled>Unavailable<br>&nbsp;</button>';
     
     let dif = 0;
@@ -763,7 +773,12 @@ function removeAllOptions(element) {
 }
  
 function populateSelectTrail() {
-    for (let i = 0; i < trails.length; i++) addOption(selectTrail, trails[i].name, i);
+    for (let i = 0; i < trails.length; i++) {
+        addOption(selectTrail, trails[i].name, i);
+        if (trailFeature.properties.title === trails[i].name) {
+            selectTrail.value = i;
+        }
+    }
 }
 
 function addOption(element, name, value) {

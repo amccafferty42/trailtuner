@@ -161,6 +161,7 @@ function updateChart() {
     //if (circuit && start trailhead != default start trailhead) {
     //  recalculate all distances in trailFeatures and exported route using startTrailhead as 0
     //}
+    // console.log(JSON.stringify(fullRoute));
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     let distances = [], elevations = [], days = [], trailheads = [], campsites = [];
@@ -192,7 +193,8 @@ function updateChart() {
             }
         }
         if (distances[distances.length - 1] === 0) distances.pop(); //for circuits, the last distance is sometimes set to 0, which breaks the chart
-        if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
+        //if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start.geometry.coordinates != this.route[this.route.length - 1].end.geometry.coordinates)) {
+        if (toggleTrail && toggleTrail.checked && (!trailCircuit || !equalCoordinates(this.route[0].start.geometry.coordinates, this.route[this.route.length - 1].end.geometry.coordinates, false))) {
             distances = [];
             elevations = [];
             days = [];
@@ -214,7 +216,8 @@ function updateChart() {
             let nights = [];
             for (let i = 0; i < this.route.length - 1; i++) {
                 nights.push(i+1);
-                if (this.route[i].end != this.route[i + 1].end) {
+                //if (this.route[i].end.geometry.coordinates != this.route[i + 1].end.geometry.coordinates) {
+                if (!equalCoordinates(this.route[i].end.geometry.coordinates, this.route[i + 1].end.geometry.coordinates, false)) {
                     const currDistance = this.route[i].end.geometry.coordinates[3];
                     let adjustedDistance;
                     if (this.isPositiveDirection && currDistance < startDistance) {
@@ -227,7 +230,8 @@ function updateChart() {
                     let x;
                     const y = this.route[i].end.geometry.coordinates[2] * elevationConstant;
                     const label = 'Night ' + nights.join(' & ') + ': ' + this.route[i].end.properties.title;
-                    if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
+                    //if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start.geometry.coordinates != this.route[this.route.length - 1].end.geometry.coordinates)) {
+                    if (toggleTrail && toggleTrail.checked && (!trailCircuit || !equalCoordinates(this.route[0].start.geometry.coordinates, this.route[this.route.length - 1].end.geometry.coordinates, false))) {
                         if (this.isPositiveDirection) {
                             x = this.route[i].end.geometry.coordinates[3] * distanceConstant;
                         } else {
@@ -252,7 +256,8 @@ function updateChart() {
             const y2 = this.route[this.route.length - 1].end.geometry.coordinates[2] * elevationConstant;
             const label1 = this.route[0].start.properties.title;
             const label2 = this.route[this.route.length - 1].end.properties.title;
-            if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start != this.route[this.route.length - 1].end)) {
+            //if (toggleTrail && toggleTrail.checked && (!trailCircuit || this.route[0].start.geometry.coordinates != this.route[this.route.length - 1].end.geometry.coordinates)) {
+            if (toggleTrail && toggleTrail.checked && (!trailCircuit || !equalCoordinates(this.route[0].start.geometry.coordinates, this.route[this.route.length - 1].end.geometry.coordinates, false))) {
                 if (this.isPositiveDirection) {
                     x1 = this.route[0].start.geometry.coordinates[3] * distanceConstant; //actual distance from 0
                     x2 = this.route[this.route.length - 1].end.geometry.coordinates[3] * distanceConstant; //actual distance from 0

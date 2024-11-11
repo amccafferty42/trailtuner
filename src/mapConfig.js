@@ -135,6 +135,9 @@ function updateMap() {
             }
         }
     });
+}
+
+function zoomOut() {
     this.leafletMap.fitBounds(this.geoJsonLayer.getBounds());
 }
 

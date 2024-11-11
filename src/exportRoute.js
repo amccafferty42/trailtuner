@@ -9,10 +9,12 @@ function updateGeoJSON() {
 
     // Add trailheads and campsites
     for (let day of this.route) {
-        exportedRoute.features.push(day.start);
+        exportedRoute.features.push(structuredClone(day.start));
+        //exportedRoute.features.push(day.start);
     }
-    if (this.route[0].start != this.route[this.route.length - 1].end) {
-        exportedRoute.features.push(this.route[this.route.length - 1].end);
+    if (!equalCoordinates(this.route[0].start.geometry.coordinates, this.route[this.route.length - 1].end.geometry.coordinates, false)) {
+        exportedRoute.features.push(structuredClone(this.route[this.route.length - 1].end));
+        //exportedRoute.features.push(this.route[this.route.length - 1].end);
     }
 
     let fullRoute = {
@@ -57,7 +59,7 @@ function updateGeoJSON() {
                     if (i >= trailFeature.geometry.coordinates.length) i = 0;
                 } while (  (trailFeature.geometry.coordinates[i][0] != this.route[this.route.length - 1].end.geometry.coordinates[0])
                         || (trailFeature.geometry.coordinates[i][1] != this.route[this.route.length - 1].end.geometry.coordinates[1]) 
-                        || (trailCircuit && this.route[0].start == this.route[this.route.length - 1].end && fullRoute.geometry.coordinates.length < 20)); //solves case where full circuit will not build line because start == end
+                        || (trailCircuit && equalCoordinates(this.route[0].start.geometry.coordinates, this.route[this.route.length - 1].end.geometry.coordinates, false) && fullRoute.geometry.coordinates.length < 20)); //solves case where full circuit will not build line because start == end
                 break;
             }
         }        
@@ -67,11 +69,22 @@ function updateGeoJSON() {
     }
     exportedRoute = calculateAdjustedDistance(exportedRoute, fullRoute);
     exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
-    updateChart(fullRoute);
+    //updateChart(fullRoute);
+    updateChart();
     updateMap();
 }
 
+function equalCoordinates(coordinate1, coordinate2, checkDistances) {
+    if (coordinate1[0] !== coordinate2[0]) return false;
+    if (coordinate1[1] !== coordinate2[1]) return false;
+    if (coordinate1[2] !== coordinate2[2]) return false;
+    if (checkDistances && coordinate1[3] !== coordinate2[3]) return false;
+    if (checkDistances && coordinate1[4] !== coordinate2[4]) return false;
+    return true;
+}
+
 function calculateAdjustedDistance(exportedRoute, fullRoute) {
+    //features in exportedRoute are pointing to the same objects in trail. exportedRoute needs to be a deep copy of trail feature so adding adjusted distance doesnt affect trail
     if (routeLength <= 0) return exportedRoute;
     const startDistance = fullRoute.geometry.coordinates[0][3];
     const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
@@ -154,7 +167,7 @@ function exportGeoJSON() {
         finalRoute.properties = {};
         finalRoute.properties.title = this.routeTitle.innerText;
         finalRoute.properties.route = this.route;
-        finalRoute.properties.trail = trail;
+        finalRoute.properties.trail = unmodifiedTrail;
         const a = document.createElement('a');
         const blob = new Blob([JSON.stringify(finalRoute)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
