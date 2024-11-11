@@ -161,7 +161,9 @@ function updateChart() {
     //if (circuit && start trailhead != default start trailhead) {
     //  recalculate all distances in trailFeatures and exported route using startTrailhead as 0
     //}
-    // console.log(JSON.stringify(fullRoute));
+    // if (trailCircuit && !equalCoordinates(this.route[0].start.geometry.coordinates, trailheadFeatures[0].geometry.coordinates, false)) {
+    //     console.log(this.route);
+    // }
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
     let distances = [], elevations = [], days = [], trailheads = [], campsites = [];

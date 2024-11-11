@@ -191,7 +191,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h2 class="modal-title" id="exampleModalLabel"><h2>More Route Options</h2>
+                            <h2 class="modal-title" id="exampleModalLabel">More Route Options</h2>
                         </div>
                         <div class="modal-body">
                             <div class="exclude-sites-input">
@@ -228,7 +228,22 @@
                 <img id="routeTitleIcon" src="./resources/pencil.svg" alt="*">
                 <div class="saveButtons">
                     <button id="exportRoute" class="btn btn-sm btn-primary" onclick="exportGeoJSON()">Download</button>
-                    <button id="shareRoute" class="btn btn-sm btn-outline-primary" onclick="emailRoute()">Share</button>
+                    <button id="shareRoute" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#share">Share</button>
+                    <div class="modal fade" id="share" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2 class="modal-title" id="exampleModalLabel">Share Route</h2>
+                                </div>
+                                <div class="select-trail-modal modal-body">
+                                    <div class="share-route">
+                                        <p id="routeText"></p>
+                                        <button type="button" class="btn btn-primary btn-lg" onclick="copyContent()">Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <table class="table route-table table-hover table-striped" id="table">

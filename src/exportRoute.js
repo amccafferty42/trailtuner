@@ -69,7 +69,7 @@ function updateGeoJSON() {
     }
     exportedRoute = calculateAdjustedDistance(exportedRoute, fullRoute);
     exportedRoute.features.push(fullRoute); //add the full route (not broken into individual days) to the exported file
-    //updateChart(fullRoute);
+    updateRouteText();
     updateChart();
     updateMap();
 }
@@ -84,7 +84,6 @@ function equalCoordinates(coordinate1, coordinate2, checkDistances) {
 }
 
 function calculateAdjustedDistance(exportedRoute, fullRoute) {
-    //features in exportedRoute are pointing to the same objects in trail. exportedRoute needs to be a deep copy of trail feature so adding adjusted distance doesnt affect trail
     if (routeLength <= 0) return exportedRoute;
     const startDistance = fullRoute.geometry.coordinates[0][3];
     const wrapAroundDistance = this.isPositiveDirection ? trailFeature.geometry.coordinates[trailFeature.geometry.coordinates.length - 1][3] - fullRoute.geometry.coordinates[0][3] : fullRoute.geometry.coordinates[fullRoute.geometry.coordinates.length - 1][3];
@@ -194,14 +193,31 @@ function trimCoordinates(featureCollection) {
     return featureCollection;
 }
 
-// Share route via email
-function emailRoute() {
-    if (exportedRoute) {
-        const subject = trailFeature.properties.title + " Itinerary";
-        let message = "";
-        for (let i = 0; i < this.route.length; i++) {
-            message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + Math.round(this.route[i].length * distanceConstant * 10) / 10 + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
-        }
-        window.open("mailto:?subject=" + subject + "&body=" + message);
+function updateRouteText() {
+    let message = "";
+    for (let i = 0; i < this.route.length; i++) {
+        message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + Math.round(this.route[i].length * distanceConstant * 10) / 10 + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '\n\n';
+    }
+    routeText.innerText = message;
+}
+
+async function copyContent() {
+    try {
+        await navigator.clipboard.writeText(routeText.value);
+        console.log('Content copied to clipboard');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
     }
 }
+
+// Share route via email
+// function emailRoute() {
+//     if (exportedRoute) {
+//         const subject = trailFeature.properties.title + " Itinerary";
+//         let message = "";
+//         for (let i = 0; i < this.route.length; i++) {
+//             message += this.route[i].date.toLocaleDateString('en-us', { year:"2-digit", month:"numeric", day:"numeric"}) + ": " + Math.round(this.route[i].length * distanceConstant * 10) / 10 + " " + distanceUnit + " from " + this.route[i].start.properties.title + " to " + this.route[i].end.properties.title + '%0D%0A';
+//         }
+//         //window.open("mailto:?subject=" + subject + "&body=" + message);
+//     }
+// }

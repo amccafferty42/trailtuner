@@ -37,6 +37,7 @@ const loopDirectionLabel = document.getElementsByClassName('loop-direction-label
 const selectTrail = document.getElementById('select-trail');
 const logo = document.getElementById('logo').addEventListener("click", refresh);
 const includeDispersedCampsites = document.getElementById('toggle-dispersed');
+const routeText = document.getElementById('routeText');
 
 populateSelectTrail();
 reset();

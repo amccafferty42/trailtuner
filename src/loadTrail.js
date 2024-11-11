@@ -239,7 +239,7 @@ function calculateLength(lineString) {
     lineString[0][3] = 0;
     for (let i = 1; i < lineString.length; i++) {
         result += haversineDistance(lineString[i-1][1],lineString[i-1][0],lineString[i-1][2],
-                                     lineString[i  ][1],lineString[i  ][0],lineString[i  ][2]);
+                                    lineString[i  ][1],lineString[i  ][0],lineString[i  ][2]);
         lineString[i][3] = result;
     }
     return result;
