@@ -333,6 +333,8 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
                 campsites.add(campsiteCandidate1);
             } else if (campsiteCandidate2) {
                 campsites.add(campsiteCandidate2);
+            } else if (campsiteCandidate1) {
+                campsites.add(campsiteCandidate1);
             }
         }
     }
