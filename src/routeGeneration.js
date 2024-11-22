@@ -2,6 +2,7 @@ let route;
 let routeLength;
 let routeElevationGain;
 let routeElevationLoss;
+let isCW;
 let isPositiveDirection;
 let userSetDays = false;
 let filteredCampsites;
@@ -51,6 +52,7 @@ function plan() {
         const distance = getDistance(days, distancePerDay);
         const startTrailhead = selectStart.value == 0 ? selectStartTrailhead(trailheadFeatures[selectEnd.value - 1], distance) : trailheadFeatures[selectStart.value - 1];
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trailheadFeatures[selectEnd.value - 1];
+        this.isCW = inputCW.checked ? true : false;
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
@@ -174,7 +176,7 @@ function selectEndTrailhead(startTrailhead, length) {
     if (trailCircuit && ((inputDays.value == '' || inputDistance.value == '') || length >= trailLength)) return startTrailhead; //prioritize full loops for route generation
     const endCandidate1 = getNearestTrailhead(startTrailhead.geometry.coordinates[3] + length);
     const endCandidate2 = getNearestTrailhead(startTrailhead.geometry.coordinates[3] - length);
-    if (trailCircuit && inputCW.checked) {
+    if (trailCircuit && this.isCW) {
         return endCandidate1;
     } else if (trailCircuit && inputCCW.checked) {
         return endCandidate2;
@@ -297,7 +299,7 @@ function getElevationBetween(start, end) {
 
 // Determine positive or negative direction
 function getDirection(start, end) {
-    return (trailCircuit && inputCW.checked) || (!trailCircuit && start.geometry.coordinates[3] < end.geometry.coordinates[3]) ? true : false;
+    return (trailCircuit && this.isCW) || (!trailCircuit && start.geometry.coordinates[3] < end.geometry.coordinates[3]) ? true : false;
 }
 
 function getOptimalCampsites(start, end, days, includeBothCandidates) {
@@ -345,10 +347,10 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
 }   
 
 function setRouteDetails(start, end) {
-    routeLength = trailCircuit && start.coordinates == end.coordinates ? trailLength : getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
+    routeLength = trailCircuit && equalCoordinates(start.geometry.coordinates, end.geometry.coordinates, false) ? trailLength : getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
     const routeElevation = getElevationBetween(start, end);
-    routeElevationGain = trailCircuit && start.coordinates == end.coordinates ? trailElevationGain : routeElevation.gain;
-    routeElevationLoss = trailCircuit && start.coordinates == end.coordinates ? trailElevationLoss : routeElevation.loss;
+    routeElevationGain = trailCircuit && equalCoordinates(start.geometry.coordinates, end.geometry.coordinates, false) ? trailElevationGain : routeElevation.gain;
+    routeElevationLoss = trailCircuit && equalCoordinates(start.geometry.coordinates, end.geometry.coordinates, false) ? trailElevationLoss : routeElevation.loss;
 }
 
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
@@ -583,8 +585,8 @@ function displayRoute(route, isRouteGen) {
     routeTitleGroup.style.display = 'flex';
     table.style.display = '';
     console.table(route);
-    inputCW.disabled = true;
-    inputCCW.disabled = true;
+    //inputCW.disabled = true;
+    //inputCCW.disabled = true;
     if (isRouteGen) { // only reset these values when new route is generated (eg. should not reset them when changing a campsite)
         toggleTrail.disabled = false;
         toggleTrail.checked = false;
