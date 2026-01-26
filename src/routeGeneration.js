@@ -7,6 +7,7 @@ let isPositiveDirection;
 let userSetDays = false;
 let filteredCampsites;
 let excludedCampsites;
+const distancesMap = new Map();
 //let includedCampsites;
 
 // Select DOM elements
@@ -357,17 +358,25 @@ function setRouteDetails(start, end) {
 function calculateRoute(start, end, days, startDate) {
     this.setRouteDetails(start, end);
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
+    console.log('NUM CAMPSITES: ' + allOptimalCampsites.length);
     // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.geometry.coordinates[3], end.geometry.coordinates[3], routeLength);
     // allOptimalCampsites.sort((a, b) => {return a.properties.relativeDistance - b.properties.relativeDistance});
     if (days > filteredCampsites.length || days > allOptimalCampsites.length) {
         console.info('Number of days is greater than or equal to the number of available campsites between start and end points. Generating route with all possible campsites');
         return buildRoute(start, end, allOptimalCampsites, days, startDate);
-    } else if (allOptimalCampsites.length > 22) {
-        console.info('Sample size is too large. Generating basic route using campsites closest to daily average');
-        allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, false));
-        return buildRoute(start, end, allOptimalCampsites, days, startDate);
-    } else {
+    } 
+    // else if (allOptimalCampsites.length > 22) {
+    //     console.info('Sample size is too large. Generating basic route using campsites closest to daily average');
+    //     allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, false));
+    //     return buildRoute(start, end, allOptimalCampsites, days, startDate);
+    // } 
+    else {
         const groupedCampsites = subset(allOptimalCampsites, days - 1);
+        //const groupedCampsites2 = subset2(allOptimalCampsites, days - 1);
+
+        console.log('new ALGO');
+        console.log(groupedCampsites);
+
         let routes = [];
         // if (includedCampsites.length > 0) {
         //     console.log("Included campsites:");
@@ -393,6 +402,7 @@ function calculateRoute(start, end, days, startDate) {
         //         if (validCampsites) routes.push(buildRoute(start, end, campsites, days, startDate));
         //     }
         // } else {
+            console.log('NUM GROUP CAMPSITES: ' + groupedCampsites.length);
             for (let campsites of groupedCampsites) {
                 routes.push(buildRoute(start, end, campsites, days, startDate));
             }
@@ -428,6 +438,39 @@ function subset(campsites, nights) {
     return result_set; 
 }
 
+function subset2(campsites, nights) {
+  const result_set = [];
+  const len = campsites.length;
+
+  for (let x = 0; x < (1 << len); x++) {
+    const picked = [];
+    const pickedIdx = [];
+
+    for (let i = 0; i < len; i++) {
+      if (x & (1 << i)) {
+        pickedIdx.push(i);
+        picked.push(campsites[i]);
+      }
+    }
+
+    if (picked.length !== nights) continue;
+
+    // Reject if any two consecutive chosen indices differ by more than 2
+    let ok = true;
+    for (let j = 1; j < pickedIdx.length; j++) {
+      if (pickedIdx[j] - pickedIdx[j - 1] > 2) {
+        ok = false;
+        break;
+      }
+    }
+    if (!ok) continue;
+
+    result_set.push(picked);
+  }
+
+  return result_set;
+}
+
 // Map trailheads, list of campsites, days, and startDate into a list of routes
 function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {   
     let route = [days];
@@ -447,10 +490,30 @@ function buildRoute(startTrailhead, endTrailhead, campsites, days, startDate) {
         } else {
             route[j].end = campsites[j] === undefined ? route[j].start : campsites[j];    
         }
-        route[j].prev_site = getPrevCampsite(route[j].end);
-        route[j].next_site = getNextCampsite(route[j].end);     
-        route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.geometry.coordinates[3], route[j].end.geometry.coordinates[3]);
-        const elevation = getElevationBetween(route[j].start, route[j].end);
+
+        const key = route[j].start.geometry.coordinates[0] + ',' + route[j].start.geometry.coordinates[1] + ',' + route[j].end.geometry.coordinates[0] + ',' + route[j].end.geometry.coordinates[1];
+        let dayData = {};
+        if (distancesMap.has(key)) {
+            dayData = distancesMap.get(key);
+            //console.log('retrieved cached length: ' + dayData.length + ', elevation gain: ' + dayData.elevation.gain + ' for key ' + key);
+        } else {
+            dayData.length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.geometry.coordinates[3], route[j].end.geometry.coordinates[3]);
+            dayData.elevation = getElevationBetween(route[j].start, route[j].end);
+            dayData.prev_site = getPrevCampsite(route[j].end);
+            dayData.next_site = getNextCampsite(route[j].end);
+            distancesMap.set(key, dayData);
+            //console.log('calculated length: ' + dayData.length + ', elevation gain: ' + dayData.elevation.gain + ' for key ' + key);
+        }
+
+        // route[j].prev_site = getPrevCampsite(route[j].end);
+        // route[j].next_site = getNextCampsite(route[j].end);
+        route[j].prev_site = dayData.prev_site;
+        route[j].next_site = dayData.next_site;
+
+        //route[j].length = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailLength : getDistanceBetween(route[j].start.geometry.coordinates[3], route[j].end.geometry.coordinates[3]);
+        route[j].length = dayData.length;
+        //const elevation = getElevationBetween(route[j].start, route[j].end);
+        const elevation = dayData.elevation;
         route[j].elevationGain = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationGain : elevation.gain;
         route[j].elevationLoss = (days == 1 && trailCircuit && route[j].start === route[j].end) ? trailElevationLoss : elevation.loss;
     }
