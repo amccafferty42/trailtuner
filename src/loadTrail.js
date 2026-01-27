@@ -159,6 +159,7 @@ function setTrailDetails() {
 // Append the distance from 0 for each trailhead and campsite
 function appendDistance(feature) {
     if (feature.properties.title.match(/[*]/)) feature.properties.title = "*Dispersed Camping*";
+    let distanceSet = false;
     let newGeometry = {};
     newGeometry.type = 'LineString';
     // First attempt: find a coordinate pair at a trail vertex within 0.001 degrees (~111 m) of marker
@@ -175,13 +176,14 @@ function appendDistance(feature) {
             feature.properties.elevationGain = elevationChange.elevationGain;
             feature.properties.elevationLoss = elevationChange.elevationLoss;
             if (trailCircuit && feature.geometry.coordinates[3].toFixed(1) == trailLength.toFixed(1)) feature.geometry.coordinates[3] = 0; 
+            distanceSet = true;
             break;
         }
     }
     // Second attempt: find a coordinate pair in line between two pairs of trail coordinates
     // This covers the scenario when a marker is placed on trail, but > 0.001 degrees from a trail vertex (i.e. low sampling)
     // If a marker is found on the line segment between two vertices, create a new vertex on the trail where the marker lies between those two points
-    if (feature.geometry.coordinates[3] === undefined) {
+    if (!distanceSet) {
         for (let i = 0; i < trailFeature.geometry.coordinates.length - 1; i++) {
             if (inLine(trailFeature.geometry.coordinates[i], trailFeature.geometry.coordinates[i+1], feature.geometry.coordinates)) {
                 if (feature.geometry.coordinates[2] == 0) feature.geometry.coordinates[2] = trailFeature.geometry.coordinates[i][2];

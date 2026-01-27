@@ -203,6 +203,7 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         route = calculateRoute(firstDay.end, lastDay.start, days - 2, tomorrow);
         route.unshift(firstDay);
         route.push(lastDay);
+        setRouteDetails(firstDay.start, lastDay.end);
         return route;
     } else if (shortHikeIn && days > 1) {
         const firstDay = generateShortHikeIn(start, startDate);
@@ -210,6 +211,7 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
         route = calculateRoute(firstDay.end, end, days - 1, tomorrow);
         route.unshift(firstDay);
+        setRouteDetails(firstDay.start, end);
         return route;
     } else if (shortHikeOut && days > 1) {
         let lastDate = new Date(startDate);
@@ -217,6 +219,7 @@ function generateRoute(start, end, days, startDate, shortHikeIn, shortHikeOut) {
         const lastDay = generateShortHikeOut(end, lastDate);
         route = calculateRoute(start, lastDay.start, days - 1, startDate);
         route.push(lastDay);
+        setRouteDetails(start, lastDay.end);
         return route;
     }
     return calculateRoute(start, end, days, startDate);
