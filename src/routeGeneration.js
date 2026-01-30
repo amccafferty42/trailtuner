@@ -55,6 +55,7 @@ function plan() {
         const endTrailhead = selectEnd.value == 0 ? selectEndTrailhead(startTrailhead, distance) : trailheadFeatures[selectEnd.value - 1];
         this.isCW = inputCW.checked ? true : false;
         this.isPositiveDirection = getDirection(startTrailhead, endTrailhead);
+        this.appendRelativeDistances(startTrailhead, endTrailhead);
         const route = generateRoute(startTrailhead, endTrailhead, days, startDate, inputShortHikeIn.checked, inputShortHikeOut.checked);
         this.route = route;
         if (!route) {
@@ -303,6 +304,36 @@ function getDirection(start, end) {
     return (trailCircuit && this.isCW) || (!trailCircuit && start.geometry.coordinates[3] < end.geometry.coordinates[3]) ? true : false;
 }
 
+// Append the relative distance from the start trailhead
+function appendRelativeDistances(start, end) {
+    const startDistance = start.geometry.coordinates[3];
+    const endDistance = end.geometry.coordinates[3];
+    const wrapAroundDistance = trailLength;
+    let currDistance;
+
+    for (feature of filteredCampsites) {
+        currDistance = feature.geometry.coordinates[3];
+        let relativeDistance = 0;
+
+        if (!trailCircuit && this.isPositiveDirection && currDistance >= startDistance && currDistance <= endDistance) {
+            relativeDistance = Math.abs(currDistance - startDistance);
+        } else if (!trailCircuit && !this.isPositiveDirection && currDistance <= startDistance && currDistance >= endDistance) {
+            relativeDistance = Math.abs(currDistance - startDistance);
+        } else {
+            relativeDistance = undefined;
+        }
+        // if (this.isPositiveDirection && currDistance < startDistance) {
+        //     relativeDistance = currDistance + wrapAroundDistance;
+        // } else if (!this.isPositiveDirection && currDistance > startDistance) {
+        //     relativeDistance = Math.abs(routeLength - currDistance + wrapAroundDistance);
+        // } else {
+        //     relativeDistance = Math.abs(currDistance - startDistance);
+        // }
+        console.log("Campsite: " + feature.properties.title)
+        console.log("Relative Distance: " + relativeDistance);
+    }
+}
+
 function getOptimalCampsites(start, end, days, includeBothCandidates) {
     let length = getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
     if ((trailCircuit && length == 0) || length > trailLength) length = trailLength;
@@ -319,6 +350,20 @@ function getOptimalCampsites(start, end, days, includeBothCandidates) {
         }
         let campsiteCandidate1 = getNextCampsiteFromTrailhead(distance, !this.isPositiveDirection);
         let campsiteCandidate2 = getNextCampsiteFromTrailhead(distance, this.isPositiveDirection);
+
+        if (!campsiteCandidate1.properties.candidateDays) campsiteCandidate1.properties.candidateDays = [];
+        campsiteCandidate1.properties.candidateDays.push(i+1);
+
+        if (!campsiteCandidate2.properties.candidateDays) campsiteCandidate2.properties.candidateDays = [];
+        campsiteCandidate2.properties.candidateDays.push(i+1);
+        
+        // console.log(campsiteCandidate1);
+        // console.log(campsiteCandidate2);
+
+        //add the day that this site would be optimal for as part of the properties
+        //then, when building subsets of routes, only consider groups of campsites that are optimal for all planned days
+        //i.e. No need to consider a route possibility with sites that are optimal for days (1, 1, 3, 4, 5) for a 5 day trip, since a site optimal for day 2 is absent
+
         //complex validation necessary to ensure both campsite candidates are valid for all possible directions
         if (this.isPositiveDirection) { 
             if (campsiteCandidate1 && !((start.geometry.coordinates[3] >= end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] > start.geometry.coordinates[3] || campsiteCandidate1.geometry.coordinates[3] < end.geometry.coordinates[3])) || (start.geometry.coordinates[3] < end.geometry.coordinates[3] && (campsiteCandidate1.geometry.coordinates[3] > start.geometry.coordinates[3] && campsiteCandidate1.geometry.coordinates[3] < end.geometry.coordinates[3])))) campsiteCandidate1 = undefined;
@@ -354,11 +399,105 @@ function setRouteDetails(start, end) {
     routeElevationLoss = trailCircuit && equalCoordinates(start.geometry.coordinates, end.geometry.coordinates, false) ? trailElevationLoss : routeElevation.loss;
 }
 
+/**
+ * optimizedRouteSolver
+ * Uses Beam Search to find a route with low variance in daily mileage.
+ * * @param {Object} start - Start coordinates
+ * @param {Object} end - End coordinates
+ * @param {Array} allCampsites - Array of campsite objects sorted by distance from start
+ * @param {Number} totalDays - Total days for the trip
+ * @param {Number} beamWidth - How many 'best' paths to keep at each step (e.g., 5 or 10)
+ */
+function calculateRouteBeamSearch(start, end, allCampsites, days, beamWidth = 20) {
+    let totalDistance = getDistanceBetween(start.geometry.coordinates[3], end.geometry.coordinates[3]);
+    const targetDailyDist = totalDistance / days;
+
+    // 2. Initialize Beam
+    // The beam contains paths. A path is an object: { campsites: [], currentDist: 0, score: 0 }
+    // Score = Sum of squared differences from targetDailyDist
+    let beam = [{
+        lastNode: start,     // The last location visited
+        campsites: [],       // The list of campsites chosen so far
+        currentDist: 0,      // Total distance covered so far
+        score: 0             // Lower is better (SSE)
+    }];
+
+    const stopsNeeded = totalDays - 1;
+
+    for (let dayStep = 1; dayStep <= stopsNeeded; dayStep++) {
+        let nextBeam = [];
+
+        for (let path of beam) {
+            
+            // Filter valid next moves
+            // We only look at campsites that are "ahead" of our last node
+            // Assuming allCampsites is sorted by distance from start
+            const lastIndex = allCampsites.indexOf(path.lastNode);
+            
+            // Optimization: Only look at a window of campsites ahead 
+            // to avoid checking impossible jumps (e.g. jumping from index 0 to 50 immediately)
+            const candidates = allCampsites.slice(lastIndex + 1);
+
+            for (let nextCamp of candidates) {
+                
+                // --- YOUR "OPTIMAL DAY" PROPERTY ---
+                // If the campsite has a property saying it's good for specific days, use it here.
+                // Example: if (nextCamp.optimalDays && !nextCamp.optimalDays.includes(dayStep)) continue;
+                
+                // Calculate segment distance
+                const legDist = getDistance(path.lastNode, nextCamp);
+                
+                // Calculate new score (Sum of Squared Errors)
+                const distDiff = legDist - targetDailyDist;
+                const addedPenalty = distDiff * distDiff; 
+                const newScore = path.score + addedPenalty;
+
+                // Create new path candidate
+                nextBeam.push({
+                    lastNode: nextCamp,
+                    campsites: [...path.campsites, nextCamp],
+                    currentDist: path.currentDist + legDist,
+                    score: newScore
+                });
+            }
+        }
+
+        // Pruning: Sort by lowest score and keep only 'beamWidth' best paths
+        // This is what prevents the exponential explosion
+        nextBeam.sort((a, b) => a.score - b.score);
+        beam = nextBeam.slice(0, beamWidth);
+    }
+
+    // 3. Final Step: Connect the last campsite to the End point
+    let finalRoutes = beam.map(path => {
+        const finalLegDist = getDistance(path.lastNode, end);
+        const distDiff = finalLegDist - targetDailyDist;
+        
+        return {
+            campsites: path.campsites,
+            finalScore: path.score + (distDiff * distDiff)
+        };
+    });
+
+    // 4. Return the absolute winner
+    finalRoutes.sort((a, b) => a.finalScore - b.finalScore);
+    
+    // Return just the campsites, or run your existing buildRoute on them
+    return finalRoutes.length > 0 ? finalRoutes[0].campsites : [];
+}
+
+// Mock distance function for context (replace with your actual calc)
+function getDistance(a, b) {
+    // return distance between coordinates a and b
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)); 
+}
+
 // Generate a subset of all optimal campsite combinations as routes, select the route with the lowest variance in daily mileage
 function calculateRoute(start, end, days, startDate) {
     this.setRouteDetails(start, end);
     let allOptimalCampsites = Array.from(getOptimalCampsites(start, end, days, true));
     console.log('NUM CAMPSITES: ' + allOptimalCampsites.length);
+    console.log(allOptimalCampsites);
     // allOptimalCampsites = calculateRelativeDistance(allOptimalCampsites, start.geometry.coordinates[3], end.geometry.coordinates[3], routeLength);
     // allOptimalCampsites.sort((a, b) => {return a.properties.relativeDistance - b.properties.relativeDistance});
     if (days > filteredCampsites.length || days > allOptimalCampsites.length) {
@@ -371,10 +510,8 @@ function calculateRoute(start, end, days, startDate) {
     //     return buildRoute(start, end, allOptimalCampsites, days, startDate);
     // } 
     else {
-        const groupedCampsites = subset(allOptimalCampsites, days - 1);
-        //const groupedCampsites2 = subset2(allOptimalCampsites, days - 1);
-
-        console.log('new ALGO');
+        const groupedCampsites = subset3(allOptimalCampsites, days - 1);
+        //const groupedCampsites = subset3(allOptimalCampsites, days - 1);
         console.log(groupedCampsites);
 
         let routes = [];
@@ -469,6 +606,68 @@ function subset2(campsites, nights) {
   }
 
   return result_set;
+}
+
+function subset3(campsites, nights) {
+    const results = [];
+
+    function backtrack(startIndex, current, coveredDays) {
+        // If we reached the target size
+        if (current.length === nights) {
+            // Ensure full coverage: days 1..nights
+            for (let day = 1; day <= nights; day++) {
+                if (!coveredDays.has(day)) return;
+            }
+            results.push([...current]);
+            return;
+        }
+
+        // Not enough campsites left to reach nights → prune
+        if (current.length + (campsites.length - startIndex) < nights) {
+            return;
+        }
+
+        for (let i = startIndex; i < campsites.length; i++) {
+            const campsite = campsites[i];
+
+            current.push(campsite);
+
+            // Add this campsite's candidateDays
+            const newCoveredDays = new Set(coveredDays);
+            for (const d of campsite.properties.candidateDays) {
+                if (d >= 1 && d <= nights) {
+                    newCoveredDays.add(d);
+                }
+            }
+
+            // Early prune: check if missing days can still be covered
+            let possible = true;
+            for (let day = 1; day <= nights; day++) {
+                if (!newCoveredDays.has(day)) {
+                    let canBeCovered = false;
+                    for (let j = i + 1; j < campsites.length; j++) {
+                        if (campsites[j].properties.candidateDays.includes(day)) {
+                            canBeCovered = true;
+                            break;
+                        }
+                    }
+                    if (!canBeCovered) {
+                        possible = false;
+                        break;
+                    }
+                }
+            }
+
+            if (possible) {
+                backtrack(i + 1, current, newCoveredDays);
+            }
+
+            current.pop();
+        }
+    }
+
+    backtrack(0, [], new Set());
+    return results;
 }
 
 // Map trailheads, list of campsites, days, and startDate into a list of routes
