@@ -180,9 +180,6 @@
                         <button type="button" class="btn btn-primary btn-lg generate-route dropdown-toggle" data-bs-toggle="modal" data-bs-target="#moreRouteOptions" aria-expanded="false"></button>
                     </div>
                 </div>
-                <!-- <div class="d-grid gap-2 col-2"> 
-                    <button type="button" class="btn btn-primary btn-lg generate-route" onclick="reset()">Generate Route</button>
-                </div> -->
                 <div class="d-grid gap-2 col-2"> 
                     <button type="button" class="btn btn-danger btn-lg generate-route" onclick="reset()">Reset</button>
                 </div>
@@ -194,16 +191,16 @@
                             <h2 class="modal-title" id="exampleModalLabel">More Route Options</h2>
                         </div>
                         <div class="modal-body">
-                            <div class="exclude-sites-input">
-                                <label for="exclude"><h3 id="excludeLabel"><small class="text-body-secondary">Do not use campsites: </small></h3></label>
-                                <br>
-                                <select class="form-select" id="exclude" multiple></select>
-                            </div>
-                            <!-- <div class="includes-sites-input">
-                                <label for="include"><h3 id="includeLabel"><small class="text-body-secondary">Must use campsites: </small></h3></label>
+                            <div class="includes-sites-input">
+                                <label for="include"><h3 id="includeLabel"><small class="text-body-secondary">Select campsites: </small></h3></label>
                                 <br>
                                 <select class="form-select" id="include" multiple></select>
-                            </div>       -->
+                            </div>    
+                            <div class="exclude-sites-input">
+                                <label for="exclude"><h3 id="excludeLabel"><small class="text-body-secondary">Exclude campsites: </small></h3></label>
+                                <br>
+                                <select class="form-select" id="exclude" multiple></select>
+                            </div>  
                             <div class="toggle-dispersed-input">
                                 <input class="toggle-visibility-input form-check-input" type="checkbox" id="toggle-dispersed" title="Dispersed" checked>
                                 <label class="toggle-visibility-input form-check-label" for="toggle-dispersed" title="Dispersed">&nbsp;<h3><small class="text-body-secondary">Include dispersed campsites</small></h3>&nbsp;</label>
