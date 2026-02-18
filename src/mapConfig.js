@@ -67,17 +67,22 @@ function resetMap() {
             }
         }
     });
+
     this.geoJsonLayer.on('click', function(e) { 
         e.layer._map.panTo([e.latlng.lat, e.latlng.lng]);
         openTooltipByName(e.layer.feature.properties.title);
     });
+
+    this.geoJsonLayer.on('popupclose', function(e) {
+        closeAllTooltips();
+    });
+
     this.leafletMap.fitBounds(this.geoJsonLayer.getBounds());
 }
 
 // This function is called by the Chart.js onClick handler
 function onMarkerSelected(chartPointData) {
     chartPointData.label = chartPointData.label.replace(/^Night \d+: /, "");
-    console.log(chartPointData);
 
     // 1. Check if the map layer exists
     if (!this.geoJsonLayer) return;
@@ -184,6 +189,7 @@ function markerClose() {
         layer.closePopup();
     });
     deselectRows();
+    closeAllTooltips();
 }
   
 function centerMarker(layer) {

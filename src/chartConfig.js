@@ -1,5 +1,48 @@
 // Variables for chart.js
 let trailElevationChart;
+let stickyElement = null;
+
+// 1. Define a custom interaction mode called 'magnetic'
+Chart.Interaction.modes.magnetic = function(chart, e, options, useFinalPosition) {
+    const radius = 30; // HIT_RADIUS: How close (in px) you need to be to snap to a bubble
+    let closestBubble = null;
+    let minDistance = radius;
+
+    // 2. Loop through Trailheads (0) and Campsites (1) ONLY
+    [0, 1].forEach(datasetIndex => {
+        // Safety: Check if dataset exists and is visible
+        if (!chart.data.datasets[datasetIndex] || !chart.isDatasetVisible(datasetIndex)) return;
+
+        const meta = chart.getDatasetMeta(datasetIndex);
+        
+        meta.data.forEach((element, index) => {
+            if (element.skip) return;
+
+            // v4: Get precise coordinates
+            // We use 'useFinalPosition' to handle animations correctly if needed
+            const { x, y } = element.getProps(['x', 'y'], useFinalPosition);
+            
+            // Calculate distance from mouse (e.x, e.y) to bubble center
+            const dist = Math.hypot(e.x - x, e.y - y);
+
+            // Keep the closest one found so far
+            if (dist < minDistance) {
+                minDistance = dist;
+                closestBubble = { element, datasetIndex, index };
+            }
+        });
+    });
+
+    // 3. PRIORITY LOGIC:
+    // If we found a bubble within 30px, return ONLY that bubble.
+    if (closestBubble) {
+        return [closestBubble];
+    }
+
+    // 4. FALLBACK LOGIC:
+    // If no bubble is nearby, use the standard 'index' mode (scrubbing behavior)
+    return Chart.Interaction.modes.index(chart, e, options, useFinalPosition);
+};
 
 const commonChartOptions = { 
    options: {
@@ -8,11 +51,10 @@ const commonChartOptions = {
         clip: false,
         spanGaps: false,
 
-        // 1. FIX: Global interaction settings for "scrubbing" behavior
         interaction: {
-            mode: 'index',    // Grab all data at this index (line + bubbles)
-            intersect: false, // Trigger even if mouse isn't touching the line
-            axis: 'x'         // Calculate nearest point based on X-axis only
+            mode: 'magnetic',
+            intersect: false,
+            axis: 'x'
         },
 
         scales: {
@@ -23,9 +65,8 @@ const commonChartOptions = {
         plugins: {
             legend: { display: false },
             
-            // 2. FIX: Consolidate all tooltip logic here (Chart.js v3+)
             tooltip: {
-                position: 'nearest',
+                position: 'average',
                 displayColors: false,
                 
                 // Sort bubbles (datasets 0 & 1) to the top of the tooltip
@@ -44,11 +85,13 @@ const commonChartOptions = {
                         if (typeof days !== 'undefined' && days[firstItem.dataIndex]) {
                             return days[firstItem.dataIndex];
                         }
-                        return "Distance: " + Math.round(firstItem.label * 10) / 10 + ' ' + distanceUnit;
+                        return '';
+                        //return "Distance: " + Math.round(firstItem.label * 10) / 10 + ' ' + distanceUnit;
                     },
                     label: (context) => {
+                        const tooltipModel = context.chart.tooltip;
                         // Check if ANY item in this hover event is a bubble
-                        const hasBubble = context.tooltip.dataPoints.some(p => p.dataset.type === 'bubble');
+                        const hasBubble = tooltipModel.dataPoints.some(p => p.dataset.type === 'bubble');
 
                         // A. If this is the LINE dataset...
                         if (context.dataset.type === 'line') {
@@ -69,35 +112,55 @@ const commonChartOptions = {
                 }
             }
         },
-
-        // 3. Events
-        onHover: (event, chartElement) => {
-            const isHoveringPoint = chartElement.length && chartElement[0].element.options.radius > 0;
-            event.native.target.style.cursor = isHoveringPoint ? 'pointer' : 'default';
+        onHover: (event, activeElements) => {
+            event.native.target.style.cursor = activeElements.length ? 'pointer' : 'default';
         },
         onClick: (evt, activeElements, chart) => {
-            if (activeElements.length === 0) {
-                stickyElement = null;
-                chart.update();
-                return;
-            }
+            // 1. Default assumption: We should clear the sticky tooltip
+            let shouldClear = true;
 
-            const element = activeElements[0];
-            const datasetIndex = element.datasetIndex;
-            const dataset = chart.data.datasets[datasetIndex];
+            // 2. Check if we actually hit a Bubble
+            if (activeElements.length > 0) {
+                const element = activeElements[0];
+                const datasetIndex = element.datasetIndex;
+                const dataset = chart.data.datasets[datasetIndex];
 
-            // Only trigger sticky behavior for Bubbles
-            if (dataset.type === 'bubble') {
-                const markerData = dataset.data[element.index];
-                stickyElement = { datasetIndex: datasetIndex, index: element.index };
-                
-                // Call your external method
-                if (typeof onMarkerSelected === 'function') {
-                    onMarkerSelected(markerData);
+                if (dataset.type === 'bubble') {
+                    // We hit a bubble! Don't clear automatically.
+                    shouldClear = false;
+                    
+                    const markerData = dataset.data[element.index];
+
+                    // TOGGLE LOGIC:
+                    // If we clicked the exact same bubble that is already open...
+                    if (stickyElement && 
+                        stickyElement.datasetIndex === datasetIndex && 
+                        stickyElement.index === element.index) {
+                        
+                        // ...then close it (Toggle Off)
+                        stickyElement = null;
+                    } else {
+                        // ...otherwise, lock onto this new bubble (Toggle On)
+                        stickyElement = { datasetIndex: datasetIndex, index: element.index };
+                        
+                        // Call your external method
+                        if (typeof onMarkerSelected === 'function') {
+                            onMarkerSelected(markerData);
+                        }
+                    }
                 }
-                
-                chart.update();
             }
+
+            // 3. If we clicked the background OR the line (anything not a bubble), clear it.
+            if (shouldClear) {
+                stickyElement = null;
+            }
+
+            if (stickyElement === null) {
+                markerClose();
+            }
+
+            chart.update();
         }
     }
 };
@@ -225,8 +288,6 @@ function initChart() {
             spanGaps: true
         }]
     };
-
-    let stickyElement = null;
       
     const config = {
         data: chartData,
@@ -246,82 +307,7 @@ function initChart() {
                 }
             }
         }],
-        options: 
-        {
-
-            onHover: (event, chartElement) => {
-                // Show pointer if hovering a bubble OR if we are currently clicking one
-                const isHoveringPoint = chartElement.length && chartElement[0].element.options.radius > 0;
-                event.native.target.style.cursor = isHoveringPoint ? 'pointer' : 'default';
-            },
-            onClick: (evt, activeElements, chart) => {
-                if (activeElements.length === 0) {
-                    stickyElement = null;
-                    chart.update();
-                    return;
-                }
-
-                const element = activeElements[0];
-                const datasetIndex = element.datasetIndex;
-                const dataset = chart.data.datasets[datasetIndex];
-
-                // Only trigger for bubbles (ignore the elevation line)
-                if (dataset.type === 'bubble') {
-                    const markerData = dataset.data[element.index];
-
-                    // A. Update the "Sticky" element so the tooltip stays open
-                    stickyElement = {
-                        datasetIndex: datasetIndex,
-                        index: element.index
-                    };
-
-                    // B. Call your EXTERNAL method
-                    onMarkerSelected(markerData);
-                    
-                    // Force chart update to render the locked tooltip
-                    chart.update();
-                }
-            },
-            animation: false,
-            maintainAspectRatio: false,
-            clip: false,
-            tooltip: { 
-                position: 'point',
-                tooltips: {
-                    filter: function (tooltipItem) {
-                        return tooltipItem.datasetIndex === 0;
-                    }
-                }
-            },
-            scales: {
-                x: { type: 'linear' },
-                y: { type: 'linear', beginAtZero: false },
-            },
-            plugins: {
-                // title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
-                legend: { display: false },
-                tooltip: {
-                    displayColors: false,
-                    callbacks: {
-                        title: (tooltipItems) => {
-                            if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit;
-                        },
-                        label: (tooltipItem) => {
-                            const stats = [];
-                            if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
-                                stats.length = 2;
-                                return stats;
-                            } else {
-                                return "Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit; 
-                            }
-                        },
-                    }
-                }
-            }
-        }
+        options: commonChartOptions.options,
     };
     this.trailElevationChart = new Chart(ctx, config);
 }
@@ -356,6 +342,14 @@ function openTooltipByName(markerName) {
 
     if (!found) {
         console.log(`Marker "${markerName}" not found.`);
+    }
+}
+
+function closeAllTooltips() {
+    stickyElement = null;
+
+    if (this.trailElevationChart) {
+        this.trailElevationChart.update();
     }
 }
 
@@ -544,17 +538,15 @@ function updateChart() {
             }
         }]
     };
-
-    let stickyElement = null;
       
     const config = {
         data: chartData,
         plugins: [{
             beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(elevations);
-            chart.options.scales.x.min = Math.min(...chart.data.labels);
-            chart.options.scales.x.max = Math.max(...chart.data.labels);
-            chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
+                const maxHeight = Math.max(elevations);
+                chart.options.scales.x.min = Math.min(...chart.data.labels);
+                chart.options.scales.x.max = Math.max(...chart.data.labels);
+                chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
             }
         },
         {
@@ -565,85 +557,7 @@ function updateChart() {
                 }
             }
         }],
-        options: {
-            animation: false,
-            maintainAspectRatio: false,
-            clip: false,
-            spanGaps: false,
-            tooltip: { 
-                position: 'point',
-                tooltips: {
-                    filter: function (tooltipItem) {
-                        return tooltipItem.datasetIndex === 0;
-                    }
-                }
-            },
-            scales: {
-                x: { type: 'linear' },
-                y: { type: 'linear', beginAtZero: false },
-            },
-            onHover: (event, chartElement) => {
-                // Show pointer if hovering a bubble OR if we are currently clicking one
-                const isHoveringPoint = chartElement.length && chartElement[0].element.options.radius > 0;
-                event.native.target.style.cursor = isHoveringPoint ? 'pointer' : 'default';
-            },
-            onClick: (evt, activeElements, chart) => {
-                if (activeElements.length === 0) {
-                    stickyElement = null;
-                    chart.update();
-                    return;
-                }
-
-                const element = activeElements[0];
-                const datasetIndex = element.datasetIndex;
-                const dataset = chart.data.datasets[datasetIndex];
-
-                // Only trigger for bubbles (ignore the elevation line)
-                if (dataset.type === 'bubble') {
-                    const markerData = dataset.data[element.index];
-
-                    // A. Update the "Sticky" element so the tooltip stays open
-                    stickyElement = {
-                        datasetIndex: datasetIndex,
-                        index: element.index
-                    };
-
-                    // B. Call your EXTERNAL method
-                    onMarkerSelected(markerData);
-                    
-                    // Force chart update to render the locked tooltip
-                    chart.update();
-                }
-            },
-            plugins: {
-                // title: { align: "end", display: true, text: "Distance, " + distanceUnit + " / Elevation, " + elevationUnit },
-                legend: { display: false },
-                tooltip: {
-                    displayColors: false,
-                    callbacks: {
-                        title: (tooltipItems) => {
-                            if (tooltipItems[0].dataset.type == 'bubble') return tooltipItems[0].dataset.data[tooltipItems[0].dataIndex].label;
-                            return days[tooltipItems[0].dataIndex];
-                            //return "Distance: " + Math.round(tooltipItems[0].label * 10) / 10 + ' ' + distanceUnit
-                        },
-                        label: (tooltipItem) => {
-                            const stats = [];
-                            if (tooltipItem.dataset.type == 'bubble') {
-                                stats.push("Distance: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].x * 10) / 10 + ' ' + distanceUnit);
-                                stats.push("Elevation: " + Math.round(tooltipItem.dataset.data[tooltipItem.dataIndex].y) + ' ' + elevationUnit);
-                                stats.length = 2;
-                                return stats;
-                            } else {
-                                stats.push("Distance: " + Math.round(tooltipItem.label * 10) / 10 + ' ' + distanceUnit);
-                                stats.push("Elevation: " + Math.round(tooltipItem.raw) + ' ' + elevationUnit);
-                                stats.length = 2;
-                                return stats;
-                            }
-                        },
-                    }
-                }
-            }
-        }
+        options: commonChartOptions.options
     };
     this.trailElevationChart = new Chart(ctx, config);
 }
