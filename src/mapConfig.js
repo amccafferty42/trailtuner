@@ -69,8 +69,37 @@ function resetMap() {
     });
     this.geoJsonLayer.on('click', function(e) { 
         e.layer._map.panTo([e.latlng.lat, e.latlng.lng]);
+        openTooltipByName(e.layer.feature.properties.title);
     });
     this.leafletMap.fitBounds(this.geoJsonLayer.getBounds());
+}
+
+// This function is called by the Chart.js onClick handler
+function onMarkerSelected(chartPointData) {
+    chartPointData.label = chartPointData.label.replace(/^Night \d+: /, "");
+    console.log(chartPointData);
+
+    // 1. Check if the map layer exists
+    if (!this.geoJsonLayer) return;
+
+    // 2. Iterate through all Leaflet layers to find the matching marker
+    this.geoJsonLayer.eachLayer((layer) => {
+        const props = layer.feature?.properties;
+
+        // Check if this layer has a title and if it matches the clicked chart bubble
+        if (props && props.title === chartPointData.label) {
+            
+            // Make sure it is a Marker (has getLatLng) and not a LineString (Trail)
+            if (typeof layer.getLatLng === 'function') {
+                
+                // A. Move the map to this marker
+                this.leafletMap.panTo(layer.getLatLng());
+
+                // B. Open the popup (Simulates the click)
+                layer.openPopup();
+            }
+        }
+    });
 }
 
 // Update map to display the generated route
@@ -128,6 +157,7 @@ function updateMap() {
     });
     this.geoJsonLayer.on('click', function(e) { 
         e.layer._map.panTo([e.latlng.lat, e.latlng.lng]);
+        openTooltipByName(e.layer.feature.properties.title);
         deselectRows();
         if (tableBody.innerHTML != "") {
             if (e.layer.feature.geometry.type == "LineString") {

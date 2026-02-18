@@ -935,6 +935,8 @@ function reset() {
     toggleTrail.disabled = true;
     toggleTrailheads.checked = true;
     toggleCampsites.checked = false;
+    this.isPositiveDirection = true;
+    this.route = undefined;
     initMap();
     initChart();
     window.scrollTo(0, 0);
@@ -1005,6 +1007,9 @@ function onTrailheadsChange() {
         this.isPositiveDirection = getDirection(trailheadFeatures[selectStart.value - 1], trailheadFeatures[selectEnd.value - 1]);
         const length = (trailCircuit && selectStart.value == selectEnd.value) ? trailLength : getDistanceBetween(trailheadFeatures[selectStart.value - 1].geometry.coordinates[3], trailheadFeatures[selectEnd.value - 1].geometry.coordinates[3]);
         inputDays.value = Math.max(1, Math.round(length / 16.0934)); // 10 miles/day
+    }
+    if (this.route == undefined) { // only flip the direction if a route isn't being displayed
+        initChart();
     }
 }
 
@@ -1084,7 +1089,7 @@ function setUnit(unit) {
         if (this.route != undefined && this.route.length > 0) {
             displayRoute(this.route, false);
             updateGeoJSON();
-        } else { //re-initialize map and chart to show updated units
+        } else { // re-initialize map and chart to show updated units
             initMap();
             initChart();
         }
