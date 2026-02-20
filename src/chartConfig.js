@@ -1,6 +1,7 @@
 // Variables for chart.js
 let trailElevationChart;
 let stickyElement = null;
+let mapHoverMarker = null;
 
 // 1. Define a custom interaction mode called 'magnetic'
 Chart.Interaction.modes.magnetic = function(chart, e, options, useFinalPosition) {
@@ -100,7 +101,8 @@ const commonChartOptions = {
                             
                             // Otherwise, show line stats (scrubbing mode)
                             const dist = Math.round(context.label * 10) / 10 + ' ' + distanceUnit;
-                            const elev = Math.round(context.raw) + ' ' + elevationUnit;
+                            const yValue = context.raw.y !== undefined ? context.raw.y : context.raw;
+                            const elev = Math.round(yValue) + ' ' + elevationUnit;
                             return [`Distance: ${dist}`, `Elevation: ${elev}`];
                         }
 
@@ -114,6 +116,27 @@ const commonChartOptions = {
         },
         onHover: (event, activeElements) => {
             event.native.target.style.cursor = activeElements.length ? 'pointer' : 'default';
+        
+            // 2. Map Synchronization
+            if (activeElements.length > 0 && mapHoverMarker) {
+                const element = activeElements[0];
+                const dataset = this.trailElevationChart.data.datasets[element.datasetIndex];
+                const pointData = dataset.data[element.index];
+
+                // Check if this point has GPS data (The Line dataset now does!)
+                if (pointData.lat !== undefined && pointData.lng !== undefined) {
+                    mapHoverMarker.setLatLng([pointData.lat, pointData.lng]);
+                    
+                    // Ensure it is visible
+                    if (!mapHoverMarker._map) mapHoverMarker.addTo(this.leafletMap);
+                    mapHoverMarker.getElement().style.display = 'block';
+                }
+            } else {
+                // Hide marker if not hovering anything
+                if (mapHoverMarker && mapHoverMarker.getElement()) {
+                    mapHoverMarker.getElement().style.display = 'none';
+                }
+            }
         },
         onClick: (evt, activeElements, chart) => {
             // 1. Default assumption: We should clear the sticky tooltip
@@ -168,16 +191,25 @@ const commonChartOptions = {
 function initChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    const distance = [], elevation = [], trailheads = [], campsites = [];
+    const elevations = [], trailheads = [], campsites = [];
     for (let i = 0; i < trailFeature.geometry.coordinates.length; i++) {
         //prevent adding multiple points at the same distance (x value)
         if (i == 0 || trailFeature.geometry.coordinates[i][2] != trailFeature.geometry.coordinates[i-1][2]) {
+            let distVal;
+            const rawDist = trailFeature.geometry.coordinates[i][3];
+            
             if ((trailCircuit && document.getElementById('cw').checked) || this.isPositiveDirection == undefined || this.isPositiveDirection) {
-                distance.push(trailFeature.geometry.coordinates[i][3] * distanceConstant);
+                distVal = rawDist * distanceConstant;
             } else {
-                distance.push(Math.abs(trailLength - trailFeature.geometry.coordinates[i][3]) * distanceConstant);
+                distVal = Math.abs(trailLength - rawDist) * distanceConstant;
             }
-            elevation.push(trailFeature.geometry.coordinates[i][2] * elevationConstant);
+            
+            elevations.push({
+                x: distVal,
+                y: trailFeature.geometry.coordinates[i][2] * elevationConstant,
+                lat: trailFeature.geometry.coordinates[i][1],
+                lng: trailFeature.geometry.coordinates[i][0]
+            });
         }
     }
     if (toggleTrailheads && toggleTrailheads.checked) {
@@ -239,7 +271,7 @@ function initChart() {
         }
     }
     const chartData = {
-        labels: distance,
+        labels: elevations.map(p => p.x),
         datasets: [{
             type: 'bubble',
             data: trailheads,
@@ -274,7 +306,11 @@ function initChart() {
         }, 
         {
             type: 'line',
-            data: elevation,
+            data: elevations,
+            parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+            },
             fill: true,
             borderWidth: 2,
             backgroundColor: function(context) {
@@ -293,7 +329,7 @@ function initChart() {
         data: chartData,
         plugins: [{
             beforeInit: (chart, args, options) => {
-            const maxHeight = Math.max(elevation);
+            const maxHeight = Math.max(elevations);
             chart.options.scales.x.min = Math.min(...chart.data.labels);
             chart.options.scales.x.max = Math.max(...chart.data.labels);
             chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
@@ -355,9 +391,8 @@ function closeAllTooltips() {
 
 function updateChart() {
     if (this.trailElevationChart) this.trailElevationChart.destroy();
-
     const ctx = document.getElementById('elevationProfile').getContext("2d");
-    let distances = [], elevations = [], days = [], trailheads = [], campsites = [];
+    const elevations = [], trailheads = [], campsites = [];
 
     for (let i = 0; i < exportedRoute.features.length; i++) {
         let feature = exportedRoute.features[i];
@@ -365,17 +400,23 @@ function updateChart() {
             if (feature.geometry && feature.geometry.type === "LineString" && feature.properties.title == "Full Route") {
                 for (let j = 0; j < trailFeature.properties.relativeDistances.length; j++) {
                     if (j === 0 || trailFeature.geometry.coordinates[j][2] !== trailFeature.geometry.coordinates[j-1][2]) {
+                        let distVal;
                         if (trailCircuit) {
-                            distances.push(trailFeature.properties.relativeDistances[j] * distanceConstant);
+                            distVal = trailFeature.properties.relativeDistances[j] * distanceConstant;
                          } else {
                             if (this.isPositiveDirection) {
-                                distances.push(trailFeature.geometry.coordinates[j][3] * distanceConstant);
+                                distVal = trailFeature.geometry.coordinates[j][3] * distanceConstant;
                             } else {
-                                distances.push(Math.abs(trailLength - trailFeature.geometry.coordinates[j][3]) * distanceConstant);
+                                distVal = Math.abs(trailLength - trailFeature.geometry.coordinates[j][3]) * distanceConstant;
                             }
                          }
-                        elevations.push(trailFeature.geometry.coordinates[j][2] * elevationConstant);
-                        days.push(trailFeature.properties.title);
+                        elevations.push({
+                            x: distVal,
+                            y: trailFeature.geometry.coordinates[j][2] * elevationConstant,
+                            lat: trailFeature.geometry.coordinates[j][1],
+                            lng: trailFeature.geometry.coordinates[j][0],
+                            day: trailFeature.properties.title
+                        });
                     }
                 }
             }
@@ -383,24 +424,21 @@ function updateChart() {
             if (feature.geometry && feature.geometry.type === "LineString" && feature.properties.title != "Full Route") {
                 for (let j = 0; j < feature.properties.relativeDistances.length; j++) {
                     if (j === 0 || feature.geometry.coordinates[j][2] !== feature.geometry.coordinates[j-1][2]) {
-                        distances.push(feature.properties.relativeDistances[j] * distanceConstant);
-                        elevations.push(feature.geometry.coordinates[j][2] * elevationConstant);
-                        days.push(feature.properties.title);
+                        elevations.push({
+                            x: feature.properties.relativeDistances[j] * distanceConstant,
+                            y: feature.geometry.coordinates[j][2] * elevationConstant,
+                            lat: feature.geometry.coordinates[j][1],
+                            lng: feature.geometry.coordinates[j][0],
+                            day: feature.properties.title
+                        });
                     }
                 }
             }
         }
     }
 
-    const combinedData = distances.map((dist, index) => {
-        return { x: dist, y: elevations[index] };
-    });
-
     // Sort the pairs based on distance (lowest to highest)
-    combinedData.sort((a, b) => a.x - b.x);
-
-    const sortedDistances = combinedData.map(point => point.x);
-    const sortedElevations = combinedData.map(point => point.y);
+    elevations.sort((a, b) => a.x - b.x);
 
     if (toggleCampsites && toggleCampsites.checked) {
         let nights = [];
@@ -456,12 +494,12 @@ function updateChart() {
             }
         } else {
             x1 = 0;
-            x2 = distances[distances.length - 1];
+            x2 = elevations[elevations.length - 1].x;
         }
 
         // end trailhead will be 0 for full circuits, force it to the "end"
         if (x2 === 0) {
-            x2 = sortedDistances[sortedDistances.length - 1];
+            x2 = elevations[elevations.length - 1].x;
         }
 
         trailheads.push({
@@ -479,7 +517,7 @@ function updateChart() {
     }
 
     const chartData = {
-        labels: sortedDistances,
+        labels: elevations.map(p => p.x),
         datasets: [{
             type: 'bubble',
             data: trailheads,
@@ -521,7 +559,11 @@ function updateChart() {
         }, 
         {
             type: 'line',
-            data: sortedElevations,
+            data: elevations,
+            parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+            },
             fill: true,
             borderWidth: 2,
             backgroundColor: '#ff000020',
