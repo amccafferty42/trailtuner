@@ -1017,12 +1017,14 @@ const createClickHandler = function(index, row) {
     return function() { 
         if (row.classList.contains("table-active")) {
             markerClose();
+            updateChart();
             row.classList.remove("table-active");
         } else {
             for (const childNode of tableBody.childNodes) {
                 childNode.classList.remove("table-active");
             }
             markerOpen(index);
+            oneDayChart(index.slice(-1));
             row.classList.add("table-active");
         }
     };

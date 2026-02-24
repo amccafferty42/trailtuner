@@ -94,6 +94,7 @@ function resetMap() {
 
     this.geoJsonLayer.on('popupclose', function(e) {
         closeAllTooltips();
+        initChart();
     });
 
     this.leafletMap.fitBounds(this.geoJsonLayer.getBounds());
@@ -294,8 +295,14 @@ function updateMap() {
         if (tableBody.innerHTML != "") {
             if (e.layer.feature.geometry.type == "LineString") {
                 selectRow(e.layer.feature.properties.title.slice(-1));
+                oneDayChart(e.layer.feature.properties.title.slice(-1));
             }
         }
+    });
+
+    this.geoJsonLayer.on('popupclose', function(e) {
+        closeAllTooltips();
+        updateChart();
     });
     
     this.leafletMap.off('mousemove');

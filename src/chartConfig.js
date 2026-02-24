@@ -2,6 +2,7 @@
 let trailElevationChart;
 let stickyElement = null;
 let mapHoverMarker = null;
+let oneDayChartToggle = false;
 
 // 1. Define a custom interaction mode called 'magnetic'
 Chart.Interaction.modes.magnetic = function(chart, e, options, useFinalPosition) {
@@ -171,6 +172,10 @@ const commonChartOptions = {
                             onMarkerSelected(markerData);
                         }
                     }
+                } else if ((toggleTrail && !toggleTrail.checked) && element.element.$context?.raw?.day && dataset.type === 'line') {
+                    const day = element.element.$context.raw.day.slice(4);
+                    oneDayToggle(day);
+                    return;
                 }
             }
 
@@ -349,7 +354,6 @@ function initChart() {
 }
 
 function openTooltipByName(markerName) {
-    console.log(markerName + " clicked");
     const chart = this.trailElevationChart; // Your chart instance
     
     let found = false;
@@ -514,6 +518,155 @@ function updateChart() {
             r: 6,
             label: label2
         });
+    }
+
+    const chartData = {
+        labels: elevations.map(p => p.x),
+        datasets: [{
+            type: 'bubble',
+            data: trailheads,
+            borderWidth: 2,
+            pointStyle: 'rectRot',
+            borderColor: 'black',
+            borderColor: function(context) {
+                return context.dataIndex % 2 ? '#000000' : '#147a14';
+            },
+            backgroundColor: function(context) {
+                return context.dataIndex % 2 ? '#ff0000' : '#23db23';
+            },
+            hitRadius: 30,
+            hoverBorderWidth: 3,
+            spanGaps: false,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
+        },
+        {
+            type: 'bubble',
+            data: campsites,
+            borderWidth: 2,
+            pointStyle: 'rectRounded',
+            borderColor: '#123bc4',
+            backgroundColor: '#5c81ff',
+            hitRadius: 30,
+            hoverBorderWidth: 2,
+            spanGaps: false,
+            options: {
+                interaction: {
+                    intersect: false, 
+                    mode: 'nearest'
+                }
+            }
+        }, 
+        {
+            type: 'line',
+            data: elevations,
+            parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+            },
+            fill: true,
+            borderWidth: 2,
+            backgroundColor: '#ff000020',
+            borderColor: '#ff0000',
+            tension: 0.1,
+            pointRadius: 0,
+            spanGaps: false,
+            options: {
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                    axis: 'x'
+                }
+            }
+        }]
+    };
+      
+    const config = {
+        data: chartData,
+        plugins: [{
+            beforeInit: (chart, args, options) => {
+                const maxHeight = Math.max(elevations);
+                chart.options.scales.x.min = Math.min(...chart.data.labels);
+                chart.options.scales.x.max = Math.max(...chart.data.labels);
+                chart.options.scales.y.max = maxHeight + Math.round(maxHeight * 0.2);
+            }
+        },
+        {
+            id: 'stickyTooltip',
+            afterEvent: (chart) => {
+                if (stickyElement) {
+                    chart.tooltip.setActiveElements([stickyElement]);
+                }
+            }
+        }],
+        options: commonChartOptions.options
+    };
+    this.trailElevationChart = new Chart(ctx, config);
+}
+
+function oneDayToggle(day) {
+    if (oneDayChartToggle) {
+        oneDayChartToggle = false;
+        updateChart();
+        markerClose();
+    } else {
+        oneDayChartToggle = true;
+        oneDayChart(day);
+        markerOpen("Day " + day);
+
+    }
+}
+
+function oneDayChart(day) {
+    if (this.trailElevationChart) this.trailElevationChart.destroy();
+    const ctx = document.getElementById('elevationProfile').getContext("2d");
+    const elevations = [], trailheads = [], campsites = [];
+    for (let i = 0; i < exportedRoute.features.length; i++) {
+        let feature = exportedRoute.features[i];
+        if (feature.geometry && feature.geometry.type === "LineString" && feature.properties.title == "Day " + day) {
+            const startDist = feature.properties.relativeDistances[0];
+            for (let j = 0; j < feature.properties.relativeDistances.length; j++) {
+                if (j === 0 || feature.geometry.coordinates[j][2] !== feature.geometry.coordinates[j-1][2]) {
+                    elevations.push({
+                        x: (feature.properties.relativeDistances[j] - startDist) * distanceConstant,
+                        y: feature.geometry.coordinates[j][2] * elevationConstant,
+                        lat: feature.geometry.coordinates[j][1],
+                        lng: feature.geometry.coordinates[j][0],
+                        day: feature.properties.title
+                    });
+                }
+            }
+        }
+    }
+
+    const marker1 = {
+        x: 0,
+        y: this.route[day - 1].start.geometry.coordinates[2] * elevationConstant,
+        r: 6,
+        label: this.route[day - 1].start.properties.title
+    }
+
+    const marker2 = {
+        x: (this.route[day - 1].end.properties.relativeDistance - this.route[day - 1].start.properties.relativeDistance) * distanceConstant,
+        y: this.route[day - 1].end.geometry.coordinates[2] * elevationConstant,
+        r: 6,
+        label: this.route[day - 1].end.properties.title
+    }
+
+    if (this.route[day - 1].start.properties.title !== this.route[0].start.properties.title) {
+        campsites.push(marker1);
+    } else {
+        trailheads.push(marker1);
+    }
+
+    if (this.route[day - 1].end.properties.title !== this.route[this.route.length - 1].end.properties.title) {
+        campsites.push(marker2);
+    } else {
+        trailheads.push(marker2);
     }
 
     const chartData = {
